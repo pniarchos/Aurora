@@ -614,8 +614,8 @@ function saveItem(){
   persist();closeOv('item-ov');editTarget=null;
   renderDash();renderOrgContent();
   // push to sheet if this is Personal Social
-  if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId&&gapi&&gapi.client){
-    pushContactToSheet(item);
+  if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId){
+    ensureAuth(()=>pushContactToSheet(item));
   }
 }
 
@@ -661,11 +661,14 @@ function removeDomain(idx){
   if(currentDomain===domain) currentDomain=(S.domains[domMgrOrg]||[])[0]||null;
 }
 
-// ── Google Sheets integration ───────────────────────────────────────────
-function handleGAuthClick(){
-  if(S.gConfig.clientId&&S.gConfig.sheetId) openOv('gsetup-ov');
-  else openOv('gsetup-ov');
-}
+// ── Google Sheets integration (GIS + gapi.client) ──────────────────────
+// Google Identity Services replaces deprecated gapi.auth2
+let gisTokenClient=null;
+let gapiReady=false;
+let pendingAction=null; // function to call after token acquired
+
+function handleGAuthClick(){openOv('gsetup-ov');}
+
 function connectGoogle(){
   const clientId=document.getElementById('gs-client-id').value.trim();
   const sheetId=document.getElementById('gs-sheet-id').value.trim();
@@ -675,53 +678,86 @@ function connectGoogle(){
   }
   S.gConfig.clientId=clientId;S.gConfig.sheetId=sheetId;S.gConfig.sheetTab=sheetTab;
   persist();
-  setAlert('gsetup-alert','Authenticating…','ok');
-  loadGapi(()=>{
-    initGapiClient(()=>{
-      signIn(()=>{
-        closeOv('gsetup-ov');
-        updateGAuthBtn();
-        fetchSheetColumns();
-      },err=>{setAlert('gsetup-alert','Authentication failed: '+err,'err');});
-    });
+  setAlert('gsetup-alert','Loading Google libraries…','ok');
+  loadGapiAndGis(()=>{
+    pendingAction=()=>{closeOv('gsetup-ov');updateGAuthBtn();fetchSheetColumns();};
+    requestToken();
   });
 }
-function loadGapi(cb){
-  if(window.gapi&&gapi.client){cb();return;}
-  const s=document.createElement('script');
-  s.src='https://apis.google.com/js/api.js';
-  s.onload=()=>gapi.load('client:auth2',cb);
-  s.onerror=()=>setAlert('gsetup-alert','Could not load Google API. Check your connection.','err');
-  document.head.appendChild(s);
+
+function loadGapiAndGis(cb){
+  let gapiLoaded=false,gisLoaded=false;
+  function check(){if(gapiLoaded&&gisLoaded) cb();}
+  // Load gapi.client for Sheets API calls
+  if(window.gapi&&gapiReady){gapiLoaded=true;check();}
+  else{
+    const s1=document.createElement('script');
+    s1.src='https://apis.google.com/js/api.js';
+    s1.onload=()=>{
+      gapi.load('client',()=>{
+        gapi.client.init({}).then(()=>{
+          return gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4');
+        }).then(()=>{gapiReady=true;gapiLoaded=true;check();})
+        .catch(e=>{setAlert('gsetup-alert','gapi init error: '+JSON.stringify(e),'err');});
+      });
+    };
+    s1.onerror=()=>setAlert('gsetup-alert','Could not load Google API.','err');
+    document.head.appendChild(s1);
+  }
+  // Load GIS for OAuth token
+  if(window.google&&window.google.accounts){gisLoaded=true;check();}
+  else{
+    const s2=document.createElement('script');
+    s2.src='https://accounts.google.com/gsi/client';
+    s2.onload=()=>{gisLoaded=true;check();};
+    s2.onerror=()=>setAlert('gsetup-alert','Could not load Google Identity Services.','err');
+    document.head.appendChild(s2);
+  }
 }
-function initGapiClient(cb){
-  gapi.client.init({
-    clientId:S.gConfig.clientId,
-    scope:'https://www.googleapis.com/auth/spreadsheets',
-    discoveryDocs:['https://sheets.googleapis.com/$discovery/rest?version=v4']
-  }).then(cb).catch(e=>setAlert('gsetup-alert','Init error: '+JSON.stringify(e),'err'));
+
+function requestToken(){
+  // GIS implicit flow — pops up a consent window, returns access token directly
+  if(!gisTokenClient){
+    gisTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:S.gConfig.clientId,
+      scope:'https://www.googleapis.com/auth/spreadsheets',
+      callback:(tokenResponse)=>{
+        if(tokenResponse.error){
+          alert('Auth error: '+tokenResponse.error);return;
+        }
+        // Token is now set on gapi.client automatically via GIS
+        if(pendingAction){pendingAction();pendingAction=null;}
+      },
+    });
+  }
+  gisTokenClient.requestAccessToken({prompt:'consent'});
 }
-function signIn(cb,errCb){
-  const auth=gapi.auth2.getAuthInstance();
-  if(auth.isSignedIn.get()){cb();return;}
-  auth.signIn().then(cb).catch(e=>errCb(e.error||'Unknown error'));
+
+function ensureAuth(action){
+  if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
+  pendingAction=action;
+  loadGapiAndGis(()=>{
+    // Check if we already have a valid token
+    const token=gapi.client.getToken();
+    if(token&&token.access_token){action();pendingAction=null;}
+    else requestToken();
+  });
 }
+
 function fetchSheetColumns(){
   const range=(S.gConfig.sheetTab||'Sheet1')+'!1:1';
   gapi.client.sheets.spreadsheets.values.get({
     spreadsheetId:S.gConfig.sheetId,range
   }).then(r=>{
     gSheetColumns=(r.result.values&&r.result.values[0])||[];
+    if(!gSheetColumns.length){
+      // fallback: try without tab name
+      return gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId:S.gConfig.sheetId,range:'1:1'
+      }).then(r2=>{gSheetColumns=(r2.result.values&&r2.result.values[0])||[];openMappingModal();});
+    }
     openMappingModal();
-  }).catch(e=>{
-    // Try without tab name
-    gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId:S.gConfig.sheetId,range:'1:1'
-    }).then(r=>{
-      gSheetColumns=(r.result.values&&r.result.values[0])||[];
-      openMappingModal();
-    }).catch(()=>alert('Could not read sheet headers. Check the Sheet ID and permissions.'));
-  });
+  }).catch(()=>alert('Could not read sheet headers. Check the Sheet ID and that your account has access.'));
 }
 function openMappingModal(){
   const tbody=document.getElementById('map-tbody');
@@ -755,49 +791,43 @@ function syncSheet(){
   if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
   const btn=document.getElementById('sync-btn');
   if(btn){btn.innerHTML='<span class="spinner"></span> Syncing…';btn.classList.add('syncing');}
-  const doSync=()=>{
-    const tab=S.gConfig.sheetTab||'Sheet1';
-    gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId:S.gConfig.sheetId,range:tab
-    }).then(r=>{
-      const rows=r.result.values||[];
-      if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
-      const headers=rows[0];
-      const mapping=S.gConfig.mapping||{};
-      const revMap={};
-      Object.entries(mapping).forEach(([hubKey,colName])=>{
-        const ci=headers.indexOf(colName);
-        if(ci>=0) revMap[ci]=hubKey;
-      });
-      const existing=S.items.personal.Social||[];
-      const existingNames=new Set(existing.map(c=>c.name.toLowerCase()));
-      let added=0,updated=0;
-      rows.slice(1).forEach(row=>{
-        const contact={_fromSheet:true};
-        row.forEach((val,ci)=>{if(revMap[ci]) contact[revMap[ci]]=val;});
-        if(!contact.name) return;
-        const nameKey=contact.name.toLowerCase();
-        const existIdx=existing.findIndex(c=>c.name.toLowerCase()===nameKey);
-        if(existIdx>=0){existing[existIdx]={...existing[existIdx],...contact};updated++;}
-        else{existing.push(contact);added++;}
-      });
-      S.items.personal.Social=existing;
-      S.gConfig.lastSync=Date.now();
-      persist();renderDash();renderOrgContent();
-      resetSyncBtn();
-      const msg=`Sync complete: ${added} added, ${updated} updated.`;
-      const statusEl=document.querySelector('.sync-status');
-      if(statusEl) statusEl.textContent='Last synced: '+new Date().toLocaleString()+' · '+msg;
-    }).catch(e=>{
-      resetSyncBtn();
-      alert('Sync failed. Check sheet access. Error: '+JSON.stringify(e.result||e));
+  ensureAuth(doSync);
+}
+function doSync(){
+  const tab=S.gConfig.sheetTab||'Sheet1';
+  gapi.client.sheets.spreadsheets.values.get({
+    spreadsheetId:S.gConfig.sheetId,range:tab
+  }).then(r=>{
+    const rows=r.result.values||[];
+    if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
+    const headers=rows[0];
+    const mapping=S.gConfig.mapping||{};
+    const revMap={};
+    Object.entries(mapping).forEach(([hubKey,colName])=>{
+      const ci=headers.indexOf(colName);
+      if(ci>=0) revMap[ci]=hubKey;
     });
-  };
-  if(window.gapi&&gapi.client&&gapi.auth2&&gapi.auth2.getAuthInstance().isSignedIn.get()){
-    doSync();
-  } else {
-    loadGapi(()=>initGapiClient(()=>signIn(doSync,err=>alert('Sign-in failed: '+err))));
-  }
+    const existing=S.items.personal.Social||[];
+    let added=0,updated=0;
+    rows.slice(1).forEach(row=>{
+      const contact={_fromSheet:true};
+      row.forEach((val,ci)=>{if(revMap[ci]) contact[revMap[ci]]=val;});
+      if(!contact.name) return;
+      const nameKey=contact.name.toLowerCase();
+      const existIdx=existing.findIndex(c=>c.name.toLowerCase()===nameKey);
+      if(existIdx>=0){existing[existIdx]={...existing[existIdx],...contact};updated++;}
+      else{existing.push(contact);added++;}
+    });
+    S.items.personal.Social=existing;
+    S.gConfig.lastSync=Date.now();
+    persist();renderDash();renderOrgContent();
+    resetSyncBtn();
+    const statusEl=document.querySelector('.sync-status');
+    if(statusEl) statusEl.textContent='Last synced: '+new Date().toLocaleString()+' · '+added+' added, '+updated+' updated.';
+  }).catch(e=>{
+    resetSyncBtn();
+    alert('Sync failed. Check sheet access. Error: '+JSON.stringify(e.result||e));
+  });
 }
 function resetSyncBtn(){
   const btn=document.getElementById('sync-btn');
