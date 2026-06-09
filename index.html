@@ -165,7 +165,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   <div class="top-bar">
     <h1>Admin Hub</h1>
     <div class="top-bar-right">
-      <div style="font-size:11px;color:var(--text3);padding:2px 6px;border:1px solid var(--border);border-radius:var(--r-sm);white-space:nowrap;">v5.0</div>
+      <div style="font-size:11px;color:var(--text3);padding:2px 6px;border:1px solid var(--border);border-radius:var(--r-sm);white-space:nowrap;">v5.1</div>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">🔔 Notifications</button>
       <button class="tb-btn" id="gauth-btn" onclick="handleGAuthClick()">⬡ Connect Google</button>
       <div class="top-date" id="top-date"></div>
@@ -365,14 +365,37 @@ const SPECIAL_FIELDS={
     {k:'notes',l:'Notes',t:'textarea'},
   ],
   'Social':[
-    {k:'name',l:'Name',t:'text',req:true},
-    {k:'relationship',l:'Relationship',t:'text'},
+    {k:'firstName',l:'First name',t:'text',req:true},
+    {k:'lastName',l:'Last name',t:'text'},
+    {k:'nickname',l:'Nickname',t:'text'},
+    {k:'salutation',l:'Salutation',t:'text'},
+    {k:'type',l:'Type / relationship',t:'text'},
+    {k:'circle',l:'Circle',t:'text'},
     {k:'email',l:'Email',t:'text'},
     {k:'phone',l:'Phone',t:'text'},
-    {k:'address',l:'Address',t:'text'},
-    {k:'birthday',l:'Birthday',t:'date'},
-    {k:'anniversary',l:'Anniversary / key date',t:'date'},
-    {k:'annivLabel',l:'Anniversary label',t:'text'},
+    {k:'streetNum',l:'Street & number',t:'text'},
+    {k:'city',l:'City',t:'text'},
+    {k:'state',l:'State',t:'text'},
+    {k:'zip',l:'Zip',t:'text'},
+    {k:'country',l:'Country',t:'text'},
+    {k:'birthdate',l:'Birthdate',t:'date'},
+    {k:'deathdate',l:'Deathdate',t:'date'},
+    {k:'anniversary',l:'Anniversary',t:'date'},
+    {k:'lastContacted',l:'Last contacted',t:'date'},
+    {k:'updatedDate',l:'Updated',t:'date'},
+    {k:'spouseSalutation',l:'Spouse salutation',t:'text'},
+    {k:'spouseFirst',l:'Spouse first name',t:'text'},
+    {k:'spouseLast',l:'Spouse last name',t:'text'},
+    {k:'spouseBirthdate',l:'Spouse birthdate',t:'date'},
+    {k:'spouseDeathdate',l:'Spouse deathdate',t:'date'},
+    {k:'birthdayCard',l:'Birthday card',t:'checkbox'},
+    {k:'christmasCard',l:'Christmas card',t:'checkbox'},
+    {k:'weddingInvite',l:'Wedding invite',t:'checkbox'},
+    {k:'andreasFuneral',l:'Dad's funeral',t:'checkbox'},
+    {k:'andreasMemorials',l:'Dad's memorial list',t:'checkbox'},
+    {k:'personalize',l:'Personalize',t:'textarea'},
+    {k:'story',l:'Story',t:'textarea'},
+    {k:'importantNotes',l:'Important notes',t:'textarea'},
     {k:'notes',l:'Notes',t:'textarea'},
   ],
   'Health':[
@@ -385,9 +408,20 @@ const SPECIAL_FIELDS={
 };
 // Hub field keys available for sheet mapping (Social domain)
 const SOCIAL_MAP_FIELDS=[
-  {k:'name',l:'Name'},{k:'relationship',l:'Relationship'},{k:'email',l:'Email'},
-  {k:'phone',l:'Phone'},{k:'address',l:'Address'},{k:'birthday',l:'Birthday'},
-  {k:'anniversary',l:'Anniversary'},{k:'annivLabel',l:'Anniversary label'},{k:'notes',l:'Notes'},
+  {k:'updatedDate',l:'Updated'},{k:'type',l:'Type'},{k:'salutation',l:'Salutation'},
+  {k:'firstName',l:'First Name'},{k:'lastName',l:'Last Name'},{k:'nickname',l:'Nickname'},
+  {k:'birthdate',l:'Birthdate'},{k:'deathdate',l:'Deathdate'},
+  {k:'birthdayCard',l:'Birthday Card'},{k:'christmasCard',l:'Christmas Card'},
+  {k:'anniversary',l:'Anniversary'},{k:'personalize',l:'Personalize'},
+  {k:'spouseSalutation',l:'Spouse Salutation'},{k:'spouseFirst',l:'Spouse First'},
+  {k:'spouseLast',l:'Spouse Last'},{k:'spouseBirthdate',l:'Spouse Birthdate'},
+  {k:'spouseDeathdate',l:'Spouse Deathdate'},{k:'email',l:'Email'},{k:'phone',l:'Phone'},
+  {k:'streetNum',l:'Street #'},{k:'city',l:'City'},{k:'state',l:'State'},
+  {k:'zip',l:'Zip'},{k:'country',l:'Country'},{k:'weddingInvite',l:'Wedding Invite'},
+  {k:'circle',l:'Circle'},{k:'andreasFuneral',l:'Andreas Funeral'},
+  {k:'andreasMemorials',l:'Andreas Memorials'},{k:'story',l:'Story'},
+  {k:'importantNotes',l:'Important Notes'},{k:'notes',l:'Notes'},
+  {k:'lastContacted',l:'Last Contacted'},
 ];
 const DEFAULT_TILES=[
   {id:'t1',label:'Overdue',type:'overdue',color:'t-red',days:null,org:null,notif:''},
@@ -429,9 +463,11 @@ function getDue(item,domain){
   if(domain==='Social'){
     const today=new Date();const yr=today.getFullYear();
     const c=[];
-    ['birthday','anniversary'].forEach(k=>{
+    ['birthdate','anniversary'].forEach(k=>{
       if(item[k]){const d=new Date(item[k]+'T00:00:00');let n=new Date(yr,d.getMonth(),d.getDate());if(n<=today)n=new Date(yr+1,d.getMonth(),d.getDate());c.push(n.toISOString().slice(0,10));}
     });
+    // Also surface spouse birthdate
+    if(item.spouseBirthdate){const d=new Date(item.spouseBirthdate+'T00:00:00');let n=new Date(yr,d.getMonth(),d.getDate());if(n<=today)n=new Date(yr+1,d.getMonth(),d.getDate());c.push(n.toISOString().slice(0,10));}
     c.sort();return c[0]||null;
   }
   return item.dueDate||item.nextDue||item.expiry||item.regExpiry||item.insExpiry||item.nextService||null;
@@ -566,15 +602,27 @@ function renderCard(org,domain,item,idx,fromDrill){
   const bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
   const sheetBadge=item._fromSheet?'<span class="badge badge-sheet">Sheet</span>':'';
   const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  const rows=fields.filter(f=>f.k!=='name'&&f.k!=='notes'&&item[f.k]).slice(0,5);
+  const isSocial=(domain==='Social');
+  const displayName=isSocial
+    ?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' ')
+    :(item.name||'');
+  const displaySub=isSocial
+    ?(item.nickname?'"'+item.nickname+'"':item.type||'')
+    :(item.category||item.relationship||'');
+  const skipKeys=isSocial
+    ?new Set(['firstName','lastName','nickname','salutation','notes','personalize','story','importantNotes'])
+    :new Set(['name','notes']);
+  const rows=fields.filter(f=>!skipKeys.has(f.k)&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]).slice(0,5);
+  const checkboxFields=fields.filter(f=>f.t==='checkbox'&&item[f.k]==='true');
   const drillNote=fromDrill?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${esc(ORG_LABELS[org])} · ${esc(domain)}</div>`:'';
   return`<div class="card">
     <div class="card-top">
-      <div><div class="card-name">${esc(item.name)}</div>${item.category||item.relationship?`<div class="card-sub">${esc(item.category||item.relationship||'')}</div>`:''}</div>${drillNote}
+      <div><div class="card-name">${esc(displayName||'Unnamed')}</div>${displaySub?`<div class="card-sub">${esc(displaySub)}</div>`:''}</div>${drillNote}
       <div class="card-acts">${sheetBadge}${lbl?`<span class="badge ${bCls}">${lbl}</span>`:''}<button class="iBtn" onclick="openItemModal('${esc(org)}','${esc(domain)}',${idx})">✎</button><button class="iBtn" onclick="askDelete('${esc(org)}','${esc(domain)}',${idx})">✕</button></div>
     </div>
     <div class="card-rows">${rows.map(f=>{let v=item[f.k];if(f.t==='date')v=fmtDate(v);return`<div class="crow"><span class="crow-lbl">${esc(f.l)}</span><span class="crow-val">${esc(v)}</span></div>`;}).join('')}</div>
-    ${item.notes?`<div class="card-notes">${esc(item.notes)}</div>`:''}
+    ${checkboxFields.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${checkboxFields.map(f=>`<span style="font-size:11px;padding:2px 7px;border-radius:20px;background:var(--green-bg);color:var(--green);font-weight:600;">${esc(f.l)}</span>`).join('')}</div>`:''}
+    ${(item.importantNotes||item.notes)?`<div class="card-notes">${esc(item.importantNotes||item.notes)}</div>`:''}
   </div>`;
 }
 
@@ -589,6 +637,7 @@ function openItemModal(org,domain,idx){
     let inp='';
     if(f.t==='select') inp=`<select id="f-${f.k}"><option value=""></option>${(f.opts||[]).map(o=>`<option${o===val?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
     else if(f.t==='textarea') inp=`<textarea id="f-${f.k}">${esc(val)}</textarea>`;
+    else if(f.t==='checkbox') inp=`<input type="checkbox" id="f-${f.k}"${val==='true'?' checked':''} style="width:auto;margin-top:4px;">`;
     else inp=`<input type="${f.t}" id="f-${f.k}" value="${esc(val)}"${f.req?' required':''}>`;
     return`<div class="fg"><label for="f-${f.k}">${f.l}</label>${inp}</div>`;
   }).join('');
@@ -602,9 +651,9 @@ function saveItem(){
   const item={};let valid=true;
   fields.forEach(f=>{
     const el=document.getElementById('f-'+f.k);
-    const val=el?el.value.trim():'';
+    const val=f.t==='checkbox'?(el&&el.checked?'true':'false'):(el?el.value.trim():'');
     if(f.req&&!val){if(el)el.style.borderColor='var(--red)';valid=false;}
-    else if(el) el.style.borderColor='';
+    else if(el&&f.t!=='checkbox') el.style.borderColor='';
     item[f.k]=val;
   });
   if(!valid) return;
