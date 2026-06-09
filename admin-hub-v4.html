@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Admin Hub">
+<meta name="theme-color" content="#1a1a18">
+<title>Admin Hub</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f6f5f1;--bg3:#eeedea;--bg4:#e8e7e3;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#a0a09a;
+  --border:rgba(0,0,0,.10);--border2:rgba(0,0,0,.18);
+  --red:#d43a3a;--amber:#b06a0c;--green:#387010;
+  --red-bg:#fdf0f0;--amber-bg:#fdf4e7;--green-bg:#eef6e4;
+  --blue:#1a5fa8;--blue-bg:#e8f1fb;
+  --r:10px;--r-sm:6px;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--bg2:#252523;--bg3:#2d2d2b;--bg4:#363633;
+  --text:#f0efe9;--text2:#9a9a94;--text3:#636360;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.16);
+  --red:#e05555;--amber:#cc8822;--green:#5a9a28;
+  --red-bg:#2a1010;--amber-bg:#281800;--green-bg:#0e1f04;
+  --blue:#4a8fd4;--blue-bg:#0d1f35;
+}}
+body{background:var(--bg3);color:var(--text);min-height:100vh;}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.top-bar{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.top-bar h1{font-size:18px;font-weight:600;letter-spacing:-.3px;white-space:nowrap;}
+.top-bar-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
+.tb-btn{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;}
+.tb-btn:hover{background:var(--bg2);color:var(--text);}
+.tb-btn.granted{border-color:var(--green);color:var(--green);}
+.tb-btn.connected{border-color:var(--blue);color:var(--blue);}
+.top-date{font-size:12px;color:var(--text3);white-space:nowrap;}
+.main-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.main-inner{max-width:960px;margin:0 auto;padding:1rem 1rem 5rem;}
+
+/* Dashboard */
+.dash{margin-bottom:1.5rem;}
+.dash-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;}
+.dash-lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);}
+.dash-edit-btn{background:none;border:1px dashed var(--border2);border-radius:var(--r-sm);padding:4px 9px;font-size:12px;cursor:pointer;color:var(--text3);font-family:inherit;}
+.dash-edit-btn:hover{color:var(--text);border-color:var(--text2);}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:9px;}
+.tile{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:background .12s;position:relative;user-select:none;}
+.tile:hover{background:var(--bg2);}
+.tile-lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;padding-right:18px;}
+.tile-val{font-size:28px;font-weight:600;line-height:1;margin-bottom:3px;}
+.tile-sub{font-size:11px;color:var(--text2);}
+.tile.t-red .tile-val{color:var(--red);}
+.tile.t-amber .tile-val{color:var(--amber);}
+.tile.t-green .tile-val{color:var(--green);}
+.tile.t-blue .tile-val{color:var(--blue);}
+.tile.t-neutral .tile-val{color:var(--text);}
+.tile-del{position:absolute;top:7px;right:7px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;border-radius:3px;}
+.tile-del:hover{color:var(--red);}
+.tile-add{background:none;border:1px dashed var(--border2);border-radius:var(--r);padding:13px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;color:var(--text3);font-family:inherit;}
+.tile-add:hover{border-color:var(--text2);color:var(--text);background:var(--bg);}
+
+/* Org tabs */
+.org-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.org-bar::-webkit-scrollbar{display:none;}
+.org-tab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 13px 9px;font-size:14px;font-weight:500;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;margin-bottom:-1px;}
+.org-tab:hover{color:var(--text);}
+.org-tab.active{color:var(--text);border-bottom-color:var(--text);}
+
+/* Domain nav */
+.dom-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
+.dom-btn{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 11px;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;}
+.dom-btn:hover{background:var(--bg2);color:var(--text);}
+.dom-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.dom-mgr-btn{background:none;border:1px dashed var(--border2);border-radius:var(--r-sm);padding:6px 10px;font-size:12px;cursor:pointer;color:var(--text3);font-family:inherit;margin-left:2px;}
+.dom-mgr-btn:hover{color:var(--text);border-color:var(--text2);}
+
+/* Section */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;gap:8px;flex-wrap:wrap;}
+.sec-title{font-size:16px;font-weight:600;}
+.sec-actions{display:flex;gap:6px;align-items:center;}
+.add-btn{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);padding:6px 12px;font-size:13px;cursor:pointer;color:var(--text);font-family:inherit;}
+.add-btn:hover{background:var(--bg2);}
+.sync-btn{background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r-sm);padding:6px 12px;font-size:13px;cursor:pointer;color:var(--blue);font-family:inherit;display:flex;align-items:center;gap:5px;}
+.sync-btn:hover{opacity:.85;}
+.sync-btn.syncing{opacity:.6;cursor:default;}
+.sync-status{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px;}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.card-name{font-size:14px;font-weight:600;line-height:1.3;}
+.card-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.card-acts{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px;}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-sheet{background:var(--blue-bg);color:var(--blue);}
+.iBtn{background:none;border:none;cursor:pointer;color:var(--text3);padding:2px 5px;border-radius:3px;font-size:13px;line-height:1;font-family:inherit;}
+.iBtn:hover{background:var(--bg2);color:var(--text);}
+.card-rows{display:flex;flex-direction:column;gap:4px;}
+.crow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;}
+.crow-lbl{color:var(--text2);flex-shrink:0;max-width:45%;}
+.crow-val{color:var(--text);font-weight:500;text-align:right;word-break:break-word;}
+.card-notes{font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:14px;grid-column:1/-1;}
+
+/* Drill panel */
+.drill-panel{display:none;position:fixed;inset:0;background:var(--bg3);z-index:150;overflow-y:auto;}
+.drill-panel.open{display:block;}
+.drill-hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;}
+.drill-back{background:none;border:none;cursor:pointer;color:var(--blue);font-size:14px;font-family:inherit;padding:4px 0;}
+.drill-title{font-size:15px;font-weight:600;}
+.drill-body{max-width:960px;margin:0 auto;padding:1rem 1rem 4rem;}
+
+/* Overlays */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;padding:1rem;align-items:flex-start;justify-content:center;overflow-y:auto;}
+.overlay.open{display:flex;}
+.modal{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;width:100%;max-width:460px;margin:auto;}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:1.1rem;}
+.modal-desc{font-size:13px;color:var(--text2);margin-bottom:1.1rem;line-height:1.5;}
+.fg{margin-bottom:11px;}
+.fg label{display:block;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:14px;font-family:inherit;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--text2);}
+.fg textarea{height:66px;resize:vertical;}
+.fg .hint{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;}
+.btn-save{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;}
+.btn-cancel{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 18px;font-size:14px;cursor:pointer;color:var(--text2);font-family:inherit;}
+.btn-danger{background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:14px;cursor:pointer;font-family:inherit;}
+.btn-blue{background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:14px;cursor:pointer;font-family:inherit;}
+
+/* Sheet mapping */
+.map-table{width:100%;border-collapse:collapse;margin-bottom:.75rem;}
+.map-table th{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:5px 6px;border-bottom:1px solid var(--border);text-align:left;}
+.map-table td{padding:5px 6px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.map-table td:first-child{color:var(--text2);white-space:nowrap;}
+.map-table select{width:100%;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;}
+.map-scroll{max-height:280px;overflow-y:auto;}
+
+/* Domain manager */
+.dom-list{display:flex;flex-direction:column;gap:5px;margin-bottom:.9rem;max-height:220px;overflow-y:auto;}
+.dom-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:var(--r-sm);}
+.dom-item-name{flex:1;font-size:14px;}
+.dom-add-row{display:flex;gap:7px;}
+.dom-add-row input{flex:1;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:14px;font-family:inherit;}
+.dom-add-row input:focus{outline:none;border-color:var(--text2);}
+.btn-add{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:7px 13px;font-size:13px;cursor:pointer;font-family:inherit;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.alert{padding:10px 12px;border-radius:var(--r-sm);font-size:13px;margin-bottom:1rem;}
+.alert-err{background:var(--red-bg);color:var(--red);}
+.alert-ok{background:var(--green-bg);color:var(--green);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top-bar">
+    <h1>Admin Hub</h1>
+    <div class="top-bar-right">
+      <button class="tb-btn" id="notif-btn" onclick="requestNotif()">🔔 Notifications</button>
+      <button class="tb-btn" id="gauth-btn" onclick="handleGAuthClick()">⬡ Connect Google</button>
+      <div class="top-date" id="top-date"></div>
+    </div>
+  </div>
+
+  <div class="main-scroll">
+    <div class="main-inner">
+
+      <!-- Dashboard -->
+      <div class="dash">
+        <div class="dash-hdr">
+          <div class="dash-lbl">Dashboard</div>
+          <button class="dash-edit-btn" id="dash-edit-btn" onclick="toggleDashEdit()">✎ Customize</button>
+        </div>
+        <div class="tiles" id="tiles-wrap"></div>
+      </div>
+
+      <!-- Org tabs -->
+      <div class="org-bar">
+        <button class="org-tab active" data-org="personal" onclick="switchOrg('personal')">Personal</button>
+        <button class="org-tab" data-org="fee" onclick="switchOrg('fee')">Foundation for Economic Education</button>
+        <button class="org-tab" data-org="tenfwd" onclick="switchOrg('tenfwd')">10Forward Technologies</button>
+      </div>
+
+      <div id="org-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Drill panel -->
+<div class="drill-panel" id="drill-panel">
+  <div class="drill-hdr">
+    <button class="drill-back" onclick="closeDrill()">← Back</button>
+    <div class="drill-title" id="drill-title"></div>
+  </div>
+  <div class="drill-body"><div class="cards" id="drill-cards"></div></div>
+</div>
+
+<!-- Item modal -->
+<div class="overlay" id="item-ov" onclick="ovBg(event,'item-ov')">
+  <div class="modal">
+    <h3 id="item-title">Add item</h3>
+    <div id="item-body"></div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('item-ov')">Cancel</button>
+      <button class="btn-save" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tile modal -->
+<div class="overlay" id="tile-ov" onclick="ovBg(event,'tile-ov')">
+  <div class="modal">
+    <h3>Add dashboard tile</h3>
+    <div class="fg"><label>Tile label</label><input type="text" id="tl-label" placeholder="e.g. Due in 10 days" maxlength="40"></div>
+    <div class="field-row">
+      <div class="fg"><label>Type</label>
+        <select id="tl-type" onchange="tileTypeChange()">
+          <option value="overdue">Overdue items</option>
+          <option value="due_days">Due within N days</option>
+          <option value="total">Total items</option>
+          <option value="org_total">Total in one org</option>
+        </select>
+      </div>
+      <div class="fg"><label>Color</label>
+        <select id="tl-color">
+          <option value="t-red">Red</option>
+          <option value="t-amber">Amber</option>
+          <option value="t-green">Green</option>
+          <option value="t-blue">Blue</option>
+          <option value="t-neutral">Neutral</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" id="tl-days-row"><label>Within how many days</label><input type="number" id="tl-days" value="10" min="1" max="365"></div>
+    <div class="fg" id="tl-org-row" style="display:none"><label>Which org</label>
+      <select id="tl-org">
+        <option value="personal">Personal</option>
+        <option value="fee">Foundation for Economic Education</option>
+        <option value="tenfwd">10Forward Technologies</option>
+      </select>
+    </div>
+    <div class="fg"><label>Notify me (days before due)</label>
+      <select id="tl-notif">
+        <option value="">No notification</option>
+        <option value="1">1 day before</option>
+        <option value="3">3 days before</option>
+        <option value="7">7 days before</option>
+        <option value="14">14 days before</option>
+        <option value="30">30 days before</option>
+      </select>
+    </div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('tile-ov')">Cancel</button>
+      <button class="btn-save" onclick="saveTile()">Add tile</button>
+    </div>
+  </div>
+</div>
+
+<!-- Google setup modal -->
+<div class="overlay" id="gsetup-ov" onclick="ovBg(event,'gsetup-ov')">
+  <div class="modal">
+    <h3>Connect Google Sheets</h3>
+    <div class="modal-desc">Enables two-way sync between your Social contacts tab and a Google Sheet. Requires a free Google Cloud OAuth Client ID — one-time setup.</div>
+    <div id="gsetup-alert"></div>
+    <div class="fg">
+      <label>OAuth Client ID</label>
+      <input type="text" id="gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
+      <div class="hint">From Google Cloud Console → APIs & Services → Credentials</div>
+    </div>
+    <div class="fg">
+      <label>Contacts Sheet ID</label>
+      <input type="text" id="gs-sheet-id" placeholder="Paste the ID from your sheet URL">
+      <div class="hint">The long string in: docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
+    </div>
+    <div class="fg">
+      <label>Sheet tab name (optional)</label>
+      <input type="text" id="gs-sheet-tab" placeholder="Sheet1">
+      <div class="hint">Leave blank to use the first tab</div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('gsetup-ov')">Cancel</button>
+      <button class="btn-blue" onclick="connectGoogle()">Connect & authenticate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Column mapping modal -->
+<div class="overlay" id="gmap-ov" onclick="ovBg(event,'gmap-ov')">
+  <div class="modal">
+    <h3>Map your sheet columns</h3>
+    <div class="modal-desc">Match your Google Sheet column headers to Admin Hub fields. Unmapped columns are ignored.</div>
+    <div id="gmap-alert"></div>
+    <div class="map-scroll"><table class="map-table" id="map-table">
+      <thead><tr><th>Hub field</th><th>Your sheet column</th></tr></thead>
+      <tbody id="map-tbody"></tbody>
+    </table></div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('gmap-ov')">Cancel</button>
+      <button class="btn-save" onclick="saveMapping()">Save mapping</button>
+    </div>
+  </div>
+</div>
+
+<!-- Domain manager -->
+<div class="overlay" id="dom-ov" onclick="ovBg(event,'dom-ov')">
+  <div class="modal">
+    <h3 id="dom-title">Manage domains</h3>
+    <div class="dom-list" id="dom-list"></div>
+    <div class="dom-add-row">
+      <input type="text" id="dom-new" placeholder="New domain name…" maxlength="40">
+      <button class="btn-add" onclick="addDomain()">Add</button>
+    </div>
+    <div class="modal-acts"><button class="btn-save" onclick="closeOv('dom-ov')">Done</button></div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="overlay" id="del-ov" onclick="ovBg(event,'del-ov')">
+  <div class="modal">
+    <h3>Delete item</h3>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem;">This cannot be undone.</p>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('del-ov')">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────
+const STORE='pahub_v4';
+const ORG_LABELS={personal:'Personal',fee:'Foundation for Economic Education',tenfwd:'10Forward Technologies'};
+const DEFAULT_DOMAINS={
+  personal:['Home','Vehicles','Finances & taxes','Health','Legal & admin','Social'],
+  fee:['Finances','Legal & compliance','HR & staff','Vendor contracts','Events & deadlines','Board & governance'],
+  tenfwd:['Finances','Legal & IP','Projects','Suppliers','Filings & compliance','Products']
+};
+const COMMON_FIELDS=[
+  {k:'name',l:'Name / title',t:'text',req:true},
+  {k:'category',l:'Category / type',t:'text'},
+  {k:'dueDate',l:'Due / expiry date',t:'date'},
+  {k:'amount',l:'Amount / cost',t:'text'},
+  {k:'notes',l:'Notes',t:'textarea'},
+];
+const SPECIAL_FIELDS={
+  'Vehicles':[
+    {k:'name',l:'Vehicle name',t:'text',req:true},
+    {k:'year',l:'Year / make / model',t:'text'},
+    {k:'plate',l:'License plate',t:'text'},
+    {k:'regExpiry',l:'Registration expiry',t:'date'},
+    {k:'insExpiry',l:'Insurance expiry',t:'date'},
+    {k:'nextService',l:'Next service date',t:'date'},
+    {k:'mileage',l:'Current mileage',t:'text'},
+    {k:'insurer',l:'Insurer',t:'text'},
+    {k:'notes',l:'Notes',t:'textarea'},
+  ],
+  'Social':[
+    {k:'name',l:'Name',t:'text',req:true},
+    {k:'relationship',l:'Relationship',t:'text'},
+    {k:'email',l:'Email',t:'text'},
+    {k:'phone',l:'Phone',t:'text'},
+    {k:'address',l:'Address',t:'text'},
+    {k:'birthday',l:'Birthday',t:'date'},
+    {k:'anniversary',l:'Anniversary / key date',t:'date'},
+    {k:'annivLabel',l:'Anniversary label',t:'text'},
+    {k:'notes',l:'Notes',t:'textarea'},
+  ],
+  'Health':[
+    {k:'name',l:'Item / provider / medication',t:'text',req:true},
+    {k:'category',l:'Category',t:'select',opts:['Appointment','Prescription','Insurance','Test / lab','Dental','Vision','Other']},
+    {k:'nextDue',l:'Next date / expiry',t:'date'},
+    {k:'provider',l:'Provider / pharmacy',t:'text'},
+    {k:'notes',l:'Notes',t:'textarea'},
+  ],
+};
+// Hub field keys available for sheet mapping (Social domain)
+const SOCIAL_MAP_FIELDS=[
+  {k:'name',l:'Name'},{k:'relationship',l:'Relationship'},{k:'email',l:'Email'},
+  {k:'phone',l:'Phone'},{k:'address',l:'Address'},{k:'birthday',l:'Birthday'},
+  {k:'anniversary',l:'Anniversary'},{k:'annivLabel',l:'Anniversary label'},{k:'notes',l:'Notes'},
+];
+const DEFAULT_TILES=[
+  {id:'t1',label:'Overdue',type:'overdue',color:'t-red',days:null,org:null,notif:''},
+  {id:'t2',label:'Due in 30 days',type:'due_days',color:'t-amber',days:30,org:null,notif:''},
+  {id:'t3',label:'Due in 90 days',type:'due_days',color:'t-neutral',days:90,org:null,notif:''},
+  {id:'t4',label:'Total items',type:'total',color:'t-neutral',days:null,org:null,notif:''},
+];
+
+// ── State ──────────────────────────────────────────────────────────────
+let S=null;
+let currentOrg='personal',currentDomain=null;
+let dashEditMode=false;
+let editTarget=null,deleteTarget=null,domMgrOrg=null;
+let gSheetColumns=[]; // fetched column headers from sheet
+
+function defaultState(){
+  const s={domains:{},items:{},tiles:[...DEFAULT_TILES],gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{}}};
+  Object.keys(DEFAULT_DOMAINS).forEach(org=>{
+    s.domains[org]=[...DEFAULT_DOMAINS[org]];
+    s.items[org]={};
+    DEFAULT_DOMAINS[org].forEach(d=>{s.items[org][d]=[];});
+  });
+  return s;
+}
+function load(){
+  try{const r=localStorage.getItem(STORE);S=r?JSON.parse(r):defaultState();}
+  catch(e){S=defaultState();}
+  if(!S.tiles) S.tiles=[...DEFAULT_TILES];
+  if(!S.gConfig) S.gConfig={clientId:'',sheetId:'',sheetTab:'',mapping:{}};
+}
+function persist(){localStorage.setItem(STORE,JSON.stringify(S));}
+
+// ── Date utils ──────────────────────────────────────────────────────────
+function getDue(item,domain){
+  if(domain==='Vehicles'){
+    const ds=[item.regExpiry,item.insExpiry,item.nextService].filter(Boolean).sort();
+    return ds[0]||null;
+  }
+  if(domain==='Social'){
+    const today=new Date();const yr=today.getFullYear();
+    const c=[];
+    ['birthday','anniversary'].forEach(k=>{
+      if(item[k]){const d=new Date(item[k]+'T00:00:00');let n=new Date(yr,d.getMonth(),d.getDate());if(n<=today)n=new Date(yr+1,d.getMonth(),d.getDate());c.push(n.toISOString().slice(0,10));}
+    });
+    c.sort();return c[0]||null;
+  }
+  return item.dueDate||item.nextDue||item.expiry||item.regExpiry||item.insExpiry||item.nextService||null;
+}
+function daysUntil(str){
+  if(!str) return null;
+  const t=new Date();t.setHours(0,0,0,0);
+  return Math.round((new Date(str+'T00:00:00')-t)/86400000);
+}
+function urgency(days){if(days===null)return'none';if(days<0)return'red';if(days<=30)return'red';if(days<=90)return'amber';return'green';}
+function fmtDate(str){if(!str)return'—';return new Date(str+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── All items ──────────────────────────────────────────────────────────
+function allItems(orgFilter){
+  const out=[];
+  (orgFilter?[orgFilter]:Object.keys(S.domains)).forEach(org=>{
+    (S.domains[org]||[]).forEach(domain=>{
+      ((S.items[org]||{})[domain]||[]).forEach((item,idx)=>{
+        const due=getDue(item,domain);
+        out.push({item,org,domain,idx,due,days:daysUntil(due)});
+      });
+    });
+  });
+  return out;
+}
+
+// ── Tiles ──────────────────────────────────────────────────────────────
+function tileValue(tile){
+  const items=allItems(tile.org||null);
+  if(tile.type==='overdue') return items.filter(r=>r.days!==null&&r.days<0).length;
+  if(tile.type==='due_days') return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days).length;
+  if(tile.type==='total') return items.length;
+  if(tile.type==='org_total') return allItems(tile.org).length;
+  return 0;
+}
+function tileItems(tile){
+  const items=allItems(tile.org||null);
+  if(tile.type==='overdue') return items.filter(r=>r.days!==null&&r.days<0);
+  if(tile.type==='due_days') return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days);
+  if(tile.type==='total') return items;
+  if(tile.type==='org_total') return allItems(tile.org);
+  return [];
+}
+function tileSub(tile){
+  if(tile.type==='due_days') return`within ${tile.days}d`;
+  if(tile.type==='org_total') return ORG_LABELS[tile.org]||'';
+  return'all orgs';
+}
+function renderDash(){
+  let h=S.tiles.map(tile=>{
+    const v=tileValue(tile);
+    const del=dashEditMode?`<button class="tile-del" onclick="deleteTile('${tile.id}',event)">✕</button>`:'';
+    return`<div class="tile ${tile.color}" onclick="drillTile('${tile.id}')">${del}<div class="tile-lbl">${esc(tile.label)}</div><div class="tile-val">${v}</div><div class="tile-sub">${esc(tileSub(tile))}</div></div>`;
+  }).join('');
+  if(dashEditMode) h+=`<button class="tile-add" onclick="openOv('tile-ov')">+ Add tile</button>`;
+  document.getElementById('tiles-wrap').innerHTML=h;
+}
+function toggleDashEdit(){
+  dashEditMode=!dashEditMode;
+  document.getElementById('dash-edit-btn').textContent=dashEditMode?'✓ Done':'✎ Customize';
+  renderDash();
+}
+function deleteTile(id,e){e.stopPropagation();S.tiles=S.tiles.filter(t=>t.id!==id);persist();renderDash();}
+function tileTypeChange(){
+  const t=document.getElementById('tl-type').value;
+  document.getElementById('tl-days-row').style.display=t==='due_days'?'block':'none';
+  document.getElementById('tl-org-row').style.display=t==='org_total'?'block':'none';
+}
+function saveTile(){
+  const label=document.getElementById('tl-label').value.trim();
+  if(!label){document.getElementById('tl-label').style.borderColor='var(--red)';return;}
+  const type=document.getElementById('tl-type').value;
+  S.tiles.push({id:'t'+Date.now(),label,type,color:document.getElementById('tl-color').value,
+    days:type==='due_days'?parseInt(document.getElementById('tl-days').value)||10:null,
+    org:type==='org_total'?document.getElementById('tl-org').value:null,
+    notif:document.getElementById('tl-notif').value});
+  persist();closeOv('tile-ov');renderDash();scheduleNotifs();
+}
+
+// ── Drill ──────────────────────────────────────────────────────────────
+function drillTile(id){
+  if(dashEditMode) return;
+  const tile=S.tiles.find(t=>t.id===id);if(!tile) return;
+  const rows=tileItems(tile);
+  document.getElementById('drill-title').textContent=tile.label+' ('+rows.length+')';
+  document.getElementById('drill-cards').innerHTML=rows.length
+    ?rows.map(r=>renderCard(r.org,r.domain,r.item,r.idx,true)).join('')
+    :'<div class="empty">Nothing here yet.</div>';
+  document.getElementById('drill-panel').classList.add('open');
+}
+function closeDrill(){document.getElementById('drill-panel').classList.remove('open');}
+
+// ── Org / domain ────────────────────────────────────────────────────────
+function switchOrg(org){
+  currentOrg=org;
+  document.querySelectorAll('.org-tab').forEach(b=>b.classList.toggle('active',b.dataset.org===org));
+  if(!currentDomain||!(S.domains[org]||[]).includes(currentDomain))
+    currentDomain=(S.domains[org]||[])[0]||null;
+  renderOrgContent();
+}
+function renderOrgContent(){
+  const org=currentOrg;
+  const domains=S.domains[org]||[];
+  let nav=`<div class="dom-nav">`;
+  domains.forEach(d=>{nav+=`<button class="dom-btn${d===currentDomain?' active':''}" onclick="switchDomain('${esc(d)}')">${esc(d)}</button>`;});
+  nav+=`<button class="dom-mgr-btn" onclick="openDomMgr('${org}')">⊕ Manage</button></div>`;
+  let body='';
+  if(currentDomain&&domains.includes(currentDomain)){
+    const isPersonalSocial=(org==='personal'&&currentDomain==='Social');
+    const items=(S.items[org]||{})[currentDomain]||[];
+    const syncConnected=isPersonalSocial&&S.gConfig.clientId&&S.gConfig.sheetId;
+    const syncBtn=isPersonalSocial?`<button class="sync-btn${syncConnected?'':''}" id="sync-btn" onclick="${syncConnected?'syncSheet()':'openOv(\'gsetup-ov\')'}">${syncConnected?'⟳ Sync with Google Sheets':'⬡ Connect Google Sheets'}</button>`:'';
+    const lastSync=syncConnected&&S.gConfig.lastSync?`<div class="sync-status">Last synced: ${new Date(S.gConfig.lastSync).toLocaleString()}</div>`:'';
+    body=`<div class="sec-hdr">
+      <div class="sec-title">${esc(currentDomain)}</div>
+      <div class="sec-actions">
+        ${syncBtn}
+        <button class="add-btn" onclick="openItemModal('${org}','${esc(currentDomain)}')">+ Add item</button>
+      </div>
+    </div>${lastSync}
+    <div class="cards">${items.length?items.map((item,i)=>renderCard(org,currentDomain,item,i,false)).join(''):'<div class="empty">No items yet — add your first</div>'}</div>`;
+  }
+  document.getElementById('org-content').innerHTML=nav+body;
+}
+function switchDomain(d){currentDomain=d;renderOrgContent();}
+
+// ── Card ──────────────────────────────────────────────────────────────
+function renderCard(org,domain,item,idx,fromDrill){
+  const due=getDue(item,domain);const days=daysUntil(due);const u=urgency(days);
+  const lbl=days===null?null:days<0?`${Math.abs(days)}d overdue`:days===0?'Today':`${days}d`;
+  const bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
+  const sheetBadge=item._fromSheet?'<span class="badge badge-sheet">Sheet</span>':'';
+  const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+  const rows=fields.filter(f=>f.k!=='name'&&f.k!=='notes'&&item[f.k]).slice(0,5);
+  const drillNote=fromDrill?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${esc(ORG_LABELS[org])} · ${esc(domain)}</div>`:'';
+  return`<div class="card">
+    <div class="card-top">
+      <div><div class="card-name">${esc(item.name)}</div>${item.category||item.relationship?`<div class="card-sub">${esc(item.category||item.relationship||'')}</div>`:''}</div>${drillNote}
+      <div class="card-acts">${sheetBadge}${lbl?`<span class="badge ${bCls}">${lbl}</span>`:''}<button class="iBtn" onclick="openItemModal('${esc(org)}','${esc(domain)}',${idx})">✎</button><button class="iBtn" onclick="askDelete('${esc(org)}','${esc(domain)}',${idx})">✕</button></div>
+    </div>
+    <div class="card-rows">${rows.map(f=>{let v=item[f.k];if(f.t==='date')v=fmtDate(v);return`<div class="crow"><span class="crow-lbl">${esc(f.l)}</span><span class="crow-val">${esc(v)}</span></div>`;}).join('')}</div>
+    ${item.notes?`<div class="card-notes">${esc(item.notes)}</div>`:''}
+  </div>`;
+}
+
+// ── Item modal ──────────────────────────────────────────────────────────
+function openItemModal(org,domain,idx){
+  editTarget=idx!==undefined?{org,domain,idx:parseInt(idx)}:null;
+  const item=idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]||{}:{};
+  document.getElementById('item-title').textContent=(idx!==undefined?'Edit — ':'Add — ')+domain;
+  const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+  document.getElementById('item-body').innerHTML=fields.map(f=>{
+    const val=item[f.k]||'';
+    let inp='';
+    if(f.t==='select') inp=`<select id="f-${f.k}"><option value=""></option>${(f.opts||[]).map(o=>`<option${o===val?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
+    else if(f.t==='textarea') inp=`<textarea id="f-${f.k}">${esc(val)}</textarea>`;
+    else inp=`<input type="${f.t}" id="f-${f.k}" value="${esc(val)}"${f.req?' required':''}>`;
+    return`<div class="fg"><label for="f-${f.k}">${f.l}</label>${inp}</div>`;
+  }).join('');
+  openOv('item-ov');
+}
+function saveItem(){
+  const org=editTarget?editTarget.org:currentOrg;
+  const domain=editTarget?editTarget.domain:currentDomain;
+  if(!org||!domain) return;
+  const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+  const item={};let valid=true;
+  fields.forEach(f=>{
+    const el=document.getElementById('f-'+f.k);
+    const val=el?el.value.trim():'';
+    if(f.req&&!val){if(el)el.style.borderColor='var(--red)';valid=false;}
+    else if(el) el.style.borderColor='';
+    item[f.k]=val;
+  });
+  if(!valid) return;
+  if(!S.items[org]) S.items[org]={};
+  if(!S.items[org][domain]) S.items[org][domain]=[];
+  if(editTarget&&editTarget.idx!==undefined) S.items[org][domain][editTarget.idx]=item;
+  else S.items[org][domain].push(item);
+  persist();closeOv('item-ov');editTarget=null;
+  renderDash();renderOrgContent();
+  // push to sheet if this is Personal Social
+  if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId&&gapi&&gapi.client){
+    pushContactToSheet(item);
+  }
+}
+
+// ── Delete ──────────────────────────────────────────────────────────────
+function askDelete(org,domain,idx){deleteTarget={org,domain,idx:parseInt(idx)};openOv('del-ov');}
+function confirmDelete(){
+  if(!deleteTarget) return;
+  const{org,domain,idx}=deleteTarget;
+  S.items[org][domain].splice(idx,1);
+  persist();deleteTarget=null;closeOv('del-ov');
+  renderDash();renderOrgContent();
+  if(document.getElementById('drill-panel').classList.contains('open')) closeDrill();
+}
+
+// ── Domain manager ──────────────────────────────────────────────────────
+function openDomMgr(org){
+  domMgrOrg=org;
+  document.getElementById('dom-title').textContent='Manage domains — '+ORG_LABELS[org];
+  renderDomList();openOv('dom-ov');
+}
+function renderDomList(){
+  const doms=S.domains[domMgrOrg]||[];
+  document.getElementById('dom-list').innerHTML=doms.length
+    ?doms.map((d,i)=>`<div class="dom-item"><span class="dom-item-name">${esc(d)}</span><button class="iBtn" onclick="removeDomain(${i})">✕</button></div>`).join('')
+    :'<div style="font-size:13px;color:var(--text3);padding:6px 0;">No domains yet.</div>';
+}
+function addDomain(){
+  const inp=document.getElementById('dom-new');const name=inp.value.trim();if(!name) return;
+  if((S.domains[domMgrOrg]||[]).includes(name)){inp.style.borderColor='var(--red)';return;}
+  if(!S.domains[domMgrOrg]) S.domains[domMgrOrg]=[];
+  S.domains[domMgrOrg].push(name);
+  if(!S.items[domMgrOrg]) S.items[domMgrOrg]={};
+  S.items[domMgrOrg][name]=[];
+  persist();inp.value='';inp.style.borderColor='';renderDomList();
+}
+function removeDomain(idx){
+  const domain=S.domains[domMgrOrg][idx];
+  const items=((S.items[domMgrOrg]||{})[domain]||[]);
+  if(items.length>0&&!confirm(`Delete "${domain}" and its ${items.length} item(s)?`)) return;
+  S.domains[domMgrOrg].splice(idx,1);
+  if(S.items[domMgrOrg]) delete S.items[domMgrOrg][domain];
+  persist();renderDomList();
+  if(currentDomain===domain) currentDomain=(S.domains[domMgrOrg]||[])[0]||null;
+}
+
+// ── Google Sheets integration ───────────────────────────────────────────
+function handleGAuthClick(){
+  if(S.gConfig.clientId&&S.gConfig.sheetId) openOv('gsetup-ov');
+  else openOv('gsetup-ov');
+}
+function connectGoogle(){
+  const clientId=document.getElementById('gs-client-id').value.trim();
+  const sheetId=document.getElementById('gs-sheet-id').value.trim();
+  const sheetTab=document.getElementById('gs-sheet-tab').value.trim();
+  if(!clientId||!sheetId){
+    setAlert('gsetup-alert','Please enter both Client ID and Sheet ID.','err');return;
+  }
+  S.gConfig.clientId=clientId;S.gConfig.sheetId=sheetId;S.gConfig.sheetTab=sheetTab;
+  persist();
+  setAlert('gsetup-alert','Authenticating…','ok');
+  loadGapi(()=>{
+    initGapiClient(()=>{
+      signIn(()=>{
+        closeOv('gsetup-ov');
+        updateGAuthBtn();
+        fetchSheetColumns();
+      },err=>{setAlert('gsetup-alert','Authentication failed: '+err,'err');});
+    });
+  });
+}
+function loadGapi(cb){
+  if(window.gapi&&gapi.client){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://apis.google.com/js/api.js';
+  s.onload=()=>gapi.load('client:auth2',cb);
+  s.onerror=()=>setAlert('gsetup-alert','Could not load Google API. Check your connection.','err');
+  document.head.appendChild(s);
+}
+function initGapiClient(cb){
+  gapi.client.init({
+    clientId:S.gConfig.clientId,
+    scope:'https://www.googleapis.com/auth/spreadsheets',
+    discoveryDocs:['https://sheets.googleapis.com/$discovery/rest?version=v4']
+  }).then(cb).catch(e=>setAlert('gsetup-alert','Init error: '+JSON.stringify(e),'err'));
+}
+function signIn(cb,errCb){
+  const auth=gapi.auth2.getAuthInstance();
+  if(auth.isSignedIn.get()){cb();return;}
+  auth.signIn().then(cb).catch(e=>errCb(e.error||'Unknown error'));
+}
+function fetchSheetColumns(){
+  const range=(S.gConfig.sheetTab||'Sheet1')+'!1:1';
+  gapi.client.sheets.spreadsheets.values.get({
+    spreadsheetId:S.gConfig.sheetId,range
+  }).then(r=>{
+    gSheetColumns=(r.result.values&&r.result.values[0])||[];
+    openMappingModal();
+  }).catch(e=>{
+    // Try without tab name
+    gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId:S.gConfig.sheetId,range:'1:1'
+    }).then(r=>{
+      gSheetColumns=(r.result.values&&r.result.values[0])||[];
+      openMappingModal();
+    }).catch(()=>alert('Could not read sheet headers. Check the Sheet ID and permissions.'));
+  });
+}
+function openMappingModal(){
+  const tbody=document.getElementById('map-tbody');
+  const mapping=S.gConfig.mapping||{};
+  tbody.innerHTML=SOCIAL_MAP_FIELDS.map(f=>{
+    const opts=['<option value="">— ignore —</option>',...gSheetColumns.map(col=>`<option value="${esc(col)}"${mapping[f.k]===col?' selected':''}>${esc(col)}</option>`)].join('');
+    return`<tr><td>${f.l}</td><td><select id="map-${f.k}">${opts}</select></td></tr>`;
+  }).join('');
+  openOv('gmap-ov');
+}
+function saveMapping(){
+  const mapping={};
+  SOCIAL_MAP_FIELDS.forEach(f=>{
+    const v=document.getElementById('map-'+f.k).value;
+    if(v) mapping[f.k]=v;
+  });
+  S.gConfig.mapping=mapping;persist();
+  closeOv('gmap-ov');
+  updateGAuthBtn();
+  syncSheet();
+}
+function updateGAuthBtn(){
+  const btn=document.getElementById('gauth-btn');
+  if(S.gConfig.clientId&&S.gConfig.sheetId){
+    btn.textContent='⬡ Google Sheets connected';btn.classList.add('connected');
+  }
+}
+
+// Pull from sheet
+function syncSheet(){
+  if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
+  const btn=document.getElementById('sync-btn');
+  if(btn){btn.innerHTML='<span class="spinner"></span> Syncing…';btn.classList.add('syncing');}
+  const doSync=()=>{
+    const tab=S.gConfig.sheetTab||'Sheet1';
+    gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId:S.gConfig.sheetId,range:tab
+    }).then(r=>{
+      const rows=r.result.values||[];
+      if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
+      const headers=rows[0];
+      const mapping=S.gConfig.mapping||{};
+      const revMap={};
+      Object.entries(mapping).forEach(([hubKey,colName])=>{
+        const ci=headers.indexOf(colName);
+        if(ci>=0) revMap[ci]=hubKey;
+      });
+      const existing=S.items.personal.Social||[];
+      const existingNames=new Set(existing.map(c=>c.name.toLowerCase()));
+      let added=0,updated=0;
+      rows.slice(1).forEach(row=>{
+        const contact={_fromSheet:true};
+        row.forEach((val,ci)=>{if(revMap[ci]) contact[revMap[ci]]=val;});
+        if(!contact.name) return;
+        const nameKey=contact.name.toLowerCase();
+        const existIdx=existing.findIndex(c=>c.name.toLowerCase()===nameKey);
+        if(existIdx>=0){existing[existIdx]={...existing[existIdx],...contact};updated++;}
+        else{existing.push(contact);added++;}
+      });
+      S.items.personal.Social=existing;
+      S.gConfig.lastSync=Date.now();
+      persist();renderDash();renderOrgContent();
+      resetSyncBtn();
+      const msg=`Sync complete: ${added} added, ${updated} updated.`;
+      const statusEl=document.querySelector('.sync-status');
+      if(statusEl) statusEl.textContent='Last synced: '+new Date().toLocaleString()+' · '+msg;
+    }).catch(e=>{
+      resetSyncBtn();
+      alert('Sync failed. Check sheet access. Error: '+JSON.stringify(e.result||e));
+    });
+  };
+  if(window.gapi&&gapi.client&&gapi.auth2&&gapi.auth2.getAuthInstance().isSignedIn.get()){
+    doSync();
+  } else {
+    loadGapi(()=>initGapiClient(()=>signIn(doSync,err=>alert('Sign-in failed: '+err))));
+  }
+}
+function resetSyncBtn(){
+  const btn=document.getElementById('sync-btn');
+  if(btn){btn.innerHTML='⟳ Sync with Google Sheets';btn.classList.remove('syncing');}
+}
+
+// Push a single contact to sheet
+function pushContactToSheet(contact){
+  if(!S.gConfig.sheetId||!gapi||!gapi.client||!gapi.client.sheets) return;
+  const mapping=S.gConfig.mapping||{};
+  const tab=S.gConfig.sheetTab||'Sheet1';
+  // First get current headers
+  gapi.client.sheets.spreadsheets.values.get({
+    spreadsheetId:S.gConfig.sheetId,range:tab+'!1:1'
+  }).then(r=>{
+    const headers=(r.result.values&&r.result.values[0])||[];
+    const row=headers.map(h=>{
+      const hubKey=Object.entries(mapping).find(([k,v])=>v===h)?.[0];
+      return hubKey?contact[hubKey]||'':'';
+    });
+    return gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId:S.gConfig.sheetId,
+      range:tab,
+      valueInputOption:'USER_ENTERED',
+      resource:{values:[row]}
+    });
+  }).catch(e=>console.warn('Push to sheet failed:',e));
+}
+
+// ── Notifications ───────────────────────────────────────────────────────
+function updateNotifBtn(){
+  const btn=document.getElementById('notif-btn');
+  if(!('Notification' in window)){btn.style.display='none';return;}
+  if(Notification.permission==='granted'){btn.textContent='🔔 Notifications on';btn.classList.add('granted');}
+  else if(Notification.permission==='denied'){btn.textContent='🔕 Blocked';btn.style.opacity='.5';}
+}
+function requestNotif(){
+  if(!('Notification' in window)) return;
+  Notification.requestPermission().then(p=>{updateNotifBtn();if(p==='granted') scheduleNotifs();});
+}
+function scheduleNotifs(){
+  if(Notification.permission!=='granted') return;
+  const now=new Date();
+  S.tiles.forEach(tile=>{
+    if(!tile.notif) return;
+    const db=parseInt(tile.notif);
+    tileItems(tile).forEach(r=>{
+      if(!r.due) return;
+      const due=new Date(r.due+'T09:00:00');
+      const notifAt=new Date(due);notifAt.setDate(notifAt.getDate()-db);
+      if(notifAt>now){
+        const delay=notifAt-now;
+        setTimeout(()=>{
+          new Notification('Admin Hub — '+tile.label,{body:r.item.name+' due '+fmtDate(r.due),icon:'/favicon.ico'});
+        },Math.min(delay,2147483647));
+      }
+    });
+  });
+}
+
+// ── Overlay helpers ──────────────────────────────────────────────────────
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+function ovBg(e,id){if(e.target===document.getElementById(id)) closeOv(id);}
+function setAlert(elId,msg,type){
+  const el=document.getElementById(elId);
+  el.innerHTML=`<div class="alert alert-${type}">${esc(msg)}</div>`;
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────
+document.getElementById('top-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
+load();
+renderDash();
+switchOrg('personal');
+updateNotifBtn();
+updateGAuthBtn();
+if(Notification.permission==='granted') scheduleNotifs();
+</script>
+</body>
+</html>
