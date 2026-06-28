@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.3</span>
+      <span class="ver">v10.9.4</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -607,6 +607,7 @@ let gisTokenClient = null, gapiReady = false, pendingGAction = null;
 let gSheetColumns = [];
 let conversationHistory = [], auroraThinking = false;
 let socialFilter = {search:'', circle:'', sort:'lastName', flag:''};
+let socialHiddenFields = []; // field keys hidden from Social cards
 let tokenUsage = {inputTokens:0, outputTokens:0, queries:0};
 const SONNET_IN = 0.000003;   // $3 per 1M input tokens
 const SONNET_OUT = 0.000015;  // $15 per 1M output tokens
@@ -660,6 +661,7 @@ function loadLS(){
   if(!S.anthropicKey) S.anthropicKey='';
   if(!S.sbConfig) S.sbConfig={url:'',key:'',migrationDone:false};
   if(S.sbConfig.migrationDone===undefined) S.sbConfig.migrationDone=false;
+  if(S.socialHiddenFields) socialHiddenFields=S.socialHiddenFields;
 }
 function persistLS(){ localStorage.setItem(LS_KEY,JSON.stringify(S)); }
 
@@ -930,7 +932,23 @@ function closeDrill(){document.getElementById('drill-panel').classList.remove('o
 // ═══════════════════════════════════════════
 // SOCIAL FILTER / SORT / SEARCH
 // ═══════════════════════════════════════════
-function setSocialSearch(v){ socialFilter.search=v; renderOrgContent(); }
+function setSocialSearch(v){
+  socialFilter.search=v;
+  // Only re-render cards to preserve search input focus
+  const org=currentOrg;
+  const items=(S.items[org]||{})[currentDomain]||[];
+  const displayItems=applySocialFilter(items);
+  const emptyMsg=socialFilter.search||socialFilter.circle||socialFilter.flag?'No contacts match your filters.':'No items yet — add your first';
+  const cardsEl=document.querySelector('#org-content .cards');
+  if(cardsEl){
+    cardsEl.innerHTML=displayItems.length
+      ?displayItems.map((item,i)=>renderCard(org,currentDomain,item,items.indexOf(item),false)).join('')
+      :'<div class="empty">'+emptyMsg+'</div>';
+  }
+  // Update count display
+  const countEl=document.getElementById('social-count');
+  if(countEl) countEl.textContent=displayItems.length+' shown';
+}
 function setSocialCircle(v){ socialFilter.circle=v; renderOrgContent(); }
 function setSocialSort(v){ socialFilter.sort=v; renderOrgContent(); }
 function setSocialFlag(v){ socialFilter.flag=v; renderOrgContent(); }
@@ -994,7 +1012,8 @@ function renderSocialControls(allItems, circles){
     +'<option value="birthday"'+(f.sort==='birthday'?' selected':'')+'>Sort: Upcoming birthday</option>'
     +'</select>'
     +(activeFilters>0?'<button onclick="resetSocialFilter()" style="padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">&#x2715; Reset ('+activeFilters+')</button>':'')
-    +'<span style="font-size:12px;color:var(--text3);white-space:nowrap;">'+allItems.length+' shown</span>'
+    +'<span id="social-count" style="font-size:12px;color:var(--text3);white-space:nowrap;">'+allItems.length+' shown</span>'
+    +'<button onclick="openSocialFieldConfig()" style="padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;" title="Configure which fields appear on cards">&#x2692; Fields</button>'
     +'</div>';
 }
 
@@ -1046,7 +1065,7 @@ function renderOrgContent(){
     let displayItems=items;
     let socialControls='';
     if(isPS){
-      const circles=[...new Set(items.map(c=>c.circle||'').filter(Boolean))].sort();
+      const circles=['Inner','Circle 2','Circle 3','Outer'];
       socialControls=renderSocialControls(items,circles);
       displayItems=applySocialFilter(items);
     }
@@ -1198,8 +1217,8 @@ function renderCard(org,domain,item,idx,fromDrill){
   const displaySub=isSocial?(item.nickname?('"'+item.nickname+'"'):item.type||''):(item.category||item.relationship||'');
   const skipKeys=isSocial?{firstName:1,lastName:1,nickname:1,salutation:1,notes:1,personalize:1,story:1,importantNotes:1}:{name:1,notes:1};
   const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  const rows=fields.filter(f=>!skipKeys[f.k]&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]).slice(0,5);
-  const cbFields=fields.filter(f=>f.t==='checkbox'&&item[f.k]==='true');
+  const rows=fields.filter(f=>!skipKeys[f.k]&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]&&!(isSocial&&socialHiddenFields.includes(f.k))).slice(0,5);
+  const cbFields=fields.filter(f=>f.t==='checkbox'&&item[f.k]==='true'&&!(isSocial&&socialHiddenFields.includes(f.k)));
   const drillNote=fromDrill?('<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+esc(ORG_LABELS[org])+' \xb7 '+esc(domain)+'</div>'):'';
   const hasDue=!!getDue(item,domain)&&(org==='personal'||org==='tenfwd');
   window['_card_'+org+'_'+idx]=item;
@@ -1812,5 +1831,19 @@ if(S.gConfig.clientId && S.gConfig.accessToken){
   loadGapiAndGis(()=>{ if(restoreGToken()) updateSettingsBtn(); });
 }
 </script>
+
+<!-- Social field config modal -->
+<div class="overlay" id="social-field-config-ov" onclick="ovBg(event,'social-field-config-ov')">
+  <div class="modal" style="max-width:420px;">
+    <h3>&#x2692; Configure contact card fields</h3>
+    <div class="modal-desc">Choose which fields appear on contact cards. Name, nickname, and type always show.</div>
+    <div id="social-field-config-body"></div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('social-field-config-ov')">Cancel</button>
+      <button class="btn-save" onclick="saveSocialFieldConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
