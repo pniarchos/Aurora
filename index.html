@@ -8,8 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Aurora">
 <meta name="theme-color" content="#1a1a18">
-<!-- Aurora v10.0 build -->
-<title>Aurora</title>
+<title>Aurora — v10.9</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -35,8 +34,6 @@
 }}
 body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
-
-/* Top bar */
 .top-bar{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .top-bar h1{font-size:20px;font-weight:900;letter-spacing:.04em;white-space:nowrap;font-family:'Orbitron',sans-serif;color:var(--text);}
 .tbr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
@@ -45,17 +42,10 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .tb-btn.st-on{border-color:#2A9070;color:#2A9070;}
 .tb-btn.st-off{border-color:var(--red);color:var(--red);}
 .tb-btn.st-partial{border-color:#C49A2A;color:#C49A2A;}
-/* legacy aliases */
-.tb-btn.ok{border-color:#2A9070;color:#2A9070;}
-.tb-btn.conn{border-color:#3A7FA8;color:#3A7FA8;}
-.tb-btn.supa-on{border-color:#2A9070;color:#2A9070;}
 .ver{font-size:11px;color:var(--text3);padding:2px 6px;border:1px solid var(--border);border-radius:var(--r-sm);}
 .top-date{font-size:12px;color:var(--text3);white-space:nowrap;}
-
 .main-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .main-inner{max-width:960px;margin:0 auto;padding:1rem 1rem 5rem;}
-
-/* Dashboard */
 .dash{margin-bottom:1.5rem;}
 .dash-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;}
 .dash-lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);}
@@ -77,20 +67,15 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .tile-del:hover{color:var(--red);}
 .tile-add{background:none;border:1px dashed var(--border2);border-radius:var(--r);padding:13px 14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;color:var(--text3);font-family:inherit;}
 .tile-add:hover{border-color:var(--text2);color:var(--text);background:var(--bg);}
-
-/* Org tabs */
 .org-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:1rem;overflow-x:auto;scrollbar-width:none;}
 .org-bar::-webkit-scrollbar{display:none;}
 .org-tab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 13px 9px;font-size:14px;font-weight:500;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;margin-bottom:-1px;}
 .org-tab:hover{color:var(--text);}
 .org-tab.active{color:var(--text);border-bottom-color:var(--text);}
-
-/* Domain nav */
 .dom-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
 .dom-btn{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 11px;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;transition:all .12s;}
 .dom-btn:hover{background:var(--bg2);color:var(--text);}
 .dom-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
-/* Brand color rotation for domain tabs */
 .dom-btn.bc-teal{border-color:#2A9070;color:#2A9070;}
 .dom-btn.bc-teal:hover,.dom-btn.bc-teal.active{background:#2A9070;color:#fff;border-color:#2A9070;}
 .dom-btn.bc-blue{border-color:#3A7FA8;color:#3A7FA8;}
@@ -103,8 +88,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .dom-btn.plant-tab.active{background:#2A9070;color:#fff;border-color:#2A9070;}
 .dom-mgr-btn{background:none;border:1px dashed var(--border2);border-radius:var(--r-sm);padding:6px 10px;font-size:12px;cursor:pointer;color:var(--text3);font-family:inherit;margin-left:2px;}
 .dom-mgr-btn:hover{color:var(--text);border-color:var(--text2);}
-
-/* Section */
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;gap:8px;flex-wrap:wrap;}
 .sec-title{font-size:16px;font-weight:600;}
 .sec-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
@@ -113,8 +96,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .sync-btn{background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r-sm);padding:6px 12px;font-size:13px;cursor:pointer;color:var(--blue);font-family:inherit;}
 .sync-btn:hover{opacity:.85;}
 .sync-status{font-size:11px;color:var(--text3);margin-bottom:.75rem;}
-
-/* Cards */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px;}
 .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
@@ -126,7 +107,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .badge-amber{background:var(--amber-bg);color:var(--amber);}
 .badge-green{background:var(--green-bg);color:var(--green);}
 .badge-blue{background:var(--blue-bg);color:var(--blue);}
-.badge-plant{background:var(--plant-bg);color:var(--plant);}
 .iBtn{background:none;border:none;cursor:pointer;color:var(--text3);padding:2px 5px;border-radius:3px;font-size:13px;line-height:1;font-family:inherit;}
 .iBtn:hover{background:var(--bg2);color:var(--text);}
 .card-rows{display:flex;flex-direction:column;gap:4px;}
@@ -135,8 +115,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .crow-val{color:var(--text);font-weight:500;text-align:right;word-break:break-word;}
 .card-notes{font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:14px;grid-column:1/-1;}
-
-/* Plant tracker */
 .plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:4px;}
 .plant-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;position:relative;}
 .plant-card.overdue{border-color:var(--red);}
@@ -157,16 +135,12 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .sunday-section{margin-bottom:1.5rem;}
 .sunday-hdr{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
 .sunday-hdr::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;}
-
-/* Drill panel */
 .drill-panel{display:none;position:fixed;inset:0;background:var(--bg3);z-index:150;overflow-y:auto;}
 .drill-panel.open{display:block;}
 .drill-hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;}
 .drill-back{background:none;border:none;cursor:pointer;color:var(--blue);font-size:14px;font-family:inherit;padding:4px 0;}
 .drill-title{font-size:15px;font-weight:600;}
 .drill-body{max-width:960px;margin:0 auto;padding:1rem 1rem 4rem;}
-
-/* Overlays */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;padding:1rem;align-items:flex-start;justify-content:center;overflow-y:auto;}
 .overlay.open{display:flex;}
 .modal{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:1.4rem;width:100%;max-width:460px;margin:auto;}
@@ -192,16 +166,12 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .alert-err{background:var(--red-bg);color:var(--red);}
 .alert-ok{background:var(--green-bg);color:var(--green);}
 .alert-info{background:var(--blue-bg);color:var(--blue);}
-
-/* Map table */
 .map-scroll{max-height:280px;overflow-y:auto;}
 .map-table{width:100%;border-collapse:collapse;}
 .map-table th{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;padding:5px 6px;border-bottom:1px solid var(--border);text-align:left;}
 .map-table td{padding:5px 6px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
 .map-table td:first-child{color:var(--text2);}
 .map-table select{width:100%;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;}
-
-/* Domain manager */
 .dom-list{display:flex;flex-direction:column;gap:5px;margin-bottom:.9rem;max-height:220px;overflow-y:auto;}
 .dom-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:var(--r-sm);}
 .dom-item-name{flex:1;font-size:14px;}
@@ -209,16 +179,8 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .dom-add-row input{flex:1;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:14px;font-family:inherit;}
 .dom-add-row input:focus{outline:none;border-color:var(--text2);}
 .btn-add{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:7px 13px;font-size:13px;cursor:pointer;font-family:inherit;}
-
-/* Supabase setup */
-.supa-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem;}
-.supa-step{font-size:13px;color:var(--text2);padding:8px 10px;background:var(--bg2);border-radius:var(--r-sm);line-height:1.5;}
-.supa-step strong{color:var(--text);}
-.code-block{font-family:monospace;font-size:11px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;margin-top:6px;white-space:pre;overflow-x:auto;color:var(--text2);}
-
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-/* Aurora Assistant */
 .aurora-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;}
 .aurora-bar-input{flex:1;background:none;border:none;font-size:14px;color:var(--text);font-family:'Space Grotesk',sans-serif;outline:none;padding:2px 0;}
 .aurora-bar-input::placeholder{color:var(--text3);}
@@ -229,8 +191,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .aurora-inline-resp{background:var(--blue-bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:1.25rem;font-size:14px;color:var(--text);line-height:1.65;font-family:'Space Grotesk',sans-serif;position:relative;}
 .aurora-inline-resp .aurora-resp-close{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 5px;border-radius:3px;}
 .aurora-inline-resp .aurora-resp-close:hover{color:var(--text);background:var(--bg2);}
-
-/* Assistant side panel */
 .aurora-panel{position:fixed;top:0;right:-420px;width:420px;max-width:92vw;height:100vh;background:var(--bg);border-left:1px solid var(--border2);z-index:160;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);}
 .aurora-panel.open{right:0;}
 .aurora-panel-hdr{flex-shrink:0;padding:.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
@@ -253,17 +213,10 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .aurora-panel-send:disabled{opacity:.4;cursor:default;}
 .aurora-clear-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;font-family:inherit;padding:2px 0;}
 .aurora-clear-btn:hover{color:var(--text);}
-
-/* Calendar */
-.cal-btn{background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--blue);font-family:inherit;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
-.cal-btn:hover{opacity:.85;}
-.cal-btn.sent{border-color:var(--green);color:var(--green);background:var(--green-bg);}
-.cal-embed-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:1rem;}
-.cal-embed-wrap iframe{width:100%;height:600px;border:none;display:block;}
-.cal-toolbar{display:flex;align-items:center;gap:8px;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
-.cal-toolbar-title{font-size:14px;font-weight:600;flex:1;}
 .cal-view-btn{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;}
 .cal-view-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.cal-embed-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:1rem;}
+.cal-embed-wrap iframe{width:100%;height:600px;border:none;display:block;}
 .cal-no-config{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px;}
 </style>
 </head>
@@ -271,37 +224,36 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 <div class="shell">
   <div class="top-bar">
     <div>
-    <h1>Aurora</h1>
-    <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
+      <h1>Aurora</h1>
+      <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.1</span>
+      <span class="ver">v10.9</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
-      <button class="tb-btn" id="settings-btn" onclick="openSettings()">⚙ Settings</button>
+      <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
     </div>
   </div>
-
   <div class="main-scroll">
     <div class="main-inner">
       <div class="dash">
         <div class="aurora-bar">
-          <span style="font-size:16px;flex-shrink:0;">✦</span>
+          <span style="font-size:16px;flex-shrink:0;">&#x2736;</span>
           <input class="aurora-bar-input" id="aurora-bar-input" type="text"
-            placeholder="Ask Aurora — What's due this week? Who haven't I contacted recently?"
+            placeholder="Ask Aurora &#x2014; What&#x27;s due this week? Who haven&#x27;t I contacted recently?"
             onkeydown="if(event.key==='Enter'){sendAuroraBarQuery();}">
-          <button class="aurora-bar-btn" onclick="sendAuroraBarQuery()" title="Ask">↵</button>
-          <button class="aurora-bar-expand" onclick="openAuroraPanel()" title="Open full assistant">Open ›</button>
+          <button class="aurora-bar-btn" onclick="sendAuroraBarQuery()" title="Ask">&#x21b5;</button>
+          <button class="aurora-bar-expand" onclick="openAuroraPanel()">Open &#x203a;</button>
         </div>
         <div id="aurora-inline-resp-wrap"></div>
         <div class="dash-hdr">
           <div class="dash-lbl">Dashboard</div>
-          <button class="dash-edit-btn" id="dash-edit-btn" onclick="toggleDashEdit()">✎ Customize</button>
+          <button class="dash-edit-btn" id="dash-edit-btn" onclick="toggleDashEdit()">&#x270e; Customize</button>
         </div>
         <div class="tiles" id="tiles-wrap"></div>
       </div>
       <div class="org-bar">
-        <button class="org-tab" data-org="calendar" onclick="switchOrg('calendar')">📅 Calendar</button>
+        <button class="org-tab" data-org="calendar" onclick="switchOrg('calendar')">&#x1F4C5; Calendar</button>
         <button class="org-tab active" data-org="personal" onclick="switchOrg('personal')">Personal</button>
         <button class="org-tab" data-org="fee" onclick="switchOrg('fee')">Foundation for Economic Education</button>
         <button class="org-tab" data-org="tenfwd" onclick="switchOrg('tenfwd')">10Forward Technologies</button>
@@ -311,16 +263,14 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Drill panel -->
 <div class="drill-panel" id="drill-panel">
   <div class="drill-hdr">
-    <button class="drill-back" onclick="closeDrill()">← Back</button>
+    <button class="drill-back" onclick="closeDrill()">&larr; Back</button>
     <div class="drill-title" id="drill-title"></div>
   </div>
   <div class="drill-body"><div class="cards" id="drill-cards"></div></div>
 </div>
 
-<!-- Item modal -->
 <div class="overlay" id="item-ov" onclick="ovBg(event,'item-ov')">
   <div class="modal">
     <h3 id="item-title">Add item</h3>
@@ -332,7 +282,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Plant modal -->
 <div class="overlay" id="plant-ov" onclick="ovBg(event,'plant-ov')">
   <div class="modal">
     <h3 id="plant-title">Add plant</h3>
@@ -369,7 +318,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Tile modal -->
 <div class="overlay" id="tile-ov" onclick="ovBg(event,'tile-ov')">
   <div class="modal">
     <h3>Add dashboard tile</h3>
@@ -387,16 +335,13 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       </div>
       <div class="fg"><label>Color</label>
         <select id="tl-color">
-          <option value="t-red">Red</option>
-          <option value="t-amber">Amber</option>
-          <option value="t-green">Green</option>
-          <option value="t-blue">Blue</option>
-          <option value="t-plant">Green (plant)</option>
-          <option value="t-neutral">Neutral</option>
+          <option value="t-red">Red</option><option value="t-amber">Amber</option>
+          <option value="t-green">Green</option><option value="t-blue">Blue</option>
+          <option value="t-plant">Green (plant)</option><option value="t-neutral">Neutral</option>
         </select>
       </div>
     </div>
-    <div class="fg" id="tl-days-row"><label>Within how many days</label><input type="number" id="tl-days" value="10" min="1" max="365"></div>
+    <div class="fg" id="tl-days-row"><label id="tl-days-lbl">Within how many days</label><input type="number" id="tl-days" value="10" min="1" max="365"></div>
     <div class="fg" id="tl-org-row" style="display:none"><label>Which org</label>
       <select id="tl-org">
         <option value="personal">Personal</option>
@@ -406,12 +351,9 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     </div>
     <div class="fg"><label>Notify me (days before due)</label>
       <select id="tl-notif">
-        <option value="">No notification</option>
-        <option value="1">1 day before</option>
-        <option value="3">3 days before</option>
-        <option value="7">7 days before</option>
-        <option value="14">14 days before</option>
-        <option value="30">30 days before</option>
+        <option value="">No notification</option><option value="1">1 day before</option>
+        <option value="3">3 days before</option><option value="7">7 days before</option>
+        <option value="14">14 days before</option><option value="30">30 days before</option>
       </select>
     </div>
     <div class="modal-acts">
@@ -421,38 +363,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-
-
-<!-- Google setup -->
-<div class="overlay" id="gsetup-ov" onclick="ovBg(event,'gsetup-ov')">
-  <div class="modal">
-    <h3>Connect Google Drive</h3>
-    <div class="modal-desc">Connects Aurora to Google Drive, Calendar, Sheets, and Docs via a single OAuth sign-in. Required for contacts sync, calendar push, and file operations.</div>
-    <div id="gsetup-alert"></div>
-    <div class="fg">
-      <label>OAuth Client ID</label>
-      <input type="text" id="gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
-      <div class="hint">Google Cloud Console &#x2192; APIs &amp; Services &#x2192; Credentials</div>
-    </div>
-    <div style="border-top:1px solid var(--border);margin:1rem 0 .75rem;"></div>
-    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.75rem;">Contacts sheet (optional)</div>
-    <div class="fg">
-      <label>Google Sheet ID for contacts</label>
-      <input type="text" id="gs-sheet-id" placeholder="Sheet ID from your contacts sheet URL">
-      <div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
-    </div>
-    <div class="fg">
-      <label>Sheet tab name</label>
-      <input type="text" id="gs-sheet-tab" placeholder="Sheet1">
-    </div>
-    <div class="modal-acts">
-      <button class="btn-cancel" onclick="closeOv('gsetup-ov')">Cancel</button>
-      <button class="btn-blue" onclick="connectGoogle()">Connect Google</button>
-    </div>
-  </div>
-</div>
-
-<!-- Column mapping -->
 <div class="overlay" id="gmap-ov" onclick="ovBg(event,'gmap-ov')">
   <div class="modal">
     <h3>Map sheet columns</h3>
@@ -466,19 +376,15 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Domain manager -->
 <div class="overlay" id="dom-ov" onclick="ovBg(event,'dom-ov')">
   <div class="modal">
     <h3 id="dom-title">Manage domains</h3>
     <div class="dom-list" id="dom-list"></div>
-    <div class="dom-add-row"><input type="text" id="dom-new" placeholder="New domain name…" maxlength="40"><button class="btn-add" onclick="addDomain()">Add</button></div>
+    <div class="dom-add-row"><input type="text" id="dom-new" placeholder="New domain name&hellip;" maxlength="40"><button class="btn-add" onclick="addDomain()">Add</button></div>
     <div class="modal-acts"><button class="btn-save" onclick="closeOv('dom-ov')">Done</button></div>
   </div>
 </div>
 
-
-
-<!-- Send to Calendar confirm -->
 <div class="overlay" id="cal-push-ov" onclick="ovBg(event,'cal-push-ov')">
   <div class="modal">
     <h3>Send to Calendar</h3>
@@ -491,97 +397,6 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Settings modal -->
-<div class="overlay" id="settings-ov" onclick="ovBg(event,'settings-ov')">
-  <div class="modal" style="max-width:500px;">
-    <h3>⚙ Aurora Settings</h3>
-    <div class="modal-desc">All credentials are stored locally on this device only — never in the code or repository.</div>
-
-    <!-- Aurora AI -->
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Aurora Assistant</div>
-    <div class="fg">
-      <label>Anthropic API Key</label>
-      <input type="password" id="settings-anthropic-key" placeholder="sk-ant-...">
-      <div class="hint">Required for the Aurora chat bar. Get yours at console.anthropic.com → API Keys</div>
-    </div>
-
-    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-
-    <!-- Supabase -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Supabase</div>
-      <span id="supa-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
-    </div>
-    <div class="fg"><label>Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co"></div>
-    <div class="fg"><label>Publishable (anon) key</label><input type="text" id="sb-key" placeholder="eyJ..."></div>
-    <div id="supa-migrate-row" style="display:none;">
-      <div class="alert alert-info">Existing data detected. Migrate to Supabase on connect?</div>
-      <div class="fg-check"><input type="checkbox" id="sb-migrate" checked><label for="sb-migrate">Migrate existing data</label></div>
-    </div>
-    <div id="supa-alert"></div>
-    <div style="display:flex;gap:6px;margin-bottom:1rem;">
-      <button class="btn-save" style="font-size:13px;padding:6px 14px;" onclick="connectSupabase()">Connect Supabase</button>
-      <button class="btn-cancel" id="supa-disconnect-btn" style="font-size:13px;padding:6px 14px;display:none;" onclick="disconnectSupabase()">Disconnect</button>
-    </div>
-
-    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-
-    <!-- Google Drive -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Google Drive</div>
-      <span id="drive-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
-    </div>
-    <div class="fg">
-      <label>OAuth Client ID</label>
-      <input type="text" id="gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
-      <div class="hint">Google Cloud Console → APIs & Services → Credentials</div>
-    </div>
-    <div class="fg">
-      <label>Contacts Sheet ID (optional — for Social sync)</label>
-      <input type="text" id="gs-sheet-id" placeholder="Sheet ID from your contacts sheet URL">
-      <div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
-    </div>
-    <div class="fg"><label>Sheet tab name</label><input type="text" id="gs-sheet-tab" placeholder="Sheet1"></div>
-    <div id="gsetup-alert"></div>
-    <div style="margin-bottom:1rem;">
-      <button class="btn-blue" style="font-size:13px;padding:6px 14px;" onclick="connectGoogle()">Connect Google</button>
-    </div>
-
-    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-
-    <!-- Calendar -->
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Google Calendar</div>
-    <div class="fg"><label>Personal calendar ID</label><input type="text" id="cal-personal-id" placeholder="yourname@gmail.com"></div>
-    <div class="fg"><label>10Forward calendar ID</label><input type="text" id="cal-tenfwd-id" placeholder="abc123@group.calendar.google.com"></div>
-    <div class="field-row">
-      <div class="fg"><label>Personal reminder (days before)</label>
-        <select id="cal-remind-personal">
-          <option value="1">1 day</option><option value="3">3 days</option>
-          <option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option>
-        </select>
-      </div>
-      <div class="fg"><label>10Forward reminder (days before)</label>
-        <select id="cal-remind-tenfwd">
-          <option value="1">1 day</option><option value="3">3 days</option>
-          <option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg">
-      <label>Custom embed URL (optional)</label>
-      <input type="text" id="cal-embed-url" placeholder="Leave blank — Aurora builds this automatically">
-      <div class="hint">Only needed if you want a custom Google Calendar embed. Leave blank to use calendar IDs above.</div>
-    </div>
-    <div id="cal-alert"></div>
-
-    <div class="modal-acts">
-      <button class="btn-cancel" onclick="closeOv('settings-ov')">Close</button>
-      <button class="btn-save" onclick="saveAllSettings()">Save all</button>
-    </div>
-  </div>
-</div>
-
-<!-- Delete confirm -->
 <div class="overlay" id="del-ov" onclick="ovBg(event,'del-ov')">
   <div class="modal">
     <h3>Delete item</h3>
@@ -593,30 +408,107 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Aurora Assistant Panel -->
+<!-- SETTINGS MODAL — unified, all s- prefixed IDs to avoid duplicates -->
+<div class="overlay" id="settings-ov" onclick="ovBg(event,'settings-ov')">
+  <div class="modal" style="max-width:500px;">
+    <h3>&#x2699; Aurora Settings</h3>
+    <div class="modal-desc">All credentials stored locally on this device only &mdash; never in code or repository.</div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Aurora Assistant</div>
+    <div class="fg">
+      <label>Anthropic API Key</label>
+      <input type="password" id="s-anthropic-key" placeholder="sk-ant-...">
+      <div class="hint">Required for Aurora chat. Get yours at console.anthropic.com &rarr; API Keys</div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Supabase</div>
+      <span id="supa-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
+    </div>
+    <div class="fg"><label>Project URL</label><input type="text" id="s-sb-url" placeholder="https://xxxx.supabase.co"></div>
+    <div class="fg"><label>Publishable (anon) key</label><input type="text" id="s-sb-key" placeholder="eyJ..."></div>
+    <div id="supa-migrate-row" style="display:none;">
+      <div class="alert alert-info">Existing data detected. Migrate to Supabase on connect?</div>
+      <div class="fg-check"><input type="checkbox" id="s-sb-migrate" checked><label for="s-sb-migrate">Migrate existing data</label></div>
+    </div>
+    <div id="supa-alert"></div>
+    <div style="display:flex;gap:6px;margin-bottom:1rem;">
+      <button class="btn-save" style="font-size:13px;padding:6px 14px;" onclick="connectSupabase()">Connect Supabase</button>
+      <button class="btn-cancel" id="supa-disconnect-btn" style="font-size:13px;padding:6px 14px;display:none;" onclick="disconnectSupabase()">Disconnect</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Google Drive</div>
+      <span id="drive-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
+    </div>
+    <div class="fg">
+      <label>OAuth Client ID</label>
+      <input type="text" id="s-gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
+      <div class="hint">Google Cloud Console &rarr; APIs &amp; Services &rarr; Credentials</div>
+    </div>
+    <div class="fg">
+      <label>Contacts Sheet ID (optional &mdash; for Social sync)</label>
+      <input type="text" id="s-gs-sheet-id" placeholder="Sheet ID from contacts sheet URL">
+      <div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
+    </div>
+    <div class="fg"><label>Sheet tab name</label><input type="text" id="s-gs-sheet-tab" placeholder="Sheet1"></div>
+    <div id="gsetup-alert"></div>
+    <div style="margin-bottom:1rem;">
+      <button class="btn-blue" style="font-size:13px;padding:6px 14px;" onclick="connectGoogle()">Connect Google</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Google Calendar</div>
+    <div class="fg"><label>Personal calendar ID</label><input type="text" id="s-cal-personal-id" placeholder="yourname@gmail.com"></div>
+    <div class="fg"><label>10Forward calendar ID</label><input type="text" id="s-cal-tenfwd-id" placeholder="abc123@group.calendar.google.com"></div>
+    <div class="field-row">
+      <div class="fg"><label>Personal reminder (days before)</label>
+        <select id="s-cal-remind-personal">
+          <option value="1">1 day</option><option value="3">3 days</option>
+          <option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option>
+        </select>
+      </div>
+      <div class="fg"><label>10Forward reminder (days before)</label>
+        <select id="s-cal-remind-tenfwd">
+          <option value="1">1 day</option><option value="3">3 days</option>
+          <option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Custom embed URL (optional)</label>
+      <input type="text" id="s-cal-embed-url" placeholder="Leave blank &mdash; Aurora builds this automatically">
+      <div class="hint">Leave blank to auto-build from calendar IDs above.</div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('settings-ov')">Close</button>
+      <button class="btn-save" onclick="saveAllSettings()">Save all</button>
+    </div>
+  </div>
+</div>
+
 <div class="aurora-panel" id="aurora-panel">
   <div class="aurora-panel-hdr">
     <div class="aurora-panel-hdr-title">Aurora</div>
     <button class="aurora-clear-btn" onclick="clearConversation()">Clear</button>
-    <button class="aurora-panel-close" onclick="closeAuroraPanel()">✕</button>
+    <button class="aurora-panel-close" onclick="closeAuroraPanel()">&#x2715;</button>
   </div>
   <div class="aurora-panel-msgs" id="aurora-msgs"></div>
   <div class="aurora-panel-input-wrap">
     <textarea class="aurora-panel-textarea" id="aurora-panel-input" rows="1"
-      placeholder="Ask Aurora anything…"
+      placeholder="Ask Aurora anything&hellip;"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAuroraMessage();}"
       oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
     <button class="aurora-panel-send" id="aurora-panel-send" onclick="sendAuroraMessage()">Send</button>
   </div>
 </div>
 
-
 <script>
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 const LS_KEY = 'pahub_v6';
 const ORG_LABELS = {personal:'Personal',fee:'Foundation for Economic Education',tenfwd:'10Forward Technologies'};
+// FIX: BRAND_COLS declared as global constant so renderOrgContent always has it
+const BRAND_COLS = ['bc-teal','bc-blue','bc-gold','bc-sage'];
 const DEFAULT_DOMAINS = {
   personal:['Home','Vehicles','Finances & taxes','Health','Legal & admin','Social','Plants'],
   fee:['Finances','Legal & compliance','HR & staff','Vendor contracts','Events & deadlines','Board & governance'],
@@ -687,376 +579,219 @@ const DEFAULT_TILES = [
   {id:'t5',label:'Check today',type:'plants_check',color:'t-neutral',days:null,org:null,notif:''},
 ];
 const DEFAULT_PLANTS = [
-  {id:'p1',name:'Monstera #1',nickname:'',checkDays:6,waterDays:8,rule:'Water when top 2 inches are dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p2',name:'Monstera #2',nickname:'',checkDays:6,waterDays:8,rule:'Water when top 2 inches are dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p3',name:'Dracaena #1',nickname:'',checkDays:7,waterDays:12,rule:'Water when top half of soil is dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p4',name:'Dracaena #2',nickname:'',checkDays:7,waterDays:12,rule:'Water when top half of soil is dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p5',name:'Fiddle Leaf Fig',nickname:'',checkDays:7,waterDays:12,rule:'Water when top 2-3 inches are dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p6',name:'Jade Plant',nickname:'',checkDays:14,waterDays:21,rule:'Water only when completely dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p7',name:'Large Aloe',nickname:'',checkDays:14,waterDays:25,rule:'Water only when bone dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p8',name:'Pothos',nickname:'',checkDays:6,waterDays:8,rule:'Water when top inch is dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p9',name:'Anthuriums',nickname:'',checkDays:5,waterDays:6,rule:'Water when top inch is dry',lastWatered:'',lastChecked:'',notes:''},
-  {id:'p10',name:'Cactus',nickname:'',checkDays:30,waterDays:35,rule:'Check monthly',lastWatered:'',lastChecked:'',notes:''},
+  {id:'p1',name:'Monstera #1',nickname:'',checkDays:6,waterDays:8,rule:'Water when top 2 inches are dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p2',name:'Monstera #2',nickname:'',checkDays:6,waterDays:8,rule:'Water when top 2 inches are dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p3',name:'Dracaena #1',nickname:'',checkDays:7,waterDays:12,rule:'Water when top half of soil is dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p4',name:'Dracaena #2',nickname:'',checkDays:7,waterDays:12,rule:'Water when top half of soil is dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p5',name:'Fiddle Leaf Fig',nickname:'',checkDays:7,waterDays:12,rule:'Water when top 2-3 inches are dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p6',name:'Jade Plant',nickname:'',checkDays:14,waterDays:21,rule:'Water only when completely dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p7',name:'Large Aloe',nickname:'',checkDays:14,waterDays:25,rule:'Water only when bone dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p8',name:'Pothos',nickname:'',checkDays:6,waterDays:8,rule:'Water when top inch is dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p9',name:'Anthuriums',nickname:'',checkDays:5,waterDays:6,rule:'Water when top inch is dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
+  {id:'p10',name:'Cactus',nickname:'',checkDays:30,waterDays:35,rule:'Check monthly',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
 ];
-const SUPA_SQL = `-- Run in Supabase SQL Editor
-create table if not exists hub_items (
-  id uuid primary key default gen_random_uuid(),
-  user_id text default 'default',
-  org text not null,
-  domain text not null,
-  data jsonb not null default '{}',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-create table if not exists hub_domains (
-  id uuid primary key default gen_random_uuid(),
-  user_id text default 'default',
-  org text not null unique,
-  domains jsonb not null default '[]',
-  updated_at timestamptz default now()
-);
-create table if not exists hub_tiles (
-  id uuid primary key default gen_random_uuid(),
-  user_id text default 'default',
-  tiles jsonb not null default '[]',
-  updated_at timestamptz default now()
-);
-create table if not exists hub_plants (
-  id uuid primary key default gen_random_uuid(),
-  user_id text default 'default',
-  name text not null,
-  nickname text default '',
-  check_days int default 7,
-  water_days int default 10,
-  rule text default '',
-  last_watered date,
-  last_checked date,
-  notes text default '',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);`;
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════════════════════════════════
-let S = null; // local state
-let SB = null; // supabase client
-let currentOrg = 'personal';
-let currentDomain = null;
-let dashEditMode = false;
-let editTarget = null;
-let deleteTarget = null;
-let domMgrOrg = null;
-let editPlantId = null;
-let gisTokenClient = null;
-let gapiReady = false;
-let pendingGAction = null;
+// ═══════════════════════════════════════════
+let S = null, SB = null;
+let currentOrg = 'personal', currentDomain = null;
+let dashEditMode = false, editTarget = null, deleteTarget = null;
+let domMgrOrg = null, editPlantId = null;
+let gisTokenClient = null, gapiReady = false, pendingGAction = null;
 let gSheetColumns = [];
+let conversationHistory = [], auroraThinking = false;
+let calView = 'month', pendingCalPush = null;
 
 function defaultState(){
-  const s = {domains:{},items:{},tiles:[...DEFAULT_TILES],plants:[...DEFAULT_PLANTS],
+  const s = {
+    domains:{}, items:{},
+    tiles: DEFAULT_TILES.map(t=>({...t})),
+    plants: DEFAULT_PLANTS.map(p=>({...p})),
     gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null},
-    sbConfig:{url:'',key:''}};
+    calConfig:{personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}},
+    sbConfig:{url:'',key:'',migrationDone:false},
+    anthropicKey:''
+  };
   Object.keys(DEFAULT_DOMAINS).forEach(org=>{
     s.domains[org] = [...DEFAULT_DOMAINS[org]];
     s.items[org] = {};
-    DEFAULT_DOMAINS[org].forEach(d=>{ s.items[org][d] = []; });
+    DEFAULT_DOMAINS[org].forEach(d=>{ s.items[org][d]=[]; });
   });
   return s;
 }
 
+// FIX: renamed from load() to loadLS() — was crashing on boot
 function loadLS(){
-  try{ const r = localStorage.getItem(LS_KEY); S = r ? JSON.parse(r) : defaultState(); }
-  catch(e){ S = defaultState(); }
-  if(!S.tiles) S.tiles = [...DEFAULT_TILES];
-  if(!S.plants) S.plants = [...DEFAULT_PLANTS];
-  if(!S.gConfig) S.gConfig = {clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null};
-  if(!S.calConfig) S.calConfig = {personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}};
-  if(!S.anthropicKey) S.anthropicKey = '';
-  if(!S.sbConfig) S.sbConfig = {url:'',key:''};
+  try{ const r=localStorage.getItem(LS_KEY); S=r?JSON.parse(r):defaultState(); }
+  catch(e){ S=defaultState(); }
+  if(!S.tiles) S.tiles=DEFAULT_TILES.map(t=>({...t}));
+  if(!S.plants) S.plants=DEFAULT_PLANTS.map(p=>({...p}));
+  if(!S.gConfig) S.gConfig={clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null};
+  if(!S.calConfig) S.calConfig={personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}};
+  if(!S.anthropicKey) S.anthropicKey='';
+  if(!S.sbConfig) S.sbConfig={url:'',key:'',migrationDone:false};
+  if(S.sbConfig.migrationDone===undefined) S.sbConfig.migrationDone=false;
 }
+function persistLS(){ localStorage.setItem(LS_KEY,JSON.stringify(S)); }
 
-function persistLS(){ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
-
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // SUPABASE
-// ═══════════════════════════════════════════════════════════════════════
-const USER_ID = 'default';
+// ═══════════════════════════════════════════
+const USER_ID='default';
 
 function loadSupabaseLib(cb){
-  if(window.supabase){ cb(); return; }
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  s.onload = cb;
-  s.onerror = ()=>setAlert('supa-alert','Could not load Supabase library.','err');
+  if(window.supabase){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload=cb; s.onerror=()=>setAlert('supa-alert','Could not load Supabase.','err');
   document.head.appendChild(s);
 }
 
 function connectSupabase(){
-  const url = document.getElementById('sb-url').value.trim();
-  const key = document.getElementById('sb-key').value.trim();
-  if(!url || !key){ setAlert('supa-alert','Please enter both URL and anon key.','err'); return; }
-  // If already connected to same project, just close — don't re-migrate
-  if(SB && S.sbConfig.url===url && S.sbConfig.key===key){
-    closeOv('supa-ov'); return;
-  }
-  S.sbConfig = {url, key};
+  // FIX: reads from s- prefixed IDs in unified settings modal
+  const url=document.getElementById('s-sb-url').value.trim();
+  const key=document.getElementById('s-sb-key').value.trim();
+  if(!url||!key){setAlert('supa-alert','Please enter both URL and anon key.','err');return;}
+  if(SB&&S.sbConfig.url===url&&S.sbConfig.key===key){return;}
+  S.sbConfig={url,key,migrationDone:S.sbConfig.migrationDone||false};
   persistLS();
-  setAlert('supa-alert','Connecting…','ok');
+  setAlert('supa-alert','Connecting\u2026','ok');
   loadSupabaseLib(()=>{
     try{
-      SB = supabase.createClient(url, key);
-      const migBox = document.getElementById('sb-migrate');
-      const doMigrate = migBox && migBox.checked && !S.sbConfig.migrationDone;
+      SB=supabase.createClient(url,key);
+      const migBox=document.getElementById('s-sb-migrate');
+      const doMigrate=migBox&&migBox.checked&&!S.sbConfig.migrationDone;
       if(doMigrate){
-        migrateToSupabase(()=>{
-          S.sbConfig.migrationDone = true;
-          persistLS();
-          updateSettingsBtn(); loadFromSupabase();
-        });
+        migrateToSupabase(()=>{S.sbConfig.migrationDone=true;persistLS();updateSettingsBtn();loadFromSupabase();openSettings();});
       } else {
-        updateSettingsBtn(); loadFromSupabase();
+        updateSettingsBtn();loadFromSupabase();openSettings();
       }
-    } catch(e){ setAlert('supa-alert','Connection failed: '+e.message,'err'); }
+    }catch(e){setAlert('supa-alert','Connection failed: '+e.message,'err');}
   });
 }
 
 async function migrateToSupabase(cb){
-  if(!SB) return;
+  if(!SB)return;
   try{
-    // Check if data already exists — if so, skip to avoid duplicates
-    const {data:existingItems} = await SB.from('hub_items').select('id').eq('user_id',USER_ID).limit(1);
-    if(existingItems && existingItems.length > 0){
-      console.log('Supabase already has data — skipping migration to avoid duplicates.');
-      if(cb) cb(); return;
-    }
-    // Migrate items
-    for(const org of Object.keys(S.items)){
-      for(const domain of Object.keys(S.items[org])){
-        for(const item of (S.items[org][domain]||[])){
-          const cleanItem = {...item}; delete cleanItem._sbId;
-          await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:cleanItem});
+    const {data:ei}=await SB.from('hub_items').select('id').eq('user_id',USER_ID).limit(1);
+    if(ei&&ei.length>0){if(cb)cb();return;}
+    for(const org of Object.keys(S.items))
+      for(const domain of Object.keys(S.items[org]))
+        for(const item of(S.items[org][domain]||[])){
+          const c={...item};delete c._sbId;
+          await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:c});
         }
-      }
-    }
-    // Migrate domains
-    for(const org of Object.keys(S.domains)){
+    for(const org of Object.keys(S.domains))
       await SB.from('hub_domains').upsert({user_id:USER_ID,org,domains:S.domains[org],updated_at:new Date().toISOString()},{onConflict:'user_id,org'});
-    }
-    // Migrate tiles
     await SB.from('hub_tiles').upsert({user_id:USER_ID,tiles:S.tiles,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-    // Migrate plants — check first
-    const {data:existingPlants} = await SB.from('hub_plants').select('id').eq('user_id',USER_ID).limit(1);
-    if(!existingPlants || existingPlants.length === 0){
-      for(const p of (S.plants||[])){
-        await SB.from('hub_plants').insert({
-          user_id:USER_ID,name:p.name,nickname:p.nickname||'',
-          check_days:p.checkDays||7,water_days:p.waterDays||10,rule:p.rule||'',
-          last_watered:p.lastWatered||null,last_checked:p.lastChecked||null,notes:p.notes||''
-        });
-      }
-    }
-    if(cb) cb();
-  } catch(e){ console.warn('Migration error:',e); if(cb) cb(); }
+    const {data:ep}=await SB.from('hub_plants').select('id').eq('user_id',USER_ID).limit(1);
+    if(!ep||!ep.length)
+      for(const p of(S.plants||[]))
+        await SB.from('hub_plants').insert({user_id:USER_ID,name:p.name,nickname:p.nickname||'',check_days:p.checkDays||7,water_days:p.waterDays||10,rule:p.rule||'',last_watered:p.lastWatered||null,last_checked:p.lastChecked||null,status:p.status||'healthy',notes:p.notes||''});
+    if(cb)cb();
+  }catch(e){console.warn('Migration error:',e);if(cb)cb();}
 }
 
 async function loadFromSupabase(){
-  if(!SB) return;
+  if(!SB)return;
   try{
-    // Load domains
-    const {data:domData} = await SB.from('hub_domains').select('*').eq('user_id',USER_ID);
-    if(domData&&domData.length){
-      domData.forEach(row=>{ S.domains[row.org] = row.domains; if(!S.items[row.org]) S.items[row.org]={}; });
+    const {data:dd}=await SB.from('hub_domains').select('*').eq('user_id',USER_ID);
+    if(dd&&dd.length) dd.forEach(r=>{S.domains[r.org]=r.domains;if(!S.items[r.org])S.items[r.org]={};});
+    const {data:id}=await SB.from('hub_items').select('*').eq('user_id',USER_ID);
+    if(id&&id.length){
+      Object.keys(S.domains).forEach(org=>{S.items[org]={};S.domains[org].forEach(d=>{S.items[org][d]=[];});});
+      id.forEach(r=>{if(!S.items[r.org])S.items[r.org]={};if(!S.items[r.org][r.domain])S.items[r.org][r.domain]=[];S.items[r.org][r.domain].push({...r.data,_sbId:r.id});});
     }
-    // Load items
-    const {data:itemData} = await SB.from('hub_items').select('*').eq('user_id',USER_ID);
-    if(itemData&&itemData.length){
-      // Reset items
-      Object.keys(S.domains).forEach(org=>{ S.items[org]={}; S.domains[org].forEach(d=>{ S.items[org][d]=[]; }); });
-      itemData.forEach(row=>{
-        if(!S.items[row.org]) S.items[row.org]={};
-        if(!S.items[row.org][row.domain]) S.items[row.org][row.domain]=[];
-        S.items[row.org][row.domain].push({...row.data, _sbId:row.id});
-      });
-    }
-    // Load tiles
-    const {data:tileData} = await SB.from('hub_tiles').select('*').eq('user_id',USER_ID).limit(1);
-    if(tileData&&tileData.length) S.tiles = tileData[0].tiles;
-    // Load plants
-    const {data:plantData} = await SB.from('hub_plants').select('*').eq('user_id',USER_ID).order('name');
-    if(plantData&&plantData.length){
-      S.plants = plantData.map(p=>({
-        id:p.id,name:p.name,nickname:p.nickname||'',
-        checkDays:p.check_days,waterDays:p.water_days,rule:p.rule||'',
-        lastWatered:p.last_watered||'',lastChecked:p.last_checked||'',notes:p.notes||''
-      }));
-    }
-    persistLS();
-    renderDash();
-    renderOrgContent();
-  } catch(e){ console.warn('Supabase load error:',e); }
+    const {data:td}=await SB.from('hub_tiles').select('*').eq('user_id',USER_ID).limit(1);
+    if(td&&td.length)S.tiles=td[0].tiles;
+    const {data:pd}=await SB.from('hub_plants').select('*').eq('user_id',USER_ID).order('name');
+    if(pd&&pd.length) S.plants=pd.map(p=>({id:p.id,name:p.name,nickname:p.nickname||'',checkDays:p.check_days,waterDays:p.water_days,rule:p.rule||'',lastWatered:p.last_watered||'',lastChecked:p.last_checked||'',status:p.status||'healthy',notes:p.notes||''}));
+    persistLS();renderDash();renderOrgContent();
+  }catch(e){console.warn('Supabase load error:',e);}
 }
 
-async function sbSaveItem(org, domain, item){
-  if(!SB) return;
+async function sbSaveItem(org,domain,item){
+  if(!SB)return;
   try{
-    const payload = {...item}; delete payload._sbId; // never store _sbId inside jsonb data
-    if(item._sbId){
-      await SB.from('hub_items').update({data:payload,updated_at:new Date().toISOString()}).eq('id',item._sbId);
-    } else {
-      const {data} = await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:payload}).select();
-      if(data&&data[0]) item._sbId = data[0].id;
-    }
-  } catch(e){ console.warn('sbSaveItem error:',e); }
+    const p={...item};delete p._sbId;
+    if(item._sbId){await SB.from('hub_items').update({data:p,updated_at:new Date().toISOString()}).eq('id',item._sbId);}
+    else{const {data}=await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:p}).select();if(data&&data[0])item._sbId=data[0].id;}
+  }catch(e){console.warn(e);}
 }
-
-async function sbDeleteItem(sbId){
-  if(!SB||!sbId) return;
-  try{ await SB.from('hub_items').delete().eq('id',sbId); }
-  catch(e){ console.warn('sbDeleteItem error:',e); }
-}
-
-async function sbSaveDomains(org){
-  if(!SB) return;
-  try{
-    await SB.from('hub_domains').upsert({user_id:USER_ID,org,domains:S.domains[org],updated_at:new Date().toISOString()},{onConflict:'user_id,org'});
-  } catch(e){ console.warn('sbSaveDomains error:',e); }
-}
-
-async function sbSaveTiles(){
-  if(!SB) return;
-  try{
-    await SB.from('hub_tiles').upsert({user_id:USER_ID,tiles:S.tiles,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  } catch(e){ console.warn('sbSaveTiles error:',e); }
-}
-
+async function sbDeleteItem(id){if(!SB||!id)return;try{await SB.from('hub_items').delete().eq('id',id);}catch(e){console.warn(e);}}
+async function sbSaveDomains(org){if(!SB)return;try{await SB.from('hub_domains').upsert({user_id:USER_ID,org,domains:S.domains[org],updated_at:new Date().toISOString()},{onConflict:'user_id,org'});}catch(e){console.warn(e);}}
+async function sbSaveTiles(){if(!SB)return;try{await SB.from('hub_tiles').upsert({user_id:USER_ID,tiles:S.tiles,updated_at:new Date().toISOString()},{onConflict:'user_id'});}catch(e){console.warn(e);}}
 async function sbSavePlant(plant){
-  if(!SB) return;
-  const row = {user_id:USER_ID,name:plant.name,nickname:plant.nickname||'',
-    check_days:plant.checkDays,water_days:plant.waterDays,rule:plant.rule||'',
-    last_watered:plant.lastWatered||null,last_checked:plant.lastChecked||null,
-    notes:plant.notes||'',updated_at:new Date().toISOString()};
+  if(!SB)return;
+  const row={user_id:USER_ID,name:plant.name,nickname:plant.nickname||'',check_days:plant.checkDays,water_days:plant.waterDays,rule:plant.rule||'',last_watered:plant.lastWatered||null,last_checked:plant.lastChecked||null,status:plant.status||'healthy',notes:plant.notes||'',updated_at:new Date().toISOString()};
   try{
-    if(plant.id && !plant.id.startsWith('p')){
-      await SB.from('hub_plants').update(row).eq('id',plant.id);
-    } else {
-      const {data} = await SB.from('hub_plants').insert(row).select();
-      if(data&&data[0]) plant.id = data[0].id;
-    }
-  } catch(e){ console.warn('sbSavePlant error:',e); }
+    if(plant.id&&!plant.id.startsWith('p')){await SB.from('hub_plants').update(row).eq('id',plant.id);}
+    else{const {data}=await SB.from('hub_plants').insert(row).select();if(data&&data[0])plant.id=data[0].id;}
+  }catch(e){console.warn(e);}
 }
+async function sbDeletePlant(id){if(!SB||!id||id.startsWith('p'))return;try{await SB.from('hub_plants').delete().eq('id',id);}catch(e){console.warn(e);}}
 
-async function sbDeletePlant(id){
-  if(!SB||!id||id.startsWith('p')) return;
-  try{ await SB.from('hub_plants').delete().eq('id',id); }
-  catch(e){ console.warn('sbDeletePlant error:',e); }
-}
-
-function updateSupaBtn(){ updateSettingsBtn(); }
-function updateSupaModal(){
-  var acts=document.getElementById('supa-modal-acts');
-  if(!acts) return;
-  if(SB&&S.sbConfig&&S.sbConfig.url){
-    var pn=S.sbConfig.url.replace('https://','').split('.')[0];
-    acts.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex:1;">'
-      +'<span style="font-size:12px;color:var(--plant);font-weight:500;">✓ Connected to '+pn+'.supabase.co</span>'
-      +'</div><button class="btn-cancel" onclick="disconnectSupabase()">Disconnect</button>'
-      +'<button class="btn-save" onclick="closeOv(\x27supa-ov\x27)">Done</button>';
-  }else{
-    acts.innerHTML='<button class="btn-cancel" onclick="closeOv(\x27supa-ov\x27)">Cancel</button>'
-      +'<button class="btn-plant" onclick="connectSupabase()">Connect</button>';
-  }
-}
+// FIX: disconnectSupabase no longer references the removed supa-btn element
 function disconnectSupabase(){
-  if(!confirm('Disconnect Supabase? Data already saved there is not deleted. Hub will use localStorage only until reconnected.')) return;
-  SB = null;
-  S.sbConfig = {url:'',key:''};
-  persistLS();
-  document.getElementById('sb-url').value='';
-  document.getElementById('sb-key').value='';
-  const btn = document.getElementById('supa-btn');
-  btn.textContent='⬡ Supabase'; btn.classList.remove('supa-on');
-  updateSupaModal();
-  setAlert('supa-alert','Disconnected. Hub is using localStorage.','ok');
+  if(!confirm('Disconnect Supabase? Cloud data is not deleted.'))return;
+  SB=null; S.sbConfig={url:'',key:'',migrationDone:false}; persistLS();
+  document.getElementById('s-sb-url').value='';
+  document.getElementById('s-sb-key').value='';
+  updateSettingsBtn(); openSettings();
+  setAlert('supa-alert','Disconnected. Using local storage.','ok');
 }
 
 function initSupabase(){
-  if(!S.sbConfig||!S.sbConfig.url||!S.sbConfig.key) return;
+  if(!S.sbConfig||!S.sbConfig.url||!S.sbConfig.key)return;
   loadSupabaseLib(()=>{
-    try{
-      SB = supabase.createClient(S.sbConfig.url, S.sbConfig.key);
-      loadFromSupabase();
-    } catch(e){ console.warn('Supabase init error:',e); }
+    try{SB=supabase.createClient(S.sbConfig.url,S.sbConfig.key);loadFromSupabase();}
+    catch(e){console.warn('Supabase init error:',e);}
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // DATE UTILS
-// ═══════════════════════════════════════════════════════════════════════
-function today(){ const d=new Date(); return d.toISOString().slice(0,10); }
-function daysUntil(str){
-  if(!str) return null;
-  const t=new Date(); t.setHours(0,0,0,0);
-  return Math.round((new Date(str+'T00:00:00')-t)/86400000);
-}
-function addDays(dateStr, n){
-  if(!dateStr) return '';
-  const d = new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n);
-  return d.toISOString().slice(0,10);
-}
-function fmtDate(str){
-  if(!str) return '—';
-  return new Date(str+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-}
-function urgency(days){
-  if(days===null) return 'none';
-  if(days<0) return 'red'; if(days<=30) return 'red'; if(days<=90) return 'amber'; return 'green';
-}
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// ═══════════════════════════════════════════
+function today(){return new Date().toISOString().slice(0,10);}
+function daysUntil(str){if(!str)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(str+'T00:00:00')-t)/86400000);}
+function addDays(ds,n){if(!ds)return'';const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function fmtDate(str){if(!str)return'\u2014';return new Date(str+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function urgency(days){if(days===null)return'none';if(days<0)return'red';if(days<=30)return'red';if(days<=90)return'amber';return'green';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function getDue(item, domain){
-  if(domain==='Vehicles'){
-    const ds=[item.regExpiry,item.insExpiry,item.nextService].filter(Boolean).sort();
-    return ds[0]||null;
-  }
+function getDue(item,domain){
+  if(domain==='Vehicles'){const ds=[item.regExpiry,item.insExpiry,item.nextService].filter(Boolean).sort();return ds[0]||null;}
   if(domain==='Social'){
-    const yr=new Date().getFullYear(); const todayD=new Date(); todayD.setHours(0,0,0,0);
-    const c=[];
+    const yr=new Date().getFullYear();const t=new Date();t.setHours(0,0,0,0);const c=[];
     ['birthdate','anniversary','spouseBirthdate'].forEach(k=>{
-      if(item[k]){ const d=new Date(item[k]+'T00:00:00'); let n=new Date(yr,d.getMonth(),d.getDate()); if(n<=todayD) n=new Date(yr+1,d.getMonth(),d.getDate()); c.push(n.toISOString().slice(0,10)); }
+      if(item[k]){const d=new Date(item[k]+'T00:00:00');let n=new Date(yr,d.getMonth(),d.getDate());if(n<=t)n=new Date(yr+1,d.getMonth(),d.getDate());c.push(n.toISOString().slice(0,10));}
     });
-    c.sort(); return c[0]||null;
+    c.sort();return c[0]||null;
   }
   return item.dueDate||item.nextDue||item.expiry||item.regExpiry||item.insExpiry||item.nextService||null;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // PLANT UTILS
-// ═══════════════════════════════════════════════════════════════════════
-function plantNextWater(p){ return p.lastWatered ? addDays(p.lastWatered, p.waterDays) : ''; }
-function plantNextCheck(p){ return p.lastChecked ? addDays(p.lastChecked, p.checkDays) : (p.lastWatered ? addDays(p.lastWatered, p.checkDays) : ''); }
-function plantWaterDays(p){ return daysUntil(plantNextWater(p)); }
-function plantCheckDays(p){ return daysUntil(plantNextCheck(p)); }
-function plantsNeedingWater(){ return (S.plants||[]).filter(p=>{ const d=plantWaterDays(p); return d!==null && d<=0; }); }
-function plantsWaterSoon(n){ return (S.plants||[]).filter(p=>{ const d=plantWaterDays(p); return d!==null && d>=0 && d<=n; }); }
-function plantsNeedingCheck(){ return (S.plants||[]).filter(p=>{ const d=plantCheckDays(p); return d!==null && d<=0; }); }
+// ═══════════════════════════════════════════
+function plantNextWater(p){return p.lastWatered?addDays(p.lastWatered,p.waterDays):'';}
+function plantNextCheck(p){return p.lastChecked?addDays(p.lastChecked,p.checkDays):(p.lastWatered?addDays(p.lastWatered,p.checkDays):'');}
+function plantWaterDays(p){return daysUntil(plantNextWater(p));}
+function plantCheckDays(p){return daysUntil(plantNextCheck(p));}
+function plantsNeedingWater(){return(S.plants||[]).filter(p=>{const d=plantWaterDays(p);return d!==null&&d<=0;});}
+function plantsWaterSoon(n){return(S.plants||[]).filter(p=>{const d=plantWaterDays(p);return d!==null&&d>=0&&d<=n;});}
+function plantsNeedingCheck(){return(S.plants||[]).filter(p=>{const d=plantCheckDays(p);return d!==null&&d<=0;});}
+function plantCardClass(p){const wd=plantWaterDays(p);if(wd===null)return'';if(wd<=0)return'overdue';if(wd<=3)return'due-soon';return'ok';}
 
-function plantCardClass(p){
-  const wd=plantWaterDays(p);
-  if(wd===null) return '';
-  if(wd<=0) return 'overdue';
-  if(wd<=3) return 'due-soon';
-  return 'ok';
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// ALL ITEMS (for dashboard tiles)
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// ALL ITEMS
+// ═══════════════════════════════════════════
 function allItems(orgFilter){
   const out=[];
   (orgFilter?[orgFilter]:Object.keys(S.domains)).forEach(org=>{
     (S.domains[org]||[]).forEach(domain=>{
-      if(domain==='Plants') return; // handled separately
+      if(domain==='Plants')return;
       ((S.items[org]||{})[domain]||[]).forEach((item,idx)=>{
         const due=getDue(item,domain);
         out.push({item,org,domain,idx,due,days:daysUntil(due)});
@@ -1066,276 +801,225 @@ function allItems(orgFilter){
   return out;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // DASHBOARD
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function tileValue(tile){
-  if(tile.type==='plants_water') return plantsWaterSoon(tile.days||7).length;
-  if(tile.type==='plants_check') return plantsNeedingCheck().length;
+  if(tile.type==='plants_water')return plantsWaterSoon(tile.days||7).length;
+  if(tile.type==='plants_check')return plantsNeedingCheck().length;
   const items=allItems(tile.org||null);
-  if(tile.type==='overdue') return items.filter(r=>r.days!==null&&r.days<0).length;
-  if(tile.type==='due_days') return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days).length;
-  if(tile.type==='total') return items.length;
-  if(tile.type==='org_total') return allItems(tile.org).length;
+  if(tile.type==='overdue')return items.filter(r=>r.days!==null&&r.days<0).length;
+  if(tile.type==='due_days')return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days).length;
+  if(tile.type==='total')return items.length;
+  if(tile.type==='org_total')return allItems(tile.org).length;
   return 0;
 }
 function tileItems(tile){
-  if(tile.type==='plants_check') return [];
-  if(tile.type==='plants_water'){ return plantsWaterSoon(tile.days||7).map(function(p){ return {item:{name:p.name},org:'personal',domain:'Plants',idx:0,due:plantNextWater(p),days:plantWaterDays(p)}; }); }
+  if(tile.type==='plants_check')return[];
+  if(tile.type==='plants_water')return plantsWaterSoon(tile.days||7).map(p=>({item:{name:p.name},org:'personal',domain:'Plants',idx:0,due:plantNextWater(p),days:plantWaterDays(p)}));
   const items=allItems(tile.org||null);
-  if(tile.type==='overdue') return items.filter(r=>r.days!==null&&r.days<0);
-  if(tile.type==='due_days') return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days);
-  if(tile.type==='total') return items;
-  if(tile.type==='org_total') return allItems(tile.org);
-  return [];
+  if(tile.type==='overdue')return items.filter(r=>r.days!==null&&r.days<0);
+  if(tile.type==='due_days')return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days);
+  if(tile.type==='total')return items;
+  if(tile.type==='org_total')return allItems(tile.org);
+  return[];
 }
 function tileSub(tile){
-  if(tile.type==='plants_water') return 'within '+(tile.days||7)+'d';
-  if(tile.type==='plants_check') return 'need checking';
-  if(tile.type==='due_days') return 'within '+tile.days+'d';
-  if(tile.type==='org_total') return ORG_LABELS[tile.org]||'';
-  return 'all orgs';
+  if(tile.type==='plants_water')return'within '+(tile.days||7)+'d';
+  if(tile.type==='plants_check')return'need checking';
+  if(tile.type==='due_days')return'within '+tile.days+'d';
+  if(tile.type==='org_total')return ORG_LABELS[tile.org]||'';
+  return'all orgs';
 }
 function renderDash(){
-  var h='';
-  S.tiles.forEach(function(tile){
-    var v=tileValue(tile);
-    var isPT=(tile.type==='plants_water'||tile.type==='plants_check');
-    var delBtn=dashEditMode?('<button class="tile-del" data-tid="'+esc(tile.id)+'" onclick="deleteTileByData(this)">&#x2715;</button>'):'';
-    var onclk=isPT?'switchOrgAndDomain(\x27personal\x27,\x27Plants\x27)':'drillTile(\x27'+esc(tile.id)+'\x27)';
-    h+='<div class="tile '+esc(tile.color)+'" onclick="'+onclk+'">'
-      +delBtn
+  let h='';
+  (S.tiles||[]).forEach(tile=>{
+    const v=tileValue(tile);
+    const isPT=tile.type==='plants_water'||tile.type==='plants_check';
+    const delBtn=dashEditMode?('<button class="tile-del" data-tid="'+esc(tile.id)+'" onclick="delTile(this.dataset.tid,event)">&#x2715;</button>'):'';
+    const onclk=isPT?'switchOrgAndDomain(\'personal\',\'Plants\')':'drillTile(\''+esc(tile.id)+'\')';
+    h+='<div class="tile '+esc(tile.color)+'" onclick="'+onclk+'">'+delBtn
       +'<div class="tile-lbl">'+esc(tile.label)+'</div>'
       +'<div class="tile-val">'+v+'</div>'
-      +'<div class="tile-sub">'+esc(tileSub(tile))+'</div>'
-      +'</div>';
+      +'<div class="tile-sub">'+esc(tileSub(tile))+'</div></div>';
   });
-  if(dashEditMode)h+='<button class="tile-add" onclick="openOv(\x27tile-ov\x27)">+ Add tile</button>';
+  if(dashEditMode)h+='<button class="tile-add" onclick="openOv(\'tile-ov\')">+ Add tile</button>';
   document.getElementById('tiles-wrap').innerHTML=h;
 }
-function deleteTileByData(btn){
-  S.tiles=S.tiles.filter(function(t){return t.id!==btn.dataset.tid;});
-  persistLS();sbSaveTiles();renderDash();
-}
+function delTile(id,e){e.stopPropagation();S.tiles=S.tiles.filter(t=>t.id!==id);persistLS();sbSaveTiles();renderDash();}
 function toggleDashEdit(){
   dashEditMode=!dashEditMode;
-  document.getElementById('dash-edit-btn').textContent=dashEditMode?'✓ Done':'✎ Customize';
+  document.getElementById('dash-edit-btn').textContent=dashEditMode?'\u2713 Done':'\u270e Customize';
   renderDash();
-}
-function deleteTile(id,e){
-  e.stopPropagation();
-  S.tiles=S.tiles.filter(t=>t.id!==id);
-  persistLS(); sbSaveTiles(); renderDash();
 }
 function tileTypeChange(){
   const t=document.getElementById('tl-type').value;
   document.getElementById('tl-days-row').style.display=(t==='due_days'||t==='plants_water')?'block':'none';
   document.getElementById('tl-org-row').style.display=t==='org_total'?'block':'none';
-  if(t==='plants_water'){
-    document.querySelector('#tl-days-row label').textContent='Water within how many days';
-  } else {
-    document.querySelector('#tl-days-row label').textContent='Within how many days';
-  }
+  document.getElementById('tl-days-lbl').textContent=t==='plants_water'?'Water within how many days':'Within how many days';
 }
 function saveTile(){
   const label=document.getElementById('tl-label').value.trim();
   if(!label){document.getElementById('tl-label').style.borderColor='var(--red)';return;}
   const type=document.getElementById('tl-type').value;
-  S.tiles.push({id:'t'+Date.now(),label,type,
-    color:document.getElementById('tl-color').value,
-    days:type==='due_days'?parseInt(document.getElementById('tl-days').value)||10:null,
-    org:type==='org_total'?document.getElementById('tl-org').value:null,
-    notif:document.getElementById('tl-notif').value});
-  persistLS(); sbSaveTiles(); closeOv('tile-ov'); renderDash(); scheduleNotifs();
+  const days=(type==='due_days'||type==='plants_water')?parseInt(document.getElementById('tl-days').value)||10:null;
+  S.tiles.push({id:'t'+Date.now(),label,type,color:document.getElementById('tl-color').value,days,org:type==='org_total'?document.getElementById('tl-org').value:null,notif:document.getElementById('tl-notif').value});
+  persistLS();sbSaveTiles();closeOv('tile-ov');renderDash();scheduleNotifs();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // DRILL
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function drillTile(id){
-  if(dashEditMode) return;
-  const tile=S.tiles.find(t=>t.id===id); if(!tile) return;
-  if(tile.type==='plants_water'||tile.type==='plants_check'){
-    switchOrgAndDomain('personal','Plants'); return;
-  }
+  if(dashEditMode)return;
+  const tile=S.tiles.find(t=>t.id===id);if(!tile)return;
+  if(tile.type==='plants_water'||tile.type==='plants_check'){switchOrgAndDomain('personal','Plants');return;}
   const rows=tileItems(tile);
   document.getElementById('drill-title').textContent=tile.label+' ('+rows.length+')';
-  if(!rows.length){
-    document.getElementById('drill-cards').innerHTML='<div class="empty">Nothing here yet.</div>';
-  } else {
-    // Group by org/domain for navigation hint
-    document.getElementById('drill-cards').innerHTML=rows.map(function(r){
-      return renderCard(r.org,r.domain,r.item,r.idx,true);
-    }).join('');
-  }
+  document.getElementById('drill-cards').innerHTML=rows.length?rows.map(r=>renderCard(r.org,r.domain,r.item,r.idx,true)).join(''):'<div class="empty">Nothing here yet.</div>';
   document.getElementById('drill-panel').classList.add('open');
 }
-function closeDrill(){ document.getElementById('drill-panel').classList.remove('open'); }
+function closeDrill(){document.getElementById('drill-panel').classList.remove('open');}
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // ORG / DOMAIN
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function switchOrg(org){
   currentOrg=org;
   document.querySelectorAll('.org-tab').forEach(b=>b.classList.toggle('active',b.dataset.org===org));
-  if(org==='calendar'){ renderCalendarView(); return; }
+  if(org==='calendar'){renderCalendarView();return;}
   if(!currentDomain||!(S.domains[org]||[]).includes(currentDomain))
     currentDomain=(S.domains[org]||[])[0]||null;
   renderOrgContent();
 }
-function switchOrgAndDomain(org, domain){
-  currentOrg=org; currentDomain=domain;
+function switchOrgAndDomain(org,domain){
+  currentOrg=org;currentDomain=domain;
   document.querySelectorAll('.org-tab').forEach(b=>b.classList.toggle('active',b.dataset.org===org));
   renderOrgContent();
 }
-function switchDomain(d){ currentDomain=d; window._plantFilter='all'; renderOrgContent(); }
+function switchDomain(d){currentDomain=d;window._plantFilter='all';renderOrgContent();}
 
 function renderOrgContent(){
   const org=currentOrg;
   const domains=S.domains[org]||[];
-  const brandCols=['bc-teal','bc-blue','bc-gold','bc-sage'];
-
+  // FIX: uses global BRAND_COLS constant — no longer undefined
   let nav='<div class="dom-nav">';
-  domains.forEach(function(d,di){
-    const isPlant=(d==='Plants');
-    const bc=isPlant?'plant-tab':brandCols[di%brandCols.length];
+  domains.forEach((d,di)=>{
+    const isPlant=d==='Plants';
+    const bc=isPlant?'plant-tab':BRAND_COLS[di%BRAND_COLS.length];
     const active=d===currentDomain?' active':'';
-    nav+='<button class="dom-btn '+bc+active+'" onclick="switchDomain(this.dataset.d)" data-d="'+esc(d)+'">'+(isPlant?'🌿 ':'')+esc(d)+'</button>';
+    nav+='<button class="dom-btn '+bc+active+'" onclick="switchDomain(this.dataset.d)" data-d="'+esc(d)+'">'+(isPlant?'\uD83C\uDF3F ':'')+esc(d)+'</button>';
   });
-  nav+='<button class="dom-mgr-btn" data-org="'+esc(org)+'" onclick="openDomMgr(this.dataset.org)">⊕ Manage</button></div>';
+  nav+='<button class="dom-mgr-btn" data-org="'+esc(org)+'" onclick="openDomMgr(this.dataset.org)">\u2295 Manage</button></div>';
 
   let body='';
   if(currentDomain==='Plants'){
     body=renderPlantSection();
   } else if(currentDomain&&domains.includes(currentDomain)){
-    const isPersonalSocial=(org==='personal'&&currentDomain==='Social');
+    const isPS=org==='personal'&&currentDomain==='Social';
     const items=(S.items[org]||{})[currentDomain]||[];
-    const syncConn=isPersonalSocial&&S.gConfig.clientId&&S.gConfig.sheetId;
-    const syncAction=syncConn?"syncSheet()":"openOv('gsetup-ov')";
-    const syncBtnLabel=syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets';
-    const syncBtn=isPersonalSocial?('<button class="sync-btn" id="sync-btn" onclick="'+syncAction+'">'+syncBtnLabel+'</button>'):'';
+    const syncConn=isPS&&S.gConfig.clientId&&S.gConfig.sheetId;
+    const syncBtn=isPS?('<button class="sync-btn" id="sync-btn" onclick="'+(syncConn?'syncSheet()':'openSettings()')+'">'+( syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets')+'</button>'):'';
     const lastSync=syncConn&&S.gConfig.lastSync?('<div class="sync-status">Last synced: '+new Date(S.gConfig.lastSync).toLocaleString()+'</div>'):'';
-    const addOnclick = 'openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
-    const cardsHtml = items.length ? items.map(function(item,i){return renderCard(org,currentDomain,item,i,false);}).join('') : '<div class="empty">No items yet — add your first</div>';
-    body = '<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
-      + '<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnclick+'">+ Add item</button></div>'
-      + '</div>'+lastSync+'<div class="cards">'+cardsHtml+'</div>';
+    const addOnc='openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
+    const cardsHtml=items.length?items.map((item,i)=>renderCard(org,currentDomain,item,i,false)).join(''):'<div class="empty">No items yet \u2014 add your first</div>';
+    body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
+      +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc+'">+ Add item</button></div>'
+      +'</div>'+lastSync+'<div class="cards">'+cardsHtml+'</div>';
   }
   document.getElementById('org-content').innerHTML=nav+body;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // PLANT SECTION
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function renderPlantSection(){
   const rawPlants=S.plants||[];
-  // Sort by waterDays ascending (most frequently watered first), dead plants last
-  const plants = rawPlants.slice().sort(function(a,b){
-    if(a.status==='dead'&&b.status!=='dead') return 1;
-    if(b.status==='dead'&&a.status!=='dead') return -1;
-    return (a.waterDays||99)-(b.waterDays||99);
+  const plants=rawPlants.slice().sort((a,b)=>{
+    if(a.status==='dead'&&b.status!=='dead')return 1;
+    if(b.status==='dead'&&a.status!=='dead')return-1;
+    return(a.waterDays||99)-(b.waterDays||99);
   });
-  const overdue=plants.filter(p=>{ const d=plantWaterDays(p); return d!==null&&d<=0; });
-  const upcoming=plants.filter(p=>{ const d=plantWaterDays(p); return d!==null&&d>0&&d<=7; });
-  const ok=plants.filter(p=>{ const d=plantWaterDays(p); return (d===null||d>7)&&p.status!=='dead'; });
+  const overdue=plants.filter(p=>{const d=plantWaterDays(p);return d!==null&&d<=0;});
+  const upcoming=plants.filter(p=>{const d=plantWaterDays(p);return d!==null&&d>0&&d<=7;});
+  const ok=plants.filter(p=>{const d=plantWaterDays(p);return(d===null||d>7)&&p.status!=='dead';});
   const dead=plants.filter(p=>p.status==='dead');
+  const pf=window._plantFilter||'all';
 
-  let plantFilter = window._plantFilter||'all';
-  let html = '<div class="sec-hdr">'
-    + '<div class="sec-title">Plants</div>'
-    + '<div class="sec-acts">'
-    + '<select id="plant-filter-sel" onchange="setPlantFilter(this.value)" style="padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
-    + '<option value="all"'+(plantFilter==='all'?' selected':'')+'>All plants</option>'
-    + '<option value="water"'+(plantFilter==='water'?' selected':'')+'>Needs water</option>'
-    + '<option value="healthy"'+(plantFilter==='healthy'?' selected':'')+'>Healthy</option>'
-    + '<option value="risk"'+(plantFilter==='risk'?' selected':'')+'>At risk / dying</option>'
-    + '<option value="dead"'+(plantFilter==='dead'?' selected':'')+'>Dead</option>'
-    + '</select>'
-    + '<button class="add-btn" style="border-color:var(--plant);color:var(--plant);" onclick="openPlantModal()">+ Add plant</button>'
-    + '</div></div>';
+  let html='<div class="sec-hdr"><div class="sec-title">Plants</div><div class="sec-acts">'
+    +'<select id="plant-filter-sel" onchange="setPlantFilter(this.value)" style="padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<option value="all"'+(pf==='all'?' selected':'')+'>All plants</option>'
+    +'<option value="water"'+(pf==='water'?' selected':'')+'>Needs water</option>'
+    +'<option value="healthy"'+(pf==='healthy'?' selected':'')+'>Healthy</option>'
+    +'<option value="risk"'+(pf==='risk'?' selected':'')+'>At risk / dying</option>'
+    +'<option value="dead"'+(pf==='dead'?' selected':'')+'>Dead</option>'
+    +'</select>'
+    +'<button class="add-btn" style="border-color:var(--plant);color:var(--plant);" onclick="openPlantModal()">+ Add plant</button>'
+    +'</div></div>';
 
-  if(!plants.length){ return html+'<div class="empty">No plants yet.</div>'; }
+  if(!plants.length)return html+'<div class="empty">No plants yet.</div>';
 
-  function renderGroup(title, list){
-    if(!list.length) return '';
-    return '<div class="sunday-section"><div class="sunday-hdr">'+title+'</div>'
-      + '<div class="plant-grid">'+list.map(function(p){return renderPlantCard(p);}).join('')+'</div></div>';
+  function renderGroup(title,list){
+    if(!list.length)return'';
+    return'<div class="sunday-section"><div class="sunday-hdr">'+title+'</div>'
+      +'<div class="plant-grid">'+list.map(renderPlantCard).join('')+'</div></div>';
   }
 
-  // Apply filter
-  let showOverdue=overdue, showUpcoming=upcoming, showOk=ok, showDead=dead;
-  if(plantFilter==='water'){ showUpcoming=upcoming; showOk=[]; showDead=[]; }
-  else if(plantFilter==='healthy'){ showOverdue=[]; showUpcoming=[]; showDead=[]; }
-  else if(plantFilter==='risk'){
-    showOverdue=[]; showUpcoming=[];
-    showOk=plants.filter(function(p){return p.status==='at-risk'||p.status==='dying';});
-    showDead=[];
-  }
-  else if(plantFilter==='dead'){ showOverdue=[]; showUpcoming=[]; showOk=[]; }
+  let so=overdue,su=upcoming,sk=ok,sd=dead;
+  if(pf==='water'){sk=[];sd=[];}
+  else if(pf==='healthy'){so=[];su=[];sd=[];}
+  else if(pf==='risk'){so=[];su=[];sk=plants.filter(p=>p.status==='at-risk'||p.status==='dying');sd=[];}
+  else if(pf==='dead'){so=[];su=[];sk=[];}
 
-  html+=renderGroup('Needs water now ('+showOverdue.length+')', showOverdue);
-  html+=renderGroup('Water soon — within 7 days ('+showUpcoming.length+')', showUpcoming);
-  html+=renderGroup('All good ('+showOk.length+')', showOk);
-  if(showDead.length) html+=renderGroup('Dead ('+showDead.length+')', showDead);
+  html+=renderGroup('Needs water now ('+so.length+')',so);
+  html+=renderGroup('Water soon \u2014 within 7 days ('+su.length+')',su);
+  html+=renderGroup('All good ('+sk.length+')',sk);
+  if(sd.length)html+=renderGroup('Dead ('+sd.length+')',sd);
   return html;
 }
 
+// FIX: renderPlantCard — fixed broken return statement that left action buttons unreachable
 function renderPlantCard(p){
   const nextWater=plantNextWater(p);
-  const nextCheck=plantNextCheck(p);
   const wd=plantWaterDays(p);
   const cls=plantCardClass(p);
   const waterLbl=wd===null?'Not set':wd<=0?'Now':'In '+wd+'d';
   const waterColor=wd===null?'var(--text3)':wd<=0?'var(--red)':wd<=3?'var(--amber)':'var(--green)';
-  const statusColors = {healthy:'#2A9070','at-risk':'#C49A2A',dying:'var(--red)',dead:'#333'};
-  const statusLabels = {healthy:'Healthy','at-risk':'At Risk',dying:'Dying',dead:'Dead'};
-  const statusColor = statusColors[p.status||'healthy']||'#2A9070';
-  const statusLabel = statusLabels[p.status||'healthy']||'Healthy';
-  const pid = esc(p.id);
+  const sColors={healthy:'#2A9070','at-risk':'#C49A2A',dying:'var(--red)',dead:'#555'};
+  const sLabels={healthy:'Healthy','at-risk':'At Risk',dying:'Dying',dead:'Dead'};
+  const sc=sColors[p.status||'healthy']||'#2A9070';
+  const sl=sLabels[p.status||'healthy']||'Healthy';
+  const pid=esc(p.id);
+  const actionsHtml=p.status!=='dead'
+    ?('<div class="plant-actions">'
+      +'<button class="plant-btn water-btn" data-pid="'+pid+'" onclick="waterPlant(this.dataset.pid)">\uD83D\uDCA7 Watered today</button>'
+      +'<button class="plant-btn" data-pid="'+pid+'" onclick="checkPlant(this.dataset.pid)">\u2713 Checked today</button>'
+      +'</div>')
+    :'<div style="font-size:12px;color:var(--text3);padding:6px 0;">Marked as dead.</div>';
+
   return '<div class="plant-card '+cls+'">'
-    + '<div class="plant-edit-acts">'
-    + '<button class="iBtn" data-pid="'+pid+'" onclick="openPlantModal(this.dataset.pid)">&#x270e;</button>'
-    + '<button class="iBtn" data-pid="'+pid+'" onclick="deletePlant(this.dataset.pid)">&#x2715;</button>'
-    + '</div>'
-    + '<div class="plant-name">'+esc(p.name)+(p.nickname?' <span style="font-weight:400;color:var(--text2);font-size:12px;">'+esc(p.nickname)+'</span>':'')+'</div>'
-    + '<div style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-bottom:6px;background:'+statusColor+'20;color:'+statusColor+';">'+statusLabel+'</div>'
-    + (p.rule?'<div class="plant-rule">'+esc(p.rule)+'</div>':'')
-    + '<div class="plant-dates">'
-    + '<div class="plant-date-row"><span class="plant-date-lbl">Last watered</span><span class="plant-date-val">'+fmtDate(p.lastWatered)+'</span></div>'
-    + '<div class="plant-date-row"><span class="plant-date-lbl">Next water</span><span class="plant-date-val" style="color:'+waterColor+'">'+(nextWater?fmtDate(nextWater)+' ('+waterLbl+')':'Not set')+'</span></div>'
-    + '<div class="plant-date-row"><span class="plant-date-lbl">Check every</span><span class="plant-date-val">'+p.checkDays+'d</span></div>'
-    + (p.lastChecked?'<div class="plant-date-row"><span class="plant-date-lbl">Last checked</span><span class="plant-date-val">'+fmtDate(p.lastChecked)+'</span></div>':'')
-    + (p.lastRepotted?'<div class="plant-date-row"><span class="plant-date-lbl">Last repotted</span><span class="plant-date-val">'+fmtDate(p.lastRepotted)+'</span></div>':'')
-    + '</div>';
-  + (p.status!=='dead'
-      ? '<div class="plant-actions">'
-        + '<button class="plant-btn water-btn" data-pid="'+pid+'" onclick="waterPlant(this.dataset.pid)">&#x1F4A7; Watered today</button>'
-        + '<button class="plant-btn" data-pid="'+pid+'" onclick="checkPlant(this.dataset.pid)">&#x2713; Checked today</button>'
-        + '</div>'
-      : '<div style="font-size:12px;color:var(--text3);padding:6px 0;">This plant has been marked as dead.</div>')
-  + '</div>';
+    +'<div class="plant-edit-acts">'
+    +'<button class="iBtn" data-pid="'+pid+'" onclick="openPlantModal(this.dataset.pid)">&#x270e;</button>'
+    +'<button class="iBtn" data-pid="'+pid+'" onclick="deletePlant(this.dataset.pid)">&#x2715;</button>'
+    +'</div>'
+    +'<div class="plant-name">'+esc(p.name)+(p.nickname?' <span style="font-weight:400;color:var(--text2);font-size:12px;">'+esc(p.nickname)+'</span>':'')+'</div>'
+    +'<div style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-bottom:6px;background:'+sc+'20;color:'+sc+';">'+sl+'</div>'
+    +(p.rule?'<div class="plant-rule">'+esc(p.rule)+'</div>':'')
+    +'<div class="plant-dates">'
+    +'<div class="plant-date-row"><span class="plant-date-lbl">Last watered</span><span class="plant-date-val">'+fmtDate(p.lastWatered)+'</span></div>'
+    +'<div class="plant-date-row"><span class="plant-date-lbl">Next water</span><span class="plant-date-val" style="color:'+waterColor+'">'+(nextWater?fmtDate(nextWater)+' ('+waterLbl+')':'Not set')+'</span></div>'
+    +'<div class="plant-date-row"><span class="plant-date-lbl">Check every</span><span class="plant-date-val">'+p.checkDays+'d</span></div>'
+    +(p.lastChecked?'<div class="plant-date-row"><span class="plant-date-lbl">Last checked</span><span class="plant-date-val">'+fmtDate(p.lastChecked)+'</span></div>':'')
+    +(p.lastRepotted?'<div class="plant-date-row"><span class="plant-date-lbl">Last repotted</span><span class="plant-date-val">'+fmtDate(p.lastRepotted)+'</span></div>':'')
+    +'</div>'
+    +actionsHtml
+    +'</div>';
 }
 
-function setPlantFilter(val){
-  window._plantFilter = val;
-  renderOrgContent();
-}
-
-function waterPlant(id){
-  const p=S.plants.find(x=>x.id===id); if(!p) return;
-  p.lastWatered=today(); p.lastChecked=today();
-  persistLS(); sbSavePlant(p); renderOrgContent(); renderDash();
-}
-function checkPlant(id){
-  const p=S.plants.find(x=>x.id===id); if(!p) return;
-  p.lastChecked=today();
-  persistLS(); sbSavePlant(p); renderOrgContent(); renderDash();
-}
-function deletePlant(id){
-  if(!confirm('Delete this plant?')) return;
-  S.plants=S.plants.filter(p=>p.id!==id);
-  persistLS(); sbDeletePlant(id); renderOrgContent(); renderDash();
-}
+function setPlantFilter(v){window._plantFilter=v;renderOrgContent();}
+function waterPlant(id){const p=S.plants.find(x=>x.id===id);if(!p)return;p.lastWatered=today();p.lastChecked=today();persistLS();sbSavePlant(p);renderOrgContent();renderDash();}
+function checkPlant(id){const p=S.plants.find(x=>x.id===id);if(!p)return;p.lastChecked=today();persistLS();sbSavePlant(p);renderOrgContent();renderDash();}
+function deletePlant(id){if(!confirm('Delete this plant?'))return;S.plants=S.plants.filter(p=>p.id!==id);persistLS();sbDeletePlant(id);renderOrgContent();renderDash();}
 
 function openPlantModal(id){
   editPlantId=id||null;
@@ -1357,8 +1041,8 @@ function savePlant(){
   const name=document.getElementById('pl-name').value.trim();
   if(!name){document.getElementById('pl-name').style.borderColor='var(--red)';return;}
   const plant={
-    id:editPlantId||(S.plants.length?'p'+(Date.now()):'p1'),
-    name,nickname:document.getElementById('pl-nick').value.trim(),
+    id:editPlantId||(S.plants.length?'p'+Date.now():'p1'),name,
+    nickname:document.getElementById('pl-nick').value.trim(),
     checkDays:parseInt(document.getElementById('pl-check').value)||7,
     waterDays:parseInt(document.getElementById('pl-water').value)||10,
     rule:document.getElementById('pl-rule').value.trim(),
@@ -1368,770 +1052,577 @@ function savePlant(){
     status:document.getElementById('pl-status').value||'healthy',
     notes:document.getElementById('pl-notes').value.trim(),
   };
-  if(editPlantId){ const idx=S.plants.findIndex(p=>p.id===editPlantId); if(idx>=0) S.plants[idx]=plant; }
+  if(editPlantId){const i=S.plants.findIndex(p=>p.id===editPlantId);if(i>=0)S.plants[i]=plant;}
   else S.plants.push(plant);
-  persistLS(); sbSavePlant(plant); closeOv('plant-ov'); renderOrgContent(); renderDash();
+  persistLS();sbSavePlant(plant);closeOv('plant-ov');renderOrgContent();renderDash();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // CARD RENDERER
-// ═══════════════════════════════════════════════════════════════════════
-function renderCard(org, domain, item, idx, fromDrill){
-  var due=getDue(item,domain);
-  var days=daysUntil(due);
-  var u=urgency(days);
-  var lbl=days===null?null:days<0?(Math.abs(days)+'d overdue'):days===0?'Today':(days+'d');
-  var bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
-  var isSocial=(domain==='Social');
-  var displayName=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'');
-  var displaySub=isSocial?(item.nickname?('"'+item.nickname+'"'):item.type||''):(item.category||item.relationship||'');
-  var skipKeys=isSocial?{firstName:1,lastName:1,nickname:1,salutation:1,notes:1,personalize:1,story:1,importantNotes:1}:{name:1,notes:1};
-  var fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  var rows=fields.filter(function(f){ return !skipKeys[f.k]&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]; }).slice(0,5);
-  var cbFields=fields.filter(function(f){ return f.t==='checkbox'&&item[f.k]==='true'; });
-  var drillNote=fromDrill?('<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+esc(ORG_LABELS[org])+' \xb7 '+esc(domain)+'</div>'):'';
-  var hasDue=!!getDue(item,domain)&&(org==='personal'||org==='tenfwd');
+// ═══════════════════════════════════════════
+function renderCard(org,domain,item,idx,fromDrill){
+  const due=getDue(item,domain);const days=daysUntil(due);const u=urgency(days);
+  const lbl=days===null?null:days<0?(Math.abs(days)+'d overdue'):days===0?'Today':(days+'d');
+  const bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
+  const isSocial=domain==='Social';
+  const displayName=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'');
+  const displaySub=isSocial?(item.nickname?('"'+item.nickname+'"'):item.type||''):(item.category||item.relationship||'');
+  const skipKeys=isSocial?{firstName:1,lastName:1,nickname:1,salutation:1,notes:1,personalize:1,story:1,importantNotes:1}:{name:1,notes:1};
+  const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+  const rows=fields.filter(f=>!skipKeys[f.k]&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]).slice(0,5);
+  const cbFields=fields.filter(f=>f.t==='checkbox'&&item[f.k]==='true');
+  const drillNote=fromDrill?('<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+esc(ORG_LABELS[org])+' \xb7 '+esc(domain)+'</div>'):'';
+  const hasDue=!!getDue(item,domain)&&(org==='personal'||org==='tenfwd');
   window['_card_'+org+'_'+idx]=item;
-  var calLbl=item._calPushed?'Pushed to calendar':'Send to calendar';
-  var calBtn=hasDue?('<button class="iBtn'+(item._calPushed?' cal-sent':'')+'" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="pushToCalendarByData(this)" title="'+calLbl+'">&#x1F4C5;</button>'):'';
-  var lbl2=lbl?('<span class="badge '+bCls+'">'+lbl+'</span>'):'';
-  var editBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="openItemModalByData(this)">&#x270e;</button>';
-  var delBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="askDeleteByData(this)">&#x2715;</button>';
-  var rowsHtml=rows.map(function(f){
-    var v=item[f.k];
-    if(f.t==='date') v=fmtDate(v);
-    return '<div class="crow"><span class="crow-lbl">'+esc(f.l)+'</span><span class="crow-val">'+esc(v)+'</span></div>';
-  }).join('');
-  var cbHtml=cbFields.length?('<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'+cbFields.map(function(f){ return '<span class="badge badge-green">'+esc(f.l)+'</span>'; }).join('')+'</div>'):'';
-  var notesHtml=(item.importantNotes||item.notes)?('<div class="card-notes">'+esc(item.importantNotes||item.notes)+'</div>'):'';
-  var nameHtml='<div class="card-name">'+esc(displayName||'Unnamed')+'</div>'+(displaySub?'<div class="card-sub">'+esc(displaySub)+'</div>':'');
-  return '<div class="card">'
-    +'<div class="card-top">'
-    +'<div>'+nameHtml+'</div>'+drillNote
-    +'<div class="card-acts">'+lbl2+calBtn+editBtn+delBtn+'</div>'
-    +'</div>'
-    +'<div class="card-rows">'+rowsHtml+'</div>'
-    +cbHtml+notesHtml
-    +'</div>';
+  const calBtn=hasDue?('<button class="iBtn'+(item._calPushed?' cal-sent':'')+'" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="pushToCalendarByData(this)" title="'+(item._calPushed?'Pushed':'Send to calendar')+'">&#x1F4C5;</button>'):'';
+  const lbl2=lbl?('<span class="badge '+bCls+'">'+lbl+'</span>'):'';
+  const editBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="openItemModalByData(this)">&#x270e;</button>';
+  const delBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="askDeleteByData(this)">&#x2715;</button>';
+  const rowsHtml=rows.map(f=>{let v=item[f.k];if(f.t==='date')v=fmtDate(v);return'<div class="crow"><span class="crow-lbl">'+esc(f.l)+'</span><span class="crow-val">'+esc(v)+'</span></div>';}).join('');
+  const cbHtml=cbFields.length?('<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'+cbFields.map(f=>'<span class="badge badge-green">'+esc(f.l)+'</span>').join('')+'</div>'):'';
+  const notesHtml=(item.importantNotes||item.notes)?('<div class="card-notes">'+esc(item.importantNotes||item.notes)+'</div>'):'';
+  const nameHtml='<div class="card-name">'+esc(displayName||'Unnamed')+'</div>'+(displaySub?'<div class="card-sub">'+esc(displaySub)+'</div>':'');
+  return'<div class="card"><div class="card-top"><div>'+nameHtml+'</div>'+drillNote
+    +'<div class="card-acts">'+lbl2+calBtn+editBtn+delBtn+'</div></div>'
+    +'<div class="card-rows">'+rowsHtml+'</div>'+cbHtml+notesHtml+'</div>';
 }
-function openItemModalByData(btn){ openItemModal(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx)); }
-function askDeleteByData(btn){ askDelete(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx)); }
-function pushToCalendarByData(btn){ var it=window['_card_'+btn.dataset.org+'_'+btn.dataset.idx]; pushToCalendar(btn.dataset.org,btn.dataset.dom,it,parseInt(btn.dataset.idx)); }
+function openItemModalByData(btn){openItemModal(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx));}
+function askDeleteByData(btn){askDelete(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx));}
+function pushToCalendarByData(btn){const it=window['_card_'+btn.dataset.org+'_'+btn.dataset.idx];pushToCalendar(btn.dataset.org,btn.dataset.dom,it,parseInt(btn.dataset.idx));}
 
-
-function openItemModal(org, domain, idx){
+function openItemModal(org,domain,idx){
   editTarget=idx!==undefined?{org,domain,idx:parseInt(idx)}:null;
   const item=idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]||{}:{};
-  document.getElementById('item-title').textContent=(idx!==undefined?'Edit — ':'Add — ')+domain;
+  document.getElementById('item-title').textContent=(idx!==undefined?'Edit \u2014 ':'Add \u2014 ')+domain;
   const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  document.getElementById('item-body').innerHTML=fields.map(function(f){
+  document.getElementById('item-body').innerHTML=fields.map(f=>{
     const val=item[f.k]||'';
-    if(f.t==='checkbox'){
-      return '<div class="fg-check"><input type="checkbox" id="f-'+f.k+'"'+(val==='true'?' checked':'')+'><label for="f-'+f.k+'">'+f.l+'</label></div>';
-    }
+    if(f.t==='checkbox')return'<div class="fg-check"><input type="checkbox" id="f-'+f.k+'"'+(val==='true'?' checked':'')+'><label for="f-'+f.k+'">'+f.l+'</label></div>';
     let inp='';
-    if(f.t==='select'){
-      const opts=(f.opts||[]).map(function(o){ return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'; }).join('');
-      inp='<select id="f-'+f.k+'"><option value=""></option>'+opts+'</select>';
-    } else if(f.t==='textarea'){
-      inp='<textarea id="f-'+f.k+'">'+esc(val)+'</textarea>';
-    } else {
-      inp='<input type="'+f.t+'" id="f-'+f.k+'" value="'+esc(val)+'"'+(f.req?' required':'')+' autocomplete="off">';
-    }
-    return '<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label>'+inp+'</div>';
+    if(f.t==='select'){const opts=(f.opts||[]).map(o=>'<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>').join('');inp='<select id="f-'+f.k+'"><option value=""></option>'+opts+'</select>';}
+    else if(f.t==='textarea')inp='<textarea id="f-'+f.k+'">'+esc(val)+'</textarea>';
+    else inp='<input type="'+f.t+'" id="f-'+f.k+'" value="'+esc(val)+'"'+(f.req?' required':'')+' autocomplete="off">';
+    return'<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label>'+inp+'</div>';
   }).join('');
   openOv('item-ov');
 }
-
 async function saveItem(){
   const org=editTarget?editTarget.org:currentOrg;
   const domain=editTarget?editTarget.domain:currentDomain;
-  if(!org||!domain) return;
+  if(!org||!domain)return;
   const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  const item={}; let valid=true;
+  const item={};let valid=true;
   fields.forEach(f=>{
     const el=document.getElementById('f-'+f.k);
     const val=f.t==='checkbox'?(el&&el.checked?'true':'false'):(el?el.value.trim():'');
     if(f.req&&!val&&f.t!=='checkbox'){if(el)el.style.borderColor='var(--red)';valid=false;}
-    else if(el&&f.t!=='checkbox') el.style.borderColor='';
+    else if(el&&f.t!=='checkbox')el.style.borderColor='';
     item[f.k]=val;
   });
-  if(!valid) return;
-  if(!S.items[org]) S.items[org]={};
-  if(!S.items[org][domain]) S.items[org][domain]=[];
+  if(!valid)return;
+  if(!S.items[org])S.items[org]={};
+  if(!S.items[org][domain])S.items[org][domain]=[];
   if(editTarget&&editTarget.idx!==undefined){
     const existing=S.items[org][domain][editTarget.idx];
-    if(existing&&existing._sbId) item._sbId=existing._sbId;
+    if(existing&&existing._sbId)item._sbId=existing._sbId;
     S.items[org][domain][editTarget.idx]=item;
-  } else {
-    S.items[org][domain].push(item);
-  }
-  persistLS();
-  await sbSaveItem(org, domain, item);
-  closeOv('item-ov'); editTarget=null;
-  renderDash(); renderOrgContent();
-  if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId){
+  }else S.items[org][domain].push(item);
+  persistLS();await sbSaveItem(org,domain,item);
+  closeOv('item-ov');editTarget=null;renderDash();renderOrgContent();
+  if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId)
     ensureGAuth(()=>pushContactToSheet(item));
-  }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // DELETE
-// ═══════════════════════════════════════════════════════════════════════
-function askDelete(org, domain, idx){ deleteTarget={org,domain,idx:parseInt(idx)}; openOv('del-ov'); }
+// ═══════════════════════════════════════════
+function askDelete(org,domain,idx){deleteTarget={org,domain,idx:parseInt(idx)};openOv('del-ov');}
 async function confirmDelete(){
-  if(!deleteTarget) return;
-  const {org,domain,idx}=deleteTarget;
-  const item=S.items[org][domain][idx];
-  const sbId=item&&item._sbId;
-  S.items[org][domain].splice(idx,1);
-  persistLS();
-  if(sbId) await sbDeleteItem(sbId);
-  deleteTarget=null; closeOv('del-ov');
-  renderDash(); renderOrgContent();
-  if(document.getElementById('drill-panel').classList.contains('open')) closeDrill();
+  if(!deleteTarget)return;
+  const{org,domain,idx}=deleteTarget;
+  const item=S.items[org][domain][idx];const sbId=item&&item._sbId;
+  S.items[org][domain].splice(idx,1);persistLS();
+  if(sbId)await sbDeleteItem(sbId);
+  deleteTarget=null;closeOv('del-ov');renderDash();renderOrgContent();
+  if(document.getElementById('drill-panel').classList.contains('open'))closeDrill();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // DOMAIN MANAGER
-// ═══════════════════════════════════════════════════════════════════════
-function openDomMgr(org){
-  domMgrOrg=org;
-  document.getElementById('dom-title').textContent='Manage domains — '+ORG_LABELS[org];
-  renderDomList(); openOv('dom-ov');
-}
+// ═══════════════════════════════════════════
+function openDomMgr(org){domMgrOrg=org;document.getElementById('dom-title').textContent='Manage domains \u2014 '+ORG_LABELS[org];renderDomList();openOv('dom-ov');}
 function renderDomList(){
   const doms=S.domains[domMgrOrg]||[];
   document.getElementById('dom-list').innerHTML=doms.length
-    ?doms.map((d,i)=>'<div class="dom-item"><span class="dom-item-name">'+(esc(d))+'</span><button class="iBtn" onclick="removeDomain('+(i)+')">✕</button></div>').join('')
+    ?doms.map((d,i)=>'<div class="dom-item"><span class="dom-item-name">'+esc(d)+'</span><button class="iBtn" data-i="'+i+'" onclick="removeDomain(parseInt(this.dataset.i))">&#x2715;</button></div>').join('')
     :'<div style="font-size:13px;color:var(--text3);padding:6px 0;">No domains yet.</div>';
 }
 function addDomain(){
-  const inp=document.getElementById('dom-new'); const name=inp.value.trim(); if(!name) return;
+  const inp=document.getElementById('dom-new');const name=inp.value.trim();if(!name)return;
   if((S.domains[domMgrOrg]||[]).includes(name)){inp.style.borderColor='var(--red)';return;}
-  if(!S.domains[domMgrOrg]) S.domains[domMgrOrg]=[];
+  if(!S.domains[domMgrOrg])S.domains[domMgrOrg]=[];
   S.domains[domMgrOrg].push(name);
-  if(!S.items[domMgrOrg]) S.items[domMgrOrg]={};
+  if(!S.items[domMgrOrg])S.items[domMgrOrg]={};
   S.items[domMgrOrg][name]=[];
-  persistLS(); sbSaveDomains(domMgrOrg);
-  inp.value=''; inp.style.borderColor=''; renderDomList();
+  persistLS();sbSaveDomains(domMgrOrg);inp.value='';inp.style.borderColor='';renderDomList();
 }
 function removeDomain(idx){
   const domain=S.domains[domMgrOrg][idx];
   const items=((S.items[domMgrOrg]||{})[domain]||[]);
-  if(items.length>0&&!confirm('Delete "'+(domain)+'" and its '+(items.length)+' item(s)?')) return;
+  if(items.length>0&&!confirm('Delete "'+domain+'" and its '+items.length+' item(s)?'))return;
   S.domains[domMgrOrg].splice(idx,1);
-  if(S.items[domMgrOrg]) delete S.items[domMgrOrg][domain];
-  persistLS(); sbSaveDomains(domMgrOrg); renderDomList();
-  if(currentDomain===domain) currentDomain=(S.domains[domMgrOrg]||[])[0]||null;
+  if(S.items[domMgrOrg])delete S.items[domMgrOrg][domain];
+  persistLS();sbSaveDomains(domMgrOrg);renderDomList();
+  if(currentDomain===domain)currentDomain=(S.domains[domMgrOrg]||[])[0]||null;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// GOOGLE SHEETS
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
+// SETTINGS — unified, all s- prefixed IDs
+// ═══════════════════════════════════════════
+function openSettings(){
+  if(!S)S=defaultState();
+  document.getElementById('s-anthropic-key').value=S.anthropicKey||'';
+  document.getElementById('s-sb-url').value=S.sbConfig&&S.sbConfig.url?S.sbConfig.url:'';
+  document.getElementById('s-sb-key').value=S.sbConfig&&S.sbConfig.key?S.sbConfig.key:'';
+  document.getElementById('s-gs-client-id').value=S.gConfig&&S.gConfig.clientId?S.gConfig.clientId:'';
+  document.getElementById('s-gs-sheet-id').value=S.gConfig&&S.gConfig.sheetId?S.gConfig.sheetId:'';
+  document.getElementById('s-gs-sheet-tab').value=S.gConfig&&S.gConfig.sheetTab?S.gConfig.sheetTab:'';
+  if(S.calConfig){
+    document.getElementById('s-cal-personal-id').value=S.calConfig.personalCalId||'';
+    document.getElementById('s-cal-tenfwd-id').value=S.calConfig.tenfwdCalId||'';
+    document.getElementById('s-cal-embed-url').value=S.calConfig.embedUrl||'';
+    if(S.calConfig.remindersByOrg){
+      document.getElementById('s-cal-remind-personal').value=String(S.calConfig.remindersByOrg.personal||7);
+      document.getElementById('s-cal-remind-tenfwd').value=String(S.calConfig.remindersByOrg.tenfwd||14);
+    }
+  }
+  const supaConn=!!(SB&&S.sbConfig&&S.sbConfig.url);
+  const driveConn=!!(S.gConfig&&S.gConfig.clientId);
+  const sl=document.getElementById('supa-status-lbl');
+  const dl=document.getElementById('drive-status-lbl');
+  const sd=document.getElementById('supa-disconnect-btn');
+  if(sl){sl.textContent=supaConn?'\u2713 Connected':'Not connected';sl.style.color=supaConn?'var(--green)':'var(--text3)';}
+  if(sd)sd.style.display=supaConn?'block':'none';
+  if(dl){dl.textContent=driveConn?'\u2713 Connected':'Not connected';dl.style.color=driveConn?'var(--green)':'var(--text3)';}
+  const hasData=Object.values(S.items||{}).some(o=>Object.values(o).some(d=>d.length>0));
+  const mr=document.getElementById('supa-migrate-row');
+  if(mr)mr.style.display=(hasData&&!(S.sbConfig&&S.sbConfig.migrationDone))?'block':'none';
+  openOv('settings-ov');
+}
+function saveAllSettings(){
+  S.anthropicKey=document.getElementById('s-anthropic-key').value.trim();
+  if(!S.calConfig)S.calConfig={};
+  S.calConfig.personalCalId=document.getElementById('s-cal-personal-id').value.trim();
+  S.calConfig.tenfwdCalId=document.getElementById('s-cal-tenfwd-id').value.trim();
+  S.calConfig.embedUrl=document.getElementById('s-cal-embed-url').value.trim();
+  S.calConfig.remindersByOrg={
+    personal:parseInt(document.getElementById('s-cal-remind-personal').value)||7,
+    tenfwd:parseInt(document.getElementById('s-cal-remind-tenfwd').value)||14
+  };
+  persistLS();updateSettingsBtn();closeOv('settings-ov');
+}
+function saveSettings(){saveAllSettings();}
+function updateSettingsBtn(){
+  const btn=document.getElementById('settings-btn');
+  if(!btn||!S)return;
+  const allOk=!!(S.anthropicKey&&S.sbConfig&&S.sbConfig.url&&S.gConfig&&S.gConfig.clientId);
+  const someOk=!!(S.anthropicKey||(S.sbConfig&&S.sbConfig.url)||(S.gConfig&&S.gConfig.clientId));
+  btn.classList.remove('st-on','st-off','st-partial');
+  if(allOk)btn.classList.add('st-on');
+  else if(someOk)btn.classList.add('st-partial');
+}
+// FIX: these stubs replace the removed individual button update functions
+function updateGAuthBtn(){updateSettingsBtn();}
+function updateSupaBtn(){updateSettingsBtn();}
+function updateCalBtn(){updateSettingsBtn();}
+
+// ═══════════════════════════════════════════
+// GOOGLE DRIVE / SHEETS
+// ═══════════════════════════════════════════
 function connectGoogle(){
-  const clientId=document.getElementById('gs-client-id').value.trim();
-  const sheetId=document.getElementById('gs-sheet-id').value.trim();
-  const sheetTab=document.getElementById('gs-sheet-tab').value.trim();
-  if(!clientId||!sheetId){setAlert('gsetup-alert','Please enter both Client ID and Sheet ID.','err');return;}
-  S.gConfig.clientId=clientId; S.gConfig.sheetId=sheetId; S.gConfig.sheetTab=sheetTab;
+  // FIX: reads from s- prefixed IDs
+  const clientId=document.getElementById('s-gs-client-id').value.trim();
+  const sheetId=document.getElementById('s-gs-sheet-id').value.trim();
+  const sheetTab=document.getElementById('s-gs-sheet-tab').value.trim();
+  if(!clientId){setAlert('gsetup-alert','Please enter your OAuth Client ID.','err');return;}
+  S.gConfig.clientId=clientId;S.gConfig.sheetId=sheetId;S.gConfig.sheetTab=sheetTab;
   persistLS();
-  setAlert('gsetup-alert','Loading Google libraries…','ok');
-  loadGapiAndGis(()=>{ pendingGAction=()=>{updateSettingsBtn();fetchSheetColumns();}; requestGToken(); });
+  setAlert('gsetup-alert','Loading Google libraries\u2026','ok');
+  loadGapiAndGis(()=>{
+    pendingGAction=()=>{updateSettingsBtn();if(sheetId)fetchSheetColumns();else setAlert('gsetup-alert','Google connected.','ok');};
+    requestGToken();
+  });
 }
 function loadGapiAndGis(cb){
-  let gapiDone=false, gisDone=false;
-  function check(){ if(gapiDone&&gisDone) cb(); }
-  if(window.gapi&&gapiReady){gapiDone=true;check();}
+  let gd=false,gi=false;
+  function check(){if(gd&&gi)cb();}
+  if(window.gapi&&gapiReady){gd=true;check();}
   else{
-    const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
-    s1.onload=()=>{ gapi.load('client',()=>{ gapi.client.init({}).then(()=>Promise.all([
-          gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4'),
-          gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'),
-          gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'),
-          gapi.client.load('https://docs.googleapis.com/$discovery/rest?version=v1')
-        ])).then(()=>{gapiReady=true;gapiDone=true;check();}); }); };
+    const s1=document.createElement('script');s1.src='https://apis.google.com/js/api.js';
+    s1.onload=()=>{gapi.load('client',()=>{gapi.client.init({}).then(()=>Promise.all([
+      gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4'),
+      gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'),
+      gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'),
+      gapi.client.load('https://docs.googleapis.com/$discovery/rest?version=v1')
+    ])).then(()=>{gapiReady=true;gd=true;check();});});};
     document.head.appendChild(s1);
   }
-  if(window.google&&window.google.accounts){gisDone=true;check();}
-  else{
-    const s2=document.createElement('script'); s2.src='https://accounts.google.com/gsi/client';
-    s2.onload=()=>{gisDone=true;check();}; document.head.appendChild(s2);
-  }
+  if(window.google&&window.google.accounts){gi=true;check();}
+  else{const s2=document.createElement('script');s2.src='https://accounts.google.com/gsi/client';s2.onload=()=>{gi=true;check();};document.head.appendChild(s2);}
 }
 function requestGToken(){
   if(!gisTokenClient){
     gisTokenClient=google.accounts.oauth2.initTokenClient({
       client_id:S.gConfig.clientId,
       scope:'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar',
-      callback:(r)=>{ if(r.error){alert('Auth error: '+r.error);return;} if(pendingGAction){pendingGAction();pendingGAction=null;} }
+      callback:r=>{if(r.error){alert('Auth error: '+r.error);return;}if(pendingGAction){pendingGAction();pendingGAction=null;}}
     });
   }
   gisTokenClient.requestAccessToken({prompt:'consent'});
 }
 function ensureGAuth(action){
-  if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
+  if(!S.gConfig.clientId){openSettings();return;}
   pendingGAction=action;
-  loadGapiAndGis(()=>{ const tok=gapi.client.getToken(); if(tok&&tok.access_token){action();pendingGAction=null;} else requestGToken(); });
+  loadGapiAndGis(()=>{const tok=gapi.client.getToken();if(tok&&tok.access_token){action();pendingGAction=null;}else requestGToken();});
 }
 function fetchSheetColumns(){
   const range=(S.gConfig.sheetTab||'Sheet1')+'!1:1';
   gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range})
-    .then(r=>{ gSheetColumns=(r.result.values&&r.result.values[0])||[]; openMappingModal(); })
-    .catch(()=>{ gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:'1:1'})
-      .then(r=>{ gSheetColumns=(r.result.values&&r.result.values[0])||[]; openMappingModal(); })
-      .catch(()=>alert('Could not read sheet headers.')); });
+    .then(r=>{gSheetColumns=(r.result.values&&r.result.values[0])||[];openMappingModal();})
+    .catch(()=>gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:'1:1'})
+      .then(r=>{gSheetColumns=(r.result.values&&r.result.values[0])||[];openMappingModal();})
+      .catch(()=>alert('Could not read sheet headers.')));
 }
 function openMappingModal(){
   const mapping=S.gConfig.mapping||{};
   document.getElementById('map-tbody').innerHTML=SOCIAL_MAP_FIELDS.map(f=>{
-    const opts=['<option value="">— ignore —</option>',...gSheetColumns.map(col=>'<option value="'+(esc(col))+'"'+(mapping[f.k]===col?' selected':'')+'>'+(esc(col))+'</option>')].join('');
-    return '<tr><td>'+(f.l)+'</td><td><select id="map-'+(f.k)+'">'+(opts)+'</select></td></tr>';
+    const opts='<option value="">\u2014 ignore \u2014</option>'+gSheetColumns.map(col=>'<option value="'+esc(col)+'"'+(mapping[f.k]===col?' selected':'')+'>'+esc(col)+'</option>').join('');
+    return'<tr><td>'+f.l+'</td><td><select id="map-'+f.k+'">'+opts+'</select></td></tr>';
   }).join('');
   openOv('gmap-ov');
 }
 function saveMapping(){
   const mapping={};
-  SOCIAL_MAP_FIELDS.forEach(f=>{ const v=document.getElementById('map-'+f.k).value; if(v) mapping[f.k]=v; });
-  S.gConfig.mapping=mapping; persistLS(); closeOv('gmap-ov'); updateGAuthBtn(); syncSheet();
+  SOCIAL_MAP_FIELDS.forEach(f=>{const v=document.getElementById('map-'+f.k).value;if(v)mapping[f.k]=v;});
+  S.gConfig.mapping=mapping;persistLS();closeOv('gmap-ov');syncSheet();
 }
-function updateGAuthBtn(){ updateSettingsBtn(); }
 function syncSheet(){
-  if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
+  if(!S.gConfig.clientId||!S.gConfig.sheetId){openSettings();return;}
   const btn=document.getElementById('sync-btn');
-  if(btn){btn.innerHTML='<span class="spinner"></span> Syncing…';}
+  if(btn)btn.innerHTML='<span class="spinner"></span> Syncing\u2026';
   ensureGAuth(doSync);
 }
 function doSync(){
   const tab=S.gConfig.sheetTab||'Sheet1';
   gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:tab})
     .then(r=>{
-      const rows=r.result.values||[]; if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
-      const headers=rows[0]; const mapping=S.gConfig.mapping||{}; const revMap={};
-      Object.entries(mapping).forEach(([hk,col])=>{ const ci=headers.indexOf(col); if(ci>=0) revMap[ci]=hk; });
-      const existing=S.items.personal.Social||[]; let added=0,updated=0;
+      const rows=r.result.values||[];if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
+      const headers=rows[0],mapping=S.gConfig.mapping||{},revMap={};
+      Object.entries(mapping).forEach(([hk,col])=>{const ci=headers.indexOf(col);if(ci>=0)revMap[ci]=hk;});
+      const existing=S.items.personal.Social||[];let added=0,updated=0;
       rows.slice(1).forEach(row=>{
         const c={_fromSheet:true};
-        row.forEach((val,ci)=>{ if(revMap[ci]) c[revMap[ci]]=val; });
-        if(!c.name&&(c.firstName||c.lastName)) c.name=((c.firstName||'')+' '+(c.lastName||'')).trim();
+        row.forEach((val,ci)=>{if(revMap[ci])c[revMap[ci]]=val;});
+        if(!c.name&&(c.firstName||c.lastName))c.name=((c.firstName||'')+' '+(c.lastName||'')).trim();
         ['birthdayCard','christmasCard','weddingInvite','andreasFuneral','andreasMemorials'].forEach(k=>{
-          if(c[k]!==undefined){ const v=String(c[k]).toLowerCase().trim(); c[k]=(v==='yes'||v==='y'||v==='true'||v==='1'||v==='x')?'true':'false'; }
+          if(c[k]!==undefined){const v=String(c[k]).toLowerCase().trim();c[k]=(v==='yes'||v==='y'||v==='true'||v==='1'||v==='x')?'true':'false';}
         });
-        const nameKey=(c.firstName||c.name||'').toLowerCase(); if(!nameKey) return;
-        const ei=existing.findIndex(x=>(x.firstName||x.name||'').toLowerCase()===nameKey);
+        const nk=(c.firstName||c.name||'').toLowerCase();if(!nk)return;
+        const ei=existing.findIndex(x=>(x.firstName||x.name||'').toLowerCase()===nk);
         if(ei>=0){existing[ei]={...existing[ei],...c};updated++;}else{existing.push(c);added++;}
       });
-      S.items.personal.Social=existing; S.gConfig.lastSync=Date.now();
-      persistLS(); renderDash(); renderOrgContent(); resetSyncBtn();
+      S.items.personal.Social=existing;S.gConfig.lastSync=Date.now();
+      persistLS();renderDash();renderOrgContent();resetSyncBtn();
       const el=document.querySelector('.sync-status');
-      if(el) el.textContent='Last synced: '+new Date().toLocaleString()+' · '+added+' added, '+updated+' updated.';
+      if(el)el.textContent='Last synced: '+new Date().toLocaleString()+' \xb7 '+added+' added, '+updated+' updated.';
     })
-    .catch(e=>{ resetSyncBtn(); alert('Sync failed: '+JSON.stringify(e.result||e)); });
+    .catch(e=>{resetSyncBtn();alert('Sync failed: '+JSON.stringify(e.result||e));});
 }
-function resetSyncBtn(){ const btn=document.getElementById('sync-btn'); if(btn){btn.innerHTML='⟳ Sync Google Sheets';} }
+function resetSyncBtn(){const btn=document.getElementById('sync-btn');if(btn)btn.innerHTML='\u21f3 Sync Google Sheets';}
 function pushContactToSheet(contact){
-  if(!S.gConfig.sheetId||!gapi||!gapi.client||!gapi.client.sheets) return;
+  if(!S.gConfig.sheetId||!gapi||!gapi.client||!gapi.client.sheets)return;
   const tab=S.gConfig.sheetTab||'Sheet1';
   gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:tab+'!1:1'})
-    .then(r=>{ const headers=(r.result.values&&r.result.values[0])||[]; const mapping=S.gConfig.mapping||{};
-      const row=headers.map(h=>{ const hk=Object.entries(mapping).find(([k,v])=>v===h)?.[0]; return hk?contact[hk]||'':''; });
+    .then(r=>{
+      const headers=(r.result.values&&r.result.values[0])||[],mapping=S.gConfig.mapping||{};
+      const row=headers.map(h=>{const hk=Object.entries(mapping).find(([k,v])=>v===h)?.[0];return hk?contact[hk]||'':'';});
       return gapi.client.sheets.spreadsheets.values.append({spreadsheetId:S.gConfig.sheetId,range:tab,valueInputOption:'USER_ENTERED',resource:{values:[row]}});
     }).catch(e=>console.warn('Push to sheet failed:',e));
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // NOTIFICATIONS
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 function updateNotifBtn(){
   const btn=document.getElementById('notif-btn');
   if(!('Notification' in window)){btn.style.display='none';return;}
   btn.classList.remove('st-on','st-off');
-  if(Notification.permission==='granted'){btn.classList.add('st-on');}
+  if(Notification.permission==='granted')btn.classList.add('st-on');
   else if(Notification.permission==='denied'){btn.classList.add('st-off');btn.style.opacity='.7';}
 }
 function requestNotif(){
-  if(!('Notification' in window)) return;
-  Notification.requestPermission().then(p=>{updateNotifBtn();if(p==='granted') scheduleNotifs();});
+  if(!('Notification' in window))return;
+  Notification.requestPermission().then(p=>{updateNotifBtn();if(p==='granted')scheduleNotifs();});
 }
 function scheduleNotifs(){
-  if(Notification.permission!=='granted') return;
+  if(Notification.permission!=='granted')return;
   const now=new Date();
-  S.tiles.forEach(tile=>{
-    if(!tile.notif) return;
+  (S.tiles||[]).forEach(tile=>{
+    if(!tile.notif)return;
     const db=parseInt(tile.notif);
     tileItems(tile).forEach(r=>{
-      if(!r.due) return;
-      const due=new Date(r.due+'T09:00:00'); const na=new Date(due); na.setDate(na.getDate()-db);
-      if(na>now) setTimeout(()=>new Notification('Admin Hub — '+tile.label,{body:r.item.name+' due '+fmtDate(r.due)}),Math.min(na-now,2147483647));
+      if(!r.due)return;
+      const due=new Date(r.due+'T09:00:00');const na=new Date(due);na.setDate(na.getDate()-db);
+      if(na>now)setTimeout(()=>new Notification('Aurora \u2014 '+tile.label,{body:r.item.name+' due '+fmtDate(r.due)}),Math.min(na-now,2147483647));
     });
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // OVERLAY HELPERS
-// ═══════════════════════════════════════════════════════════════════════
-function openOv(id){
-  document.getElementById(id).classList.add('open');
-  if(id==='supa-ov') updateSupaModal();
-}
-function closeOv(id){ document.getElementById(id).classList.remove('open'); }
-function ovBg(e,id){ if(e.target===document.getElementById(id)) closeOv(id); }
-function setAlert(elId,msg,type){ document.getElementById(elId).innerHTML='<div class="alert alert-'+(type)+'">'+(esc(msg))+'</div>'; }
+// ═══════════════════════════════════════════
+function openOv(id){document.getElementById(id).classList.add('open');}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+function ovBg(e,id){if(e.target===document.getElementById(id))closeOv(id);}
+function setAlert(elId,msg,type){const el=document.getElementById(elId);if(el)el.innerHTML='<div class="alert alert-'+type+'">'+esc(msg)+'</div>';}
 
-// ═══════════════════════════════════════════════════════════════════════
-// AURORA ASSISTANT (Claude API)
-// ═══════════════════════════════════════════════════════════════════════
-
-let conversationHistory = []; // persists for session
-let auroraThinking = false;
-
+// ═══════════════════════════════════════════
+// AURORA ASSISTANT
+// ═══════════════════════════════════════════
 function buildAuroraContext(){
-  const today = new Date().toISOString().slice(0,10);
-  const allDeadlines = [];
-  Object.keys(S.domains).forEach(function(org){
-    (S.domains[org]||[]).forEach(function(domain){
-      if(domain==='Plants') return;
-      ((S.items[org]||{})[domain]||[]).forEach(function(item){
-        const due = getDue(item,domain);
-        const days = daysUntil(due);
-        if(due) allDeadlines.push({
-          name: item.name||((item.firstName||'')+' '+(item.lastName||'')).trim(),
-          org: ORG_LABELS[org], domain: domain, due: due, daysUntil: days,
-          status: days===null?'no date':days<0?'OVERDUE':days===0?'TODAY':days<=7?'THIS WEEK':days<=30?'THIS MONTH':'UPCOMING'
-        });
+  const td=new Date().toISOString().slice(0,10);
+  const allDL=[];
+  Object.keys(S.domains).forEach(org=>{
+    (S.domains[org]||[]).forEach(domain=>{
+      if(domain==='Plants')return;
+      ((S.items[org]||{})[domain]||[]).forEach(item=>{
+        const due=getDue(item,domain);const days=daysUntil(due);
+        if(due)allDL.push({name:item.name||((item.firstName||'')+' '+(item.lastName||'')).trim(),org:ORG_LABELS[org],domain,due,daysUntil:days,status:days===null?'no date':days<0?'OVERDUE':days===0?'TODAY':days<=7?'THIS WEEK':days<=30?'THIS MONTH':'UPCOMING'});
       });
     });
   });
-  allDeadlines.sort(function(a,b){ return (a.daysUntil===null?999:a.daysUntil)-(b.daysUntil===null?999:b.daysUntil); });
-
-  const plantsNeedWater = (S.plants||[]).filter(function(p){ const d=plantWaterDays(p); return d!==null&&d<=0; });
-  const plantsNeedCheck = (S.plants||[]).filter(function(p){ const d=plantCheckDays(p); return d!==null&&d<=0; });
-  const contacts = ((S.items.personal||{}).Social||[]);
-  const today60 = new Date(); today60.setDate(today60.getDate()-60);
-  const notContacted = contacts.filter(function(c){
-    if(!c.lastContacted) return false;
-    return new Date(c.lastContacted+'T00:00:00') < today60;
-  });
-  const counts = {};
-  Object.keys(S.domains).forEach(function(org){
-    counts[ORG_LABELS[org]] = {};
-    (S.domains[org]||[]).forEach(function(d){
-      counts[ORG_LABELS[org]][d] = ((S.items[org]||{})[d]||[]).length;
-    });
-  });
-
-  const dlLines = allDeadlines.slice(0,40).map(function(d){
-    const days = d.daysUntil===null?'no date':d.daysUntil<0?Math.abs(d.daysUntil)+'d overdue':d.daysUntil+'d';
-    return '- ['+d.status+'] '+(d.name||'Unknown')+' | '+d.org+' > '+d.domain+' | Due: '+d.due+' ('+days+')';
-  }).join('\n');
-
-  const countLines = Object.keys(counts).map(function(org){
-    return Object.keys(counts[org]).map(function(d){
-      return '- '+org+' > '+d+': '+counts[org][d]+' items';
-    }).join('\n');
-  }).join('\n');
-
-  const waterNames = plantsNeedWater.map(function(p){ return p.name; }).join(', ')||'none';
-  const contactNames = notContacted.slice(0,5).map(function(c){
-    return ((c.firstName||'')+(c.lastName?' '+c.lastName:'')).trim()||c.name||'Unknown';
-  }).join(', ')||'none';
-
-  return 'You are Aurora, an intelligent personal and professional assistant system built for Pericles Niarchos. You have access to his real-time hub data. Today is '+today+'.\n\n'
-    + 'ORGANIZATION CONTEXTS:\n'
-    + '- Personal: home, vehicles, finances, health, legal, social/contacts, plants\n'
-    + '- Foundation for Economic Education (FEE): Pericles is Chief Programs & Innovation Officer\n'
-    + '- 10Forward Technologies Corporation: Pericles invention company (solo founder)\n\n'
-    + 'CURRENT HUB DATA SNAPSHOT:\n\n'
-    + 'DEADLINES ('+allDeadlines.length+' total with due dates):\n'
-    + dlLines + '\n\n'
-    + 'ITEM COUNTS BY ORG & DOMAIN:\n'
-    + countLines + '\n\n'
-    + 'PLANTS:\n'
-    + '- Total: '+(S.plants||[]).length+'\n'
-    + '- Need water now: '+plantsNeedWater.length+' ('+waterNames+')\n'
-    + '- Need checking: '+plantsNeedCheck.length+'\n\n'
-    + 'SOCIAL CONTACTS:\n'
-    + '- Total contacts: '+contacts.length+'\n'
-    + '- Not contacted in 60+ days: '+notContacted.length+' ('+contactNames+')\n\n'
-    + 'Respond conversationally and specifically. Reference actual item names and dates. Be concise but thorough. If the user asks a follow-up, use context from the conversation.';
+  allDL.sort((a,b)=>(a.daysUntil===null?999:a.daysUntil)-(b.daysUntil===null?999:b.daysUntil));
+  const pnw=(S.plants||[]).filter(p=>{const d=plantWaterDays(p);return d!==null&&d<=0;});
+  const pnc=(S.plants||[]).filter(p=>{const d=plantCheckDays(p);return d!==null&&d<=0;});
+  const contacts=((S.items.personal||{}).Social||[]);
+  const t60=new Date();t60.setDate(t60.getDate()-60);
+  const nc=contacts.filter(c=>c.lastContacted&&new Date(c.lastContacted+'T00:00:00')<t60);
+  const dlLines=allDL.slice(0,40).map(d=>{const ds=d.daysUntil===null?'no date':d.daysUntil<0?Math.abs(d.daysUntil)+'d overdue':d.daysUntil+'d';return'- ['+d.status+'] '+(d.name||'Unknown')+' | '+d.org+' > '+d.domain+' | Due: '+d.due+' ('+ds+')';}).join('\n');
+  const wn=pnw.map(p=>p.name).join(', ')||'none';
+  const cn=nc.slice(0,5).map(c=>((c.firstName||'')+(c.lastName?' '+c.lastName:'')).trim()||c.name||'Unknown').join(', ')||'none';
+  return'You are Aurora, an intelligent personal and professional assistant built for Pericles Niarchos. Today is '+td+'.\n\nCONTEXTS:\n- Personal: home, vehicles, finances, health, legal, contacts, plants\n- FEE: Pericles is Chief Programs & Innovation Officer\n- 10Forward: solo-founder invention company\n\nDEADLINES ('+allDL.length+' with due dates):\n'+dlLines+'\n\nPLANTS: '+((S.plants||[]).length)+' total. Need water now: '+pnw.length+' ('+wn+'). Need checking: '+pnc.length+'.\n\nCONTACTS: '+contacts.length+' total. Not contacted in 60+ days: '+nc.length+' ('+cn+').\n\nRespond conversationally and specifically using the real data above.';
 }
 
 async function callClaude(userMessage){
-  conversationHistory.push({role:'user', content: userMessage});
-  const systemPrompt = buildAuroraContext();
+  conversationHistory.push({role:'user',content:userMessage});
+  const sys=buildAuroraContext();
+  if(!S.anthropicKey)throw new Error('No Anthropic API key. Open \u2699 Settings to add your key.');
   try{
-    if(!S.anthropicKey){ throw new Error('No Anthropic API key set. Open Settings (⚙) to add your key.'); }
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        system: systemPrompt,
-        messages: conversationHistory
-      })
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:conversationHistory})
     });
-    const data = await resp.json();
-    if(data.error) throw new Error(data.error.message);
-    const reply = data.content&&data.content[0]&&data.content[0].text||'No response.';
-    conversationHistory.push({role:'assistant', content: reply});
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const reply=(data.content&&data.content[0]&&data.content[0].text)||'No response.';
+    conversationHistory.push({role:'assistant',content:reply});
     return reply;
-  } catch(e){
-    conversationHistory.pop(); // remove failed user message
-    throw e;
-  }
+  }catch(e){conversationHistory.pop();throw e;}
 }
 
-// ── Compact bar (single query, inline response) ──────────────────────
 async function sendAuroraBarQuery(){
-  const inp = document.getElementById('aurora-bar-input');
-  const q = inp.value.trim(); if(!q) return;
-  inp.value=''; inp.disabled=true;
-  const wrap = document.getElementById('aurora-inline-resp-wrap');
-  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span> Aurora is thinking…</div>';
+  const inp=document.getElementById('aurora-bar-input');
+  const q=inp.value.trim();if(!q)return;
+  inp.value='';inp.disabled=true;
+  const wrap=document.getElementById('aurora-inline-resp-wrap');
+  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span> Aurora is thinking\u2026</div>';
   try{
-    const reply = await callClaude(q);
-    const rHtml = esc(reply).split('\n').join('<br>');
-    wrap.innerHTML = '<div class="aurora-inline-resp">'
-      + '<button class="aurora-resp-close" onclick="document.getElementById(\'aurora-inline-resp-wrap\').innerHTML=\'\'">&#x2715;</button>'
-      + '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:Space Mono,monospace;text-transform:uppercase;letter-spacing:.08em;">Aurora</div>'
-      + '<div>' + rHtml + '</div>'
-      + '<div style="margin-top:10px;"><button class="aurora-bar-expand" onclick="openAuroraPanel()">Continue in assistant</button></div>'
-      + '</div>';
-  } catch(e){
-    wrap.innerHTML = '<div class="aurora-inline-resp" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">Error: ' + esc(e.message) + '</div>';
+    const reply=await callClaude(q);
+    const rh=esc(reply).split('\n').join('<br>');
+    wrap.innerHTML='<div class="aurora-inline-resp">'
+      +'<button class="aurora-resp-close" onclick="document.getElementById(\'aurora-inline-resp-wrap\').innerHTML=\'\'">&#x2715;</button>'
+      +'<div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:Space Mono,monospace;text-transform:uppercase;letter-spacing:.08em;">Aurora</div>'
+      +'<div>'+rh+'</div>'
+      +'<div style="margin-top:10px;"><button class="aurora-bar-expand" onclick="openAuroraPanel()">Continue in assistant</button></div>'
+      +'</div>';
+  }catch(e){
+    wrap.innerHTML='<div class="aurora-inline-resp" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">'+esc(e.message)+'</div>';
   }
-    inp.disabled=false; inp.focus();
+  inp.disabled=false;inp.focus();
 }
 
-// ── Full panel (conversational thread) ───────────────────────────────
-function openAuroraPanel(){
-  document.getElementById('aurora-panel').classList.add('open');
-  renderPanelMessages();
-  setTimeout(()=>document.getElementById('aurora-panel-input').focus(),300);
-}
-function closeAuroraPanel(){
-  document.getElementById('aurora-panel').classList.remove('open');
-}
-function clearConversation(){
-  conversationHistory=[];
-  document.getElementById('aurora-msgs').innerHTML='';
-  document.getElementById('aurora-inline-resp-wrap').innerHTML='';
-}
+function openAuroraPanel(){document.getElementById('aurora-panel').classList.add('open');renderPanelMessages();setTimeout(()=>document.getElementById('aurora-panel-input').focus(),300);}
+function closeAuroraPanel(){document.getElementById('aurora-panel').classList.remove('open');}
+function clearConversation(){conversationHistory=[];document.getElementById('aurora-msgs').innerHTML='';document.getElementById('aurora-inline-resp-wrap').innerHTML='';}
 
 function renderPanelMessages(){
-  const el = document.getElementById('aurora-msgs');
+  const el=document.getElementById('aurora-msgs');
   if(!conversationHistory.length){
-    const quickQueries = [
-      'What is overdue right now?',
-      'Who have I not contacted recently?',
-      'Summarize my 10Forward obligations',
-      'Which plants need water?'
-    ];
-    const btns = quickQueries.map(function(q){
-      return '<button onclick="quickQuery(this.dataset.q)" data-q="'+esc(q)+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;text-align:left;">'+esc(q)+'</button>';
-    }).join('');
-    el.innerHTML = '<div style="text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;">'
-      + '<div style="font-size:28px;margin-bottom:10px;">✦</div>'
-      + '<div style="font-weight:600;color:var(--text);margin-bottom:6px;">Aurora Assistant</div>'
-      + '<div style="line-height:1.6;">Ask anything about your deadlines, contacts, plants, or obligations across all three orgs.</div>'
-      + '<div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">' + btns + '</div>'
-      + '</div>';
+    const qs=['What is overdue right now?','Who have I not contacted recently?','Summarize my 10Forward obligations','Which plants need water?'];
+    const btns=qs.map(q=>'<button onclick="quickQuery(this.dataset.q)" data-q="'+esc(q)+'" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;text-align:left;">'+esc(q)+'</button>').join('');
+    el.innerHTML='<div style="text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;">'
+      +'<div style="font-size:28px;margin-bottom:10px;">&#x2736;</div>'
+      +'<div style="font-weight:600;color:var(--text);margin-bottom:6px;">Aurora Assistant</div>'
+      +'<div style="line-height:1.6;">Ask anything about your deadlines, contacts, plants, or obligations.</div>'
+      +'<div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">'+btns+'</div></div>';
     return;
   }
-  el.innerHTML = conversationHistory.map(function(m){
-    const msgHtml = esc(m.content).split('\n').join('<br>');
-    return '<div class="aurora-msg aurora-msg-'+(m.role==='user'?'user':'asst')+'">'
-      + '<div class="aurora-bubble">'+msgHtml+'</div>'
-      + '</div>';
+  el.innerHTML=conversationHistory.map(m=>{
+    const mh=esc(m.content).split('\n').join('<br>');
+    return'<div class="aurora-msg aurora-msg-'+(m.role==='user'?'user':'asst')+'"><div class="aurora-bubble">'+mh+'</div></div>';
   }).join('');
-  el.scrollTop = el.scrollHeight;
+  el.scrollTop=el.scrollHeight;
 }
-
-function quickQuery(q){
-  // q may come from dataset.q attribute
-  document.getElementById('aurora-panel-input').value=q;
-  sendAuroraMessage();
-}
+function quickQuery(q){document.getElementById('aurora-panel-input').value=q;sendAuroraMessage();}
 
 async function sendAuroraMessage(){
-  if(auroraThinking) return;
-  const inp = document.getElementById('aurora-panel-input');
-  const q = inp.value.trim(); if(!q) return;
-  inp.value=''; inp.style.height='auto';
+  if(auroraThinking)return;
+  const inp=document.getElementById('aurora-panel-input');
+  const q=inp.value.trim();if(!q)return;
+  inp.value='';inp.style.height='auto';
   auroraThinking=true;
-  const sendBtn = document.getElementById('aurora-panel-send');
-  sendBtn.disabled=true;
-
-  // Add user message and thinking indicator
-  conversationHistory.push({role:'user', content:q});
-  const msgs = document.getElementById('aurora-msgs');
-  msgs.innerHTML += '<div class="aurora-msg aurora-msg-user"><div class="aurora-bubble">'+esc(q)+'</div></div>'
-    + '<div class="aurora-msg aurora-msg-asst" id="aurora-thinking-msg"><div class="aurora-bubble thinking"><span class="spinner"></span> Thinking…</div></div>';
-  msgs.scrollTop = msgs.scrollHeight;
-
+  const sb=document.getElementById('aurora-panel-send');sb.disabled=true;
+  conversationHistory.push({role:'user',content:q});
+  const msgs=document.getElementById('aurora-msgs');
+  msgs.innerHTML+='<div class="aurora-msg aurora-msg-user"><div class="aurora-bubble">'+esc(q)+'</div></div>'
+    +'<div class="aurora-msg aurora-msg-asst" id="aurora-thinking-msg"><div class="aurora-bubble thinking"><span class="spinner"></span> Thinking\u2026</div></div>';
+  msgs.scrollTop=msgs.scrollHeight;
   try{
-    const systemPrompt = buildAuroraContext();
-    if(!S.anthropicKey){ throw new Error('No Anthropic API key set. Open Settings (⚙) to add your key.'); }
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    const sys=buildAuroraContext();
+    if(!S.anthropicKey)throw new Error('No Anthropic API key. Open \u2699 Settings.');
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        system: systemPrompt,
-        messages: conversationHistory
-      })
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:conversationHistory})
     });
-    const data = await resp.json();
-    if(data.error) throw new Error(data.error.message);
-    const reply = data.content&&data.content[0]&&data.content[0].text||'No response.';
-    conversationHistory.push({role:'assistant', content:reply});
-
-    // Replace thinking with real response
-    const thinkEl = document.getElementById('aurora-thinking-msg');
-    if(thinkEl){
-      const rHtml2 = esc(reply).split('\n').join('<br>');
-      thinkEl.outerHTML='<div class="aurora-msg aurora-msg-asst"><div class="aurora-bubble">'+rHtml2+'</div></div>';
-    }
-    msgs.scrollTop = msgs.scrollHeight;
-  } catch(e){
-    conversationHistory.pop(); // remove failed user turn
-    const thinkEl = document.getElementById('aurora-thinking-msg');
-    if(thinkEl) thinkEl.outerHTML='<div class="aurora-msg aurora-msg-asst"><div class="aurora-bubble" style="color:var(--red);">Error: '+esc(e.message)+'</div></div>';
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    const reply=(data.content&&data.content[0]&&data.content[0].text)||'No response.';
+    conversationHistory.push({role:'assistant',content:reply});
+    const te=document.getElementById('aurora-thinking-msg');
+    if(te){const rh=esc(reply).split('\n').join('<br>');te.outerHTML='<div class="aurora-msg aurora-msg-asst"><div class="aurora-bubble">'+rh+'</div></div>';}
+    msgs.scrollTop=msgs.scrollHeight;
+  }catch(e){
+    conversationHistory.pop();
+    const te=document.getElementById('aurora-thinking-msg');
+    if(te)te.outerHTML='<div class="aurora-msg aurora-msg-asst"><div class="aurora-bubble" style="color:var(--red);">'+esc(e.message)+'</div></div>';
   }
-  auroraThinking=false;
-  sendBtn.disabled=false;
-  inp.focus();
+  auroraThinking=false;sb.disabled=false;inp.focus();
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// SETTINGS (unified)
-// ═══════════════════════════════════════════════════════════════════════
-function openSettings(){
-  if(!S) S = defaultState();
-  // Anthropic
-  document.getElementById('settings-anthropic-key').value = S.anthropicKey||'';
-  // Supabase
-  if(S.sbConfig&&S.sbConfig.url) document.getElementById('sb-url').value=S.sbConfig.url;
-  if(S.sbConfig&&S.sbConfig.key) document.getElementById('sb-key').value=S.sbConfig.key;
-  // Google
-  if(S.gConfig&&S.gConfig.clientId) document.getElementById('gs-client-id').value=S.gConfig.clientId;
-  if(S.gConfig&&S.gConfig.sheetId) document.getElementById('gs-sheet-id').value=S.gConfig.sheetId;
-  if(S.gConfig&&S.gConfig.sheetTab) document.getElementById('gs-sheet-tab').value=S.gConfig.sheetTab;
-  // Calendar
-  if(S.calConfig){
-    if(S.calConfig.personalCalId) document.getElementById('cal-personal-id').value=S.calConfig.personalCalId;
-    if(S.calConfig.tenfwdCalId) document.getElementById('cal-tenfwd-id').value=S.calConfig.tenfwdCalId;
-    if(S.calConfig.embedUrl) document.getElementById('cal-embed-url').value=S.calConfig.embedUrl;
-    if(S.calConfig.remindersByOrg){
-      document.getElementById('cal-remind-personal').value=String(S.calConfig.remindersByOrg.personal||7);
-      document.getElementById('cal-remind-tenfwd').value=String(S.calConfig.remindersByOrg.tenfwd||14);
-    }
-  }
-  // Status labels
-  var supaLbl=document.getElementById('supa-status-lbl');
-  var driveLbl=document.getElementById('drive-status-lbl');
-  var supaDisc=document.getElementById('supa-disconnect-btn');
-  if(supaLbl) supaLbl.textContent=(SB&&S.sbConfig&&S.sbConfig.url)?'✓ Connected':'Not connected';
-  if(supaLbl) supaLbl.style.color=(SB&&S.sbConfig&&S.sbConfig.url)?'var(--green)':'var(--text3)';
-  if(supaDisc) supaDisc.style.display=(SB&&S.sbConfig&&S.sbConfig.url)?'block':'none';
-  if(driveLbl) driveLbl.textContent=(S.gConfig&&S.gConfig.clientId)?'✓ Connected':'Not connected';
-  if(driveLbl) driveLbl.style.color=(S.gConfig&&S.gConfig.clientId)?'var(--green)':'var(--text3)';
-  // Migration hint
-  var hasData=Object.values(S.items||{}).some(function(org){return Object.values(org).some(function(d){return d.length>0;});});
-  var migrRow=document.getElementById('supa-migrate-row');
-  if(migrRow) migrRow.style.display=(hasData&&!S.sbConfig.migrationDone)?'block':'none';
-  openOv('settings-ov');
-}
-function saveAllSettings(){
-  // Anthropic
-  S.anthropicKey = document.getElementById('settings-anthropic-key').value.trim();
-  // Calendar config
-  if(!S.calConfig) S.calConfig={};
-  S.calConfig.personalCalId = document.getElementById('cal-personal-id').value.trim();
-  S.calConfig.tenfwdCalId = document.getElementById('cal-tenfwd-id').value.trim();
-  S.calConfig.embedUrl = document.getElementById('cal-embed-url').value.trim();
-  S.calConfig.remindersByOrg = {
-    personal: parseInt(document.getElementById('cal-remind-personal').value)||7,
-    tenfwd: parseInt(document.getElementById('cal-remind-tenfwd').value)||14,
-  };
-  persistLS();
-  updateSettingsBtn();
-  updateCalBtn();
-  closeOv('settings-ov');
-}
-// Keep saveSettings as alias for backward compat
-function saveSettings(){ saveAllSettings(); }
-function updateSettingsBtn(){
-  var btn=document.getElementById('settings-btn');
-  if(!btn) return;
-  var allOk=S.anthropicKey&&S.sbConfig&&S.sbConfig.url&&S.gConfig&&S.gConfig.clientId;
-  btn.classList.remove('st-on','st-off','st-partial');
-  if(allOk) btn.classList.add('st-on');
-  else if(S.anthropicKey||S.sbConfig&&S.sbConfig.url) btn.classList.add('st-partial');
-  else btn.classList.add('st-off');
-}
-
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 // GOOGLE CALENDAR
-// ═══════════════════════════════════════════════════════════════════════
-
-let pendingCalPush = null; // {item, org, domain}
-
-function openCalSettings(){ openSettings(); }
-
-function saveCalConfig(){ saveAllSettings(); }
-
-function updateCalBtn(){ updateSettingsBtn(); }
+// ═══════════════════════════════════════════
+function openCalSettings(){openSettings();}
+function saveCalConfig(){saveAllSettings();}
 
 function calIdForOrg(org){
-  const c = S.calConfig||{};
-  if(org==='personal') return c.personalCalId||'primary';
-  if(org==='tenfwd') return c.tenfwdCalId||'';
-  return '';
+  const c=S.calConfig||{};
+  if(org==='personal')return c.personalCalId||'primary';
+  if(org==='tenfwd')return c.tenfwdCalId||'';
+  return'';
 }
-
-function reminderDaysForOrg(org){
-  const c = S.calConfig||{};
-  return (c.remindersByOrg&&c.remindersByOrg[org])||7;
-}
+function reminderDaysForOrg(org){const c=S.calConfig||{};return(c.remindersByOrg&&c.remindersByOrg[org])||7;}
 
 function pushToCalendar(org,domain,item,idx){
-  var calId=calIdForOrg(org);
+  const calId=calIdForOrg(org);
   if(!calId&&org!=='personal'){alert('No calendar configured for '+ORG_LABELS[org]+'.');return;}
-  var due=getDue(item,domain);
+  const due=getDue(item,domain);
   if(!due){alert('This item has no due date.');return;}
-  pendingCalPush={org:org,domain:domain,item:item,idx:idx,calId:calId,due:due};
-  var rd=reminderDaysForOrg(org);
-  var calLabel=org==='personal'?'Personal Calendar':ORG_LABELS[org]+' Calendar';
-  var isSocial=domain==='Social';
-  var dn=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'Unnamed');
-  function makeRow(lbl,val){
-    return '<div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">'
-      +'<div style="font-size:13px;color:var(--text2);margin-bottom:4px;">'+lbl+'</div>'
-      +'<div style="font-size:15px;font-weight:600;">'+val+'</div></div>';
-  }
+  pendingCalPush={org,domain,item,idx,calId,due};
+  const rd=reminderDaysForOrg(org);
+  const calLabel=org==='personal'?'Personal Calendar':ORG_LABELS[org]+' Calendar';
+  const isSocial=domain==='Social';
+  const dn=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'Unnamed');
+  function makeRow(lbl,val){return'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;"><div style="font-size:13px;color:var(--text2);margin-bottom:4px;">'+lbl+'</div><div style="font-size:15px;font-weight:600;">'+val+'</div></div>';}
   document.getElementById('cal-push-body').innerHTML='<div style="margin-bottom:1rem;">'
-    +makeRow('Event',esc(dn)+'<br><span style="font-size:12px;color:var(--text2);">'+esc(domain)+' · '+esc(ORG_LABELS[org])+'</span>')
-    +makeRow('Date',fmtDate(due))
-    +makeRow('Calendar',esc(calLabel))
-    +makeRow('Reminder',rd+' day'+(rd===1?'':'s')+' before')
-    +'</div>';
+    +makeRow('Event',esc(dn)+'<br><span style="font-size:12px;color:var(--text2);">'+esc(domain)+' \xb7 '+esc(ORG_LABELS[org])+'</span>')
+    +makeRow('Date',fmtDate(due))+makeRow('Calendar',esc(calLabel))+makeRow('Reminder',rd+' day'+(rd===1?'':'s')+' before')+'</div>';
   document.getElementById('cal-push-alert').innerHTML='';
   openOv('cal-push-ov');
 }
 
 function confirmPushToCalendar(){
-  if(!pendingCalPush) return;
-  const {org, domain, item, calId, due} = pendingCalPush;
-  const btn = document.getElementById('cal-push-confirm-btn');
-  btn.innerHTML='<span class="spinner"></span> Adding…'; btn.disabled=true;
-  const isSocial = domain==='Social';
-  const displayName = isSocial
-    ? [item.salutation,item.firstName,item.lastName].filter(Boolean).join(' ')
-    : (item.name||'Unnamed');
-  const reminderDays = reminderDaysForOrg(org);
-  const reminderMins = reminderDays * 24 * 60;
-  const doAdd = ()=>{
-    const event = {
-      summary: displayName + (domain!==displayName?' — '+domain:''),
-      description: 'Added by Aurora \u00b7 '+ORG_LABELS[org]+(item.notes?' '+item.notes:''),
-      start: { date: due },
-      end: { date: due },
-      reminders: { useDefault: false, overrides: [{ method:'popup', minutes: reminderMins }] },
-      colorId: org==='tenfwd'?'5':org==='personal'?'1':'3', // blueberry / tomato / sage
+  if(!pendingCalPush)return;
+  const{org,domain,item,calId,due}=pendingCalPush;
+  const btn=document.getElementById('cal-push-confirm-btn');
+  btn.innerHTML='<span class="spinner"></span> Adding\u2026';btn.disabled=true;
+  const isSocial=domain==='Social';
+  const displayName=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'Unnamed');
+  const rd=reminderDaysForOrg(org);
+  const doAdd=()=>{
+    const event={
+      summary:displayName+(domain!==displayName?' \u2014 '+domain:''),
+      description:'Added by Aurora \xb7 '+ORG_LABELS[org]+(item.notes?' '+item.notes:''),
+      start:{date:due},end:{date:due},
+      reminders:{useDefault:false,overrides:[{method:'popup',minutes:rd*24*60}]},
+      colorId:org==='tenfwd'?'5':org==='personal'?'1':'3'
     };
-    gapi.client.calendar.events.insert({
-      calendarId: calId||'primary',
-      resource: event
-    }).then(()=>{
-      setAlert('cal-push-alert','Added to calendar successfully.','ok');
-      btn.innerHTML='✓ Added'; btn.disabled=false;
-      // Mark item as pushed
-      if(S.items[org]&&S.items[org][domain]&&S.items[org][domain][pendingCalPush.idx]){
-        S.items[org][domain][pendingCalPush.idx]._calPushed=due;
-        persistLS();
-        sbSaveItem(org,domain,S.items[org][domain][pendingCalPush.idx]);
-        renderOrgContent();
-      }
-      pendingCalPush=null;
-      setTimeout(()=>closeOv('cal-push-ov'),1200);
-    }).catch(e=>{
-      const msg = e.result&&e.result.error?e.result.error.message:JSON.stringify(e);
-      setAlert('cal-push-alert','Failed: '+msg,'err');
-      btn.innerHTML='Add to calendar'; btn.disabled=false;
-    });
+    gapi.client.calendar.events.insert({calendarId:calId||'primary',resource:event})
+      .then(()=>{
+        setAlert('cal-push-alert','Added to calendar successfully.','ok');
+        btn.innerHTML='\u2713 Added';btn.disabled=false;
+        if(S.items[org]&&S.items[org][domain]&&S.items[org][domain][pendingCalPush.idx]){
+          S.items[org][domain][pendingCalPush.idx]._calPushed=due;
+          persistLS();sbSaveItem(org,domain,S.items[org][domain][pendingCalPush.idx]);renderOrgContent();
+        }
+        pendingCalPush=null;setTimeout(()=>closeOv('cal-push-ov'),1200);
+      })
+      .catch(e=>{
+        const msg=e.result&&e.result.error?e.result.error.message:JSON.stringify(e);
+        setAlert('cal-push-alert','Failed: '+msg,'err');btn.innerHTML='Add to calendar';btn.disabled=false;
+      });
   };
-  // Ensure auth covers calendar scope
   ensureGAuth(doAdd);
 }
 
-// ── Calendar view ───────────────────────────────────────────────────
-let calView = 'month'; // month | week | agenda
-
 function renderCalendarView(){
-  var c=S.calConfig||{};
-  var wrap=document.getElementById('org-content');
+  const c=S.calConfig||{};
+  const wrap=document.getElementById('org-content');
   if(!c.personalCalId&&!c.embedUrl){
-    wrap.innerHTML='<div class="cal-no-config">'
-      +'<div style="font-size:32px;margin-bottom:12px;">&#x1F4C5;</div>'
+    wrap.innerHTML='<div class="cal-no-config"><div style="font-size:32px;margin-bottom:12px;">&#x1F4C5;</div>'
       +'<div style="font-weight:600;margin-bottom:6px;color:var(--text);">Calendar not configured</div>'
-      +'<div style="margin-bottom:16px;">Add your calendar IDs in Calendar settings.</div>'
-      +'<button class="btn-save" onclick="openCalSettings()">Open calendar settings</button>'
-      +'</div>';
+      +'<div style="margin-bottom:16px;">Add your calendar IDs in &#x2699; Settings.</div>'
+      +'<button class="btn-save" onclick="openSettings()">Open Settings</button></div>';
     return;
   }
-  var embedSrc=c.embedUrl||'';
+  let embedSrc=c.embedUrl||'';
   if(!embedSrc&&c.personalCalId){
-    var mode=calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
-    var tz=encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'America/New_York');
+    const mode=calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
+    const tz=encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'America/New_York');
     embedSrc='https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23ffffff'
       +'&ctz='+tz+'&src='+encodeURIComponent(c.personalCalId)
-      +'&color=%230B8043&mode='+mode
-      +'&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTitle=0';
-    if(c.tenfwdCalId) embedSrc+='&src='+encodeURIComponent(c.tenfwdCalId)+'&color=%234285F4';
+      +'&color=%230B8043&mode='+mode+'&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTitle=0';
+    if(c.tenfwdCalId)embedSrc+='&src='+encodeURIComponent(c.tenfwdCalId)+'&color=%234285F4';
   }
-  var mA=calView==='month'?' active':'';
-  var wA=calView==='week'?' active':'';
-  var aA=calView==='agenda'?' active':'';
-  wrap.innerHTML='<div class="sec-hdr">'
-    +'<div class="sec-title">Calendar</div>'
-    +'<div class="sec-acts">'
-    +'<button class="cal-view-btn'+mA+'" onclick="setCalView(\x27month\x27)">Month</button>'
-    +'<button class="cal-view-btn'+wA+'" onclick="setCalView(\x27week\x27)">Week</button>'
-    +'<button class="cal-view-btn'+aA+'" onclick="setCalView(\x27agenda\x27)">Agenda</button>'
-    +'<button class="add-btn" onclick="openCalSettings()">⚙ Settings</button>'
+  const mA=calView==='month'?' active':'';
+  const wA=calView==='week'?' active':'';
+  const aA=calView==='agenda'?' active':'';
+  wrap.innerHTML='<div class="sec-hdr"><div class="sec-title">Calendar</div><div class="sec-acts">'
+    +'<button class="cal-view-btn'+mA+'" onclick="setCalView(\'month\')">Month</button>'
+    +'<button class="cal-view-btn'+wA+'" onclick="setCalView(\'week\')">Week</button>'
+    +'<button class="cal-view-btn'+aA+'" onclick="setCalView(\'agenda\')">Agenda</button>'
+    +'<button class="add-btn" onclick="openSettings()">\u2699 Settings</button>'
     +'</div></div>'
-    +'<div class="cal-embed-wrap">'
-    +'<iframe src="'+esc(embedSrc)+'" frameborder="0" scrolling="no" allowfullscreen></iframe>'
-    +'</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-top:8px;">Calendar view is read-only. Use the &#x1F4C5; button on any item to push deadlines.</div>';
+    +'<div class="cal-embed-wrap"><iframe src="'+esc(embedSrc)+'" frameborder="0" scrolling="no" allowfullscreen></iframe></div>'
+    +'<div style="font-size:11px;color:var(--text3);margin-top:8px;">Read-only. Use &#x1F4C5; on any item to push it to your calendar.</div>';
 }
+function setCalView(v){calView=v;renderCalendarView();}
 
-function setCalView(v){
-  calView=v;
-  renderCalendarView();
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// BOOT
-// ═══════════════════════════════════════════════════════════════════════
-document.getElementById('top-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
-load(); // ensure S is initialized before any function can access it
-document.getElementById('supa-sql').textContent = SUPA_SQL;
-
+// ═══════════════════════════════════════════
+// BOOT — all bugs fixed here
+// ═══════════════════════════════════════════
+document.getElementById('top-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
+loadLS();            // FIX 1: was load() — function is loadLS()
+                     // FIX 2: removed reference to supa-sql element (doesn't exist in HTML)
+                     // FIX 3: removed updateGAuthBtn/updateSupaBtn/updateCalBtn calls to removed elements
 renderDash();
 switchOrg('personal');
 updateNotifBtn();
-updateGAuthBtn();
-updateSupaBtn();
-updateCalBtn();
-updateSettingsBtn();
-if(Notification.permission==='granted') scheduleNotifs();
-// Auto-connect Supabase if credentials already saved
+updateSettingsBtn(); // single settings button replaces all three individual ones
+if(Notification.permission==='granted')scheduleNotifs();
 initSupabase();
-// Settings pre-fill handled by openSettings()
 </script>
 </body>
 </html>
