@@ -41,9 +41,13 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .tbr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
 .tb-btn{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 9px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;}
 .tb-btn:hover{background:var(--bg2);color:var(--text);}
-.tb-btn.ok{border-color:var(--green);color:var(--green);}
-.tb-btn.conn{border-color:var(--blue);color:var(--blue);}
-.tb-btn.supa-on{border-color:var(--plant);color:var(--plant);}
+.tb-btn.st-on{border-color:#2A9070;color:#2A9070;}
+.tb-btn.st-off{border-color:var(--red);color:var(--red);}
+.tb-btn.st-partial{border-color:#C49A2A;color:#C49A2A;}
+/* legacy aliases */
+.tb-btn.ok{border-color:#2A9070;color:#2A9070;}
+.tb-btn.conn{border-color:#3A7FA8;color:#3A7FA8;}
+.tb-btn.supa-on{border-color:#2A9070;color:#2A9070;}
 .ver{font-size:11px;color:var(--text3);padding:2px 6px;border:1px solid var(--border);border-radius:var(--r-sm);}
 .top-date{font-size:12px;color:var(--text3);white-space:nowrap;}
 
@@ -82,11 +86,20 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 
 /* Domain nav */
 .dom-nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem;align-items:center;}
-.dom-btn{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 11px;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;}
+.dom-btn{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 11px;font-size:13px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;transition:all .12s;}
 .dom-btn:hover{background:var(--bg2);color:var(--text);}
 .dom-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
-.dom-btn.plant-tab{border-color:var(--plant);color:var(--plant);}
-.dom-btn.plant-tab.active{background:var(--plant);color:#fff;border-color:var(--plant);}
+/* Brand color rotation for domain tabs */
+.dom-btn.bc-teal{border-color:#2A9070;color:#2A9070;}
+.dom-btn.bc-teal:hover,.dom-btn.bc-teal.active{background:#2A9070;color:#fff;border-color:#2A9070;}
+.dom-btn.bc-blue{border-color:#3A7FA8;color:#3A7FA8;}
+.dom-btn.bc-blue:hover,.dom-btn.bc-blue.active{background:#3A7FA8;color:#fff;border-color:#3A7FA8;}
+.dom-btn.bc-gold{border-color:#C49A2A;color:#C49A2A;}
+.dom-btn.bc-gold:hover,.dom-btn.bc-gold.active{background:#C49A2A;color:#fff;border-color:#C49A2A;}
+.dom-btn.bc-sage{border-color:#5A7A5C;color:#5A7A5C;}
+.dom-btn.bc-sage:hover,.dom-btn.bc-sage.active{background:#5A7A5C;color:#fff;border-color:#5A7A5C;}
+.dom-btn.plant-tab{border-color:#2A9070;color:#2A9070;}
+.dom-btn.plant-tab.active{background:#2A9070;color:#fff;border-color:#2A9070;}
 .dom-mgr-btn{background:none;border:1px dashed var(--border2);border-radius:var(--r-sm);padding:6px 10px;font-size:12px;cursor:pointer;color:var(--text3);font-family:inherit;margin-left:2px;}
 .dom-mgr-btn:hover{color:var(--text);border-color:var(--text2);}
 
@@ -260,11 +273,12 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
     </div>
     <div class="tbr">
-      <span class="ver">v9.0</span>
-      <button class="tb-btn" id="notif-btn" onclick="requestNotif()">🔔 Notifications</button>
-      <button class="tb-btn" id="supa-btn" onclick="openOv('supa-ov')">⬡ Supabase</button>
-      <button class="tb-btn" id="gauth-btn" onclick="openOv('gsetup-ov')">⬡ Google Sheets</button>
-      <button class="tb-btn" id="cal-settings-btn" onclick="openCalSettings()">📅 Calendar</button>
+      <span class="ver">v10.0</span>
+      <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
+      <button class="tb-btn" id="supa-btn" onclick="openOv('supa-ov')">Supabase</button>
+      <button class="tb-btn" id="gauth-btn" onclick="openOv('gsetup-ov')">Drive</button>
+      <button class="tb-btn" id="cal-settings-btn" onclick="openCalSettings()">Calendar</button>
+      <button class="tb-btn" id="settings-btn" onclick="openSettings()">⚙</button>
       <div class="top-date" id="top-date"></div>
     </div>
   </div>
@@ -288,10 +302,10 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
         <div class="tiles" id="tiles-wrap"></div>
       </div>
       <div class="org-bar">
+        <button class="org-tab" data-org="calendar" onclick="switchOrg('calendar')">📅 Calendar</button>
         <button class="org-tab active" data-org="personal" onclick="switchOrg('personal')">Personal</button>
         <button class="org-tab" data-org="fee" onclick="switchOrg('fee')">Foundation for Economic Education</button>
         <button class="org-tab" data-org="tenfwd" onclick="switchOrg('tenfwd')">10Forward Technologies</button>
-        <button class="org-tab" data-org="calendar" onclick="switchOrg('calendar')">📅 Calendar</button>
       </div>
       <div id="org-content"></div>
     </div>
@@ -335,6 +349,18 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     <div class="field-row">
       <div class="fg"><label>Last watered</label><input type="date" id="pl-last-watered"></div>
       <div class="fg"><label>Last checked</label><input type="date" id="pl-last-checked"></div>
+    </div>
+    <div class="field-row">
+      <div class="fg">
+        <label>Status</label>
+        <select id="pl-status">
+          <option value="healthy">Healthy</option>
+          <option value="at-risk">At Risk</option>
+          <option value="dying">Dying</option>
+          <option value="dead">Dead</option>
+        </select>
+      </div>
+      <div class="fg"><label>Last repotted</label><input type="date" id="pl-last-repotted"></div>
     </div>
     <div class="fg"><label>Notes</label><textarea id="pl-notes"></textarea></div>
     <div class="modal-acts">
@@ -522,6 +548,25 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
+<!-- Settings modal -->
+<div class="overlay" id="settings-ov" onclick="ovBg(event,'settings-ov')">
+  <div class="modal">
+    <h3>Aurora Settings</h3>
+    <div class="modal-desc">Credentials are stored locally on this device only — never in the code or repository.</div>
+    <div class="fg">
+      <label>Anthropic API Key</label>
+      <input type="password" id="settings-anthropic-key" placeholder="sk-ant-...">
+      <div class="hint">Required for the Aurora Assistant chat feature. Get yours at console.anthropic.com</div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+    <div class="modal-desc" style="margin-bottom:.5rem;">Supabase and Google credentials are managed via their own buttons in the top bar.</div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('settings-ov')">Cancel</button>
+      <button class="btn-save" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Delete confirm -->
 <div class="overlay" id="del-ov" onclick="ovBg(event,'del-ov')">
   <div class="modal">
@@ -624,7 +669,7 @@ const DEFAULT_TILES = [
   {id:'t1',label:'Overdue',type:'overdue',color:'t-red',days:null,org:null,notif:''},
   {id:'t2',label:'Due in 30 days',type:'due_days',color:'t-amber',days:30,org:null,notif:''},
   {id:'t3',label:'Total items',type:'total',color:'t-neutral',days:null,org:null,notif:''},
-  {id:'t4',label:'Water now',type:'plants_water',color:'t-plant',days:null,org:null,notif:''},
+  {id:'t4',label:'Water soon',type:'plants_water',color:'t-plant',days:7,org:null,notif:''},
   {id:'t5',label:'Check today',type:'plants_check',color:'t-neutral',days:null,org:null,notif:''},
 ];
 const DEFAULT_PLANTS = [
@@ -713,6 +758,7 @@ function loadLS(){
   if(!S.plants) S.plants = [...DEFAULT_PLANTS];
   if(!S.gConfig) S.gConfig = {clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null};
   if(!S.calConfig) S.calConfig = {personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}};
+  if(!S.anthropicKey) S.anthropicKey = '';
   if(!S.sbConfig) S.sbConfig = {url:'',key:''};
 }
 
@@ -894,7 +940,9 @@ async function sbDeletePlant(id){
 
 function updateSupaBtn(){
   const btn = document.getElementById('supa-btn');
-  if(S.sbConfig&&S.sbConfig.url){ btn.textContent='⬡ Supabase connected'; btn.classList.add('supa-on'); }
+  btn.classList.remove('st-on','st-off');
+  if(S.sbConfig&&S.sbConfig.url){ btn.classList.add('st-on'); }
+  else { btn.classList.add('st-off'); }
 }
 function updateSupaModal(){
   const acts = document.getElementById('supa-modal-acts');
@@ -983,6 +1031,7 @@ function plantNextCheck(p){ return p.lastChecked ? addDays(p.lastChecked, p.chec
 function plantWaterDays(p){ return daysUntil(plantNextWater(p)); }
 function plantCheckDays(p){ return daysUntil(plantNextCheck(p)); }
 function plantsNeedingWater(){ return (S.plants||[]).filter(p=>{ const d=plantWaterDays(p); return d!==null && d<=0; }); }
+function plantsWaterSoon(n){ return (S.plants||[]).filter(p=>{ const d=plantWaterDays(p); return d!==null && d>=0 && d<=n; }); }
 function plantsNeedingCheck(){ return (S.plants||[]).filter(p=>{ const d=plantCheckDays(p); return d!==null && d<=0; }); }
 
 function plantCardClass(p){
@@ -1014,7 +1063,7 @@ function allItems(orgFilter){
 // DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════
 function tileValue(tile){
-  if(tile.type==='plants_water') return plantsNeedingWater().length;
+  if(tile.type==='plants_water') return plantsWaterSoon(tile.days||7).length;
   if(tile.type==='plants_check') return plantsNeedingCheck().length;
   const items=allItems(tile.org||null);
   if(tile.type==='overdue') return items.filter(r=>r.days!==null&&r.days<0).length;
@@ -1024,7 +1073,8 @@ function tileValue(tile){
   return 0;
 }
 function tileItems(tile){
-  if(tile.type==='plants_water'||tile.type==='plants_check') return [];
+  if(tile.type==='plants_check') return [];
+  if(tile.type==='plants_water'){ return plantsWaterSoon(tile.days||7).map(function(p){ return {item:{name:p.name},org:'personal',domain:'Plants',idx:0,due:plantNextWater(p),days:plantWaterDays(p)}; }); }
   const items=allItems(tile.org||null);
   if(tile.type==='overdue') return items.filter(r=>r.days!==null&&r.days<0);
   if(tile.type==='due_days') return items.filter(r=>r.days!==null&&r.days>=0&&r.days<=tile.days);
@@ -1033,7 +1083,7 @@ function tileItems(tile){
   return [];
 }
 function tileSub(tile){
-  if(tile.type==='plants_water') return 'need water now';
+  if(tile.type==='plants_water') return 'within '+(tile.days||7)+'d';
   if(tile.type==='plants_check') return 'need checking';
   if(tile.type==='due_days') return 'within '+tile.days+'d';
   if(tile.type==='org_total') return ORG_LABELS[tile.org]||'';
@@ -1063,8 +1113,13 @@ function deleteTile(id,e){
 }
 function tileTypeChange(){
   const t=document.getElementById('tl-type').value;
-  document.getElementById('tl-days-row').style.display=t==='due_days'?'block':'none';
+  document.getElementById('tl-days-row').style.display=(t==='due_days'||t==='plants_water')?'block':'none';
   document.getElementById('tl-org-row').style.display=t==='org_total'?'block':'none';
+  if(t==='plants_water'){
+    document.querySelector('#tl-days-row label').textContent='Water within how many days';
+  } else {
+    document.querySelector('#tl-days-row label').textContent='Within how many days';
+  }
 }
 function saveTile(){
   const label=document.getElementById('tl-label').value.trim();
@@ -1084,11 +1139,19 @@ function saveTile(){
 function drillTile(id){
   if(dashEditMode) return;
   const tile=S.tiles.find(t=>t.id===id); if(!tile) return;
+  if(tile.type==='plants_water'||tile.type==='plants_check'){
+    switchOrgAndDomain('personal','Plants'); return;
+  }
   const rows=tileItems(tile);
   document.getElementById('drill-title').textContent=tile.label+' ('+rows.length+')';
-  document.getElementById('drill-cards').innerHTML=rows.length
-    ?rows.map(r=>renderCard(r.org,r.domain,r.item,r.idx,true)).join('')
-    :'<div class="empty">Nothing here yet.</div>';
+  if(!rows.length){
+    document.getElementById('drill-cards').innerHTML='<div class="empty">Nothing here yet.</div>';
+  } else {
+    // Group by org/domain for navigation hint
+    document.getElementById('drill-cards').innerHTML=rows.map(function(r){
+      return renderCard(r.org,r.domain,r.item,r.idx,true);
+    }).join('');
+  }
   document.getElementById('drill-panel').classList.add('open');
 }
 function closeDrill(){ document.getElementById('drill-panel').classList.remove('open'); }
@@ -1143,29 +1206,55 @@ function renderOrgContent(){
 // PLANT SECTION
 // ═══════════════════════════════════════════════════════════════════════
 function renderPlantSection(){
-  const plants=S.plants||[];
+  const rawPlants=S.plants||[];
+  // Sort by waterDays ascending (most frequently watered first), dead plants last
+  const plants = rawPlants.slice().sort(function(a,b){
+    if(a.status==='dead'&&b.status!=='dead') return 1;
+    if(b.status==='dead'&&a.status!=='dead') return -1;
+    return (a.waterDays||99)-(b.waterDays||99);
+  });
   const overdue=plants.filter(p=>{ const d=plantWaterDays(p); return d!==null&&d<=0; });
-  const upcoming=plants.filter(p=>{ const d=plantWaterDays(p); return d!==null&&d>0&&d<=5; });
-  const ok=plants.filter(p=>{ const d=plantWaterDays(p); return d===null||d>5; });
+  const upcoming=plants.filter(p=>{ const d=plantWaterDays(p); return d!==null&&d>0&&d<=7; });
+  const ok=plants.filter(p=>{ const d=plantWaterDays(p); return (d===null||d>7)&&p.status!=='dead'; });
+  const dead=plants.filter(p=>p.status==='dead');
 
-  let html=`<div class="sec-hdr">
-    <div class="sec-title">Plants</div>
-    <div class="sec-acts">
-      <button class="add-btn" style="border-color:var(--plant);color:var(--plant);" onclick="openPlantModal()">+ Add plant</button>
-    </div>
-  </div>`;
+  let plantFilter = window._plantFilter||'all';
+  let html = '<div class="sec-hdr">'
+    + '<div class="sec-title">Plants</div>'
+    + '<div class="sec-acts">'
+    + '<select id="plant-filter-sel" onchange="setPlantFilter(this.value)" style="padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+    + '<option value="all"'+(plantFilter==='all'?' selected':'')+'>All plants</option>'
+    + '<option value="water"'+(plantFilter==='water'?' selected':'')+'>Needs water</option>'
+    + '<option value="healthy"'+(plantFilter==='healthy'?' selected':'')+'>Healthy</option>'
+    + '<option value="risk"'+(plantFilter==='risk'?' selected':'')+'>At risk / dying</option>'
+    + '<option value="dead"'+(plantFilter==='dead'?' selected':'')+'>Dead</option>'
+    + '</select>'
+    + '<button class="add-btn" style="border-color:var(--plant);color:var(--plant);" onclick="openPlantModal()">+ Add plant</button>'
+    + '</div></div>';
 
   if(!plants.length){ return html+'<div class="empty">No plants yet.</div>'; }
 
-  const renderGroup=(title, list)=>{
+  function renderGroup(title, list){
     if(!list.length) return '';
-    return `<div class="sunday-section"><div class="sunday-hdr">${title}</div>
-    <div class="plant-grid">${list.map(p=>renderPlantCard(p)).join('')}</div></div>`;
-  };
+    return '<div class="sunday-section"><div class="sunday-hdr">'+title+'</div>'
+      + '<div class="plant-grid">'+list.map(function(p){return renderPlantCard(p);}).join('')+'</div></div>';
+  }
 
-  html+=renderGroup('Needs water now ('+overdue.length+')', overdue);
-  html+=renderGroup('Water soon — within 5 days ('+upcoming.length+')', upcoming);
-  html+=renderGroup('All good ('+ok.length+')', ok);
+  // Apply filter
+  let showOverdue=overdue, showUpcoming=upcoming, showOk=ok, showDead=dead;
+  if(plantFilter==='water'){ showUpcoming=upcoming; showOk=[]; showDead=[]; }
+  else if(plantFilter==='healthy'){ showOverdue=[]; showUpcoming=[]; showDead=[]; }
+  else if(plantFilter==='risk'){
+    showOverdue=[]; showUpcoming=[];
+    showOk=plants.filter(function(p){return p.status==='at-risk'||p.status==='dying';});
+    showDead=[];
+  }
+  else if(plantFilter==='dead'){ showOverdue=[]; showUpcoming=[]; showOk=[]; }
+
+  html+=renderGroup('Needs water now ('+showOverdue.length+')', showOverdue);
+  html+=renderGroup('Water soon — within 7 days ('+showUpcoming.length+')', showUpcoming);
+  html+=renderGroup('All good ('+showOk.length+')', showOk);
+  if(showDead.length) html+=renderGroup('Dead ('+showDead.length+')', showDead);
   return html;
 }
 
@@ -1176,24 +1265,38 @@ function renderPlantCard(p){
   const cls=plantCardClass(p);
   const waterLbl=wd===null?'Not set':wd<=0?'Now':'In '+wd+'d';
   const waterColor=wd===null?'var(--text3)':wd<=0?'var(--red)':wd<=3?'var(--amber)':'var(--green)';
-  return `<div class="plant-card ${cls}">
-    <div class="plant-edit-acts">
-      <button class="iBtn" onclick="openPlantModal('${p.id}')">✎</button>
-      <button class="iBtn" onclick="deletePlant('${p.id}')">✕</button>
-    </div>
-    <div class="plant-name">${esc(p.name)}${p.nickname?` <span style="font-weight:400;color:var(--text2);font-size:12px;">${esc(p.nickname)}</span>`:''}</div>
-    ${p.rule?`<div class="plant-rule">${esc(p.rule)}</div>`:''}
-    <div class="plant-dates">
-      <div class="plant-date-row"><span class="plant-date-lbl">Last watered</span><span class="plant-date-val">${fmtDate(p.lastWatered)}</span></div>
-      <div class="plant-date-row"><span class="plant-date-lbl">Next water</span><span class="plant-date-val" style="color:${waterColor}">${nextWater?fmtDate(nextWater)+' ('+waterLbl+')':'Not set'}</span></div>
-      <div class="plant-date-row"><span class="plant-date-lbl">Check every</span><span class="plant-date-val">${p.checkDays}d</span></div>
-      ${p.lastChecked?`<div class="plant-date-row"><span class="plant-date-lbl">Last checked</span><span class="plant-date-val">${fmtDate(p.lastChecked)}</span></div>`:''}
-    </div>
-    <div class="plant-actions">
-      <button class="plant-btn water-btn" onclick="waterPlant('${p.id}')">💧 Watered today</button>
-      <button class="plant-btn" onclick="checkPlant('${p.id}')">✓ Checked today</button>
-    </div>
-  </div>`;
+  const statusColors = {healthy:'#2A9070','at-risk':'#C49A2A',dying:'var(--red)',dead:'#333'};
+  const statusLabels = {healthy:'Healthy','at-risk':'At Risk',dying:'Dying',dead:'Dead'};
+  const statusColor = statusColors[p.status||'healthy']||'#2A9070';
+  const statusLabel = statusLabels[p.status||'healthy']||'Healthy';
+  const pid = esc(p.id);
+  return '<div class="plant-card '+cls+'">'
+    + '<div class="plant-edit-acts">'
+    + '<button class="iBtn" data-pid="'+pid+'" onclick="openPlantModal(this.dataset.pid)">&#x270e;</button>'
+    + '<button class="iBtn" data-pid="'+pid+'" onclick="deletePlant(this.dataset.pid)">&#x2715;</button>'
+    + '</div>'
+    + '<div class="plant-name">'+esc(p.name)+(p.nickname?' <span style="font-weight:400;color:var(--text2);font-size:12px;">'+esc(p.nickname)+'</span>':'')+'</div>'
+    + '<div style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-bottom:6px;background:'+statusColor+'20;color:'+statusColor+';">'+statusLabel+'</div>'
+    + (p.rule?'<div class="plant-rule">'+esc(p.rule)+'</div>':'')
+    + '<div class="plant-dates">'
+    + '<div class="plant-date-row"><span class="plant-date-lbl">Last watered</span><span class="plant-date-val">'+fmtDate(p.lastWatered)+'</span></div>'
+    + '<div class="plant-date-row"><span class="plant-date-lbl">Next water</span><span class="plant-date-val" style="color:'+waterColor+'">'+(nextWater?fmtDate(nextWater)+' ('+waterLbl+')':'Not set')+'</span></div>'
+    + '<div class="plant-date-row"><span class="plant-date-lbl">Check every</span><span class="plant-date-val">'+p.checkDays+'d</span></div>'
+    + (p.lastChecked?'<div class="plant-date-row"><span class="plant-date-lbl">Last checked</span><span class="plant-date-val">'+fmtDate(p.lastChecked)+'</span></div>':'')
+    + (p.lastRepotted?'<div class="plant-date-row"><span class="plant-date-lbl">Last repotted</span><span class="plant-date-val">'+fmtDate(p.lastRepotted)+'</span></div>':'')
+    + '</div>';
+  + (p.status!=='dead'
+      ? '<div class="plant-actions">'
+        + '<button class="plant-btn water-btn" data-pid="'+pid+'" onclick="waterPlant(this.dataset.pid)">&#x1F4A7; Watered today</button>'
+        + '<button class="plant-btn" data-pid="'+pid+'" onclick="checkPlant(this.dataset.pid)">&#x2713; Checked today</button>'
+        + '</div>'
+      : '<div style="font-size:12px;color:var(--text3);padding:6px 0;">This plant has been marked as dead.</div>')
+  + '</div>';
+}
+
+function setPlantFilter(val){
+  window._plantFilter = val;
+  renderOrgContent();
 }
 
 function waterPlant(id){
@@ -1223,6 +1326,8 @@ function openPlantModal(id){
   document.getElementById('pl-rule').value=p?p.rule:'';
   document.getElementById('pl-last-watered').value=p?p.lastWatered:'';
   document.getElementById('pl-last-checked').value=p?p.lastChecked:'';
+  document.getElementById('pl-last-repotted').value=p?(p.lastRepotted||''):'';
+  document.getElementById('pl-status').value=p?(p.status||'healthy'):'healthy';
   document.getElementById('pl-notes').value=p?p.notes:'';
   openOv('plant-ov');
 }
@@ -1237,6 +1342,8 @@ function savePlant(){
     rule:document.getElementById('pl-rule').value.trim(),
     lastWatered:document.getElementById('pl-last-watered').value,
     lastChecked:document.getElementById('pl-last-checked').value,
+    lastRepotted:document.getElementById('pl-last-repotted').value,
+    status:document.getElementById('pl-status').value||'healthy',
     notes:document.getElementById('pl-notes').value.trim(),
   };
   if(editPlantId){ const idx=S.plants.findIndex(p=>p.id===editPlantId); if(idx>=0) S.plants[idx]=plant; }
@@ -1449,7 +1556,9 @@ function saveMapping(){
 }
 function updateGAuthBtn(){
   const btn=document.getElementById('gauth-btn');
-  if(S.gConfig.clientId&&S.gConfig.sheetId){btn.textContent='⬡ Google Sheets connected';btn.classList.add('conn');}
+  btn.classList.remove('st-on','st-off');
+  if(S.gConfig&&S.gConfig.clientId&&S.gConfig.sheetId){btn.classList.add('st-on');}
+  else{btn.classList.add('st-off');}
 }
 function syncSheet(){
   if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
@@ -1498,9 +1607,11 @@ function pushContactToSheet(contact){
 // NOTIFICATIONS
 // ═══════════════════════════════════════════════════════════════════════
 function updateNotifBtn(){
-  const btn=document.getElementById('notif-btn'); if(!('Notification' in window)){btn.style.display='none';return;}
-  if(Notification.permission==='granted'){btn.textContent='🔔 Notifications on';btn.classList.add('ok');}
-  else if(Notification.permission==='denied'){btn.textContent='🔕 Blocked';btn.style.opacity='.5';}
+  const btn=document.getElementById('notif-btn');
+  if(!('Notification' in window)){btn.style.display='none';return;}
+  btn.classList.remove('st-on','st-off');
+  if(Notification.permission==='granted'){btn.classList.add('st-on');}
+  else if(Notification.permission==='denied'){btn.classList.add('st-off');btn.style.opacity='.7';}
 }
 function requestNotif(){
   if(!('Notification' in window)) return;
@@ -1613,9 +1724,10 @@ async function callClaude(userMessage){
   conversationHistory.push({role:'user', content: userMessage});
   const systemPrompt = buildAuroraContext();
   try{
+    if(!S.anthropicKey){ throw new Error('No Anthropic API key set. Open Settings (⚙) to add your key.'); }
     const resp = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body: JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:1000,
@@ -1724,9 +1836,10 @@ async function sendAuroraMessage(){
 
   try{
     const systemPrompt = buildAuroraContext();
+    if(!S.anthropicKey){ throw new Error('No Anthropic API key set. Open Settings (⚙) to add your key.'); }
     const resp = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body: JSON.stringify({
         model:'claude-sonnet-4-6',
         max_tokens:1000,
@@ -1754,6 +1867,26 @@ async function sendAuroraMessage(){
   auroraThinking=false;
   sendBtn.disabled=false;
   inp.focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════════════
+function openSettings(){
+  document.getElementById('settings-anthropic-key').value = S.anthropicKey||'';
+  openOv('settings-ov');
+}
+function saveSettings(){
+  S.anthropicKey = document.getElementById('settings-anthropic-key').value.trim();
+  persistLS();
+  closeOv('settings-ov');
+  updateSettingsBtn();
+}
+function updateSettingsBtn(){
+  const btn = document.getElementById('settings-btn');
+  if(!btn) return;
+  if(S.anthropicKey){ btn.classList.add('st-on'); btn.title='Settings (API key set)'; }
+  else { btn.classList.remove('st-on'); btn.title='Settings (API key required for chat)'; }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1789,10 +1922,10 @@ function saveCalConfig(){
 function updateCalBtn(){
   const btn = document.getElementById('cal-settings-btn');
   if(!btn) return;
+  btn.classList.remove('st-on','st-off');
   const c = S.calConfig||{};
-  if(c.personalCalId||c.tenfwdCalId){
-    btn.textContent='📅 Calendar connected'; btn.classList.add('conn');
-  }
+  if(c.personalCalId||c.tenfwdCalId){ btn.classList.add('st-on'); }
+  else { btn.classList.add('st-off'); }
 }
 
 function calIdForOrg(org){
@@ -1917,9 +2050,12 @@ function renderCalendarView(){
   let embedSrc = c.embedUrl;
   if(!embedSrc && c.personalCalId){
     const mode = calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
-    // Add 10Forward cal if configured
-    let src = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(c.personalCalId)}&mode=${mode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=1&showTz=1`;
-    if(c.tenfwdCalId) src += `&src=${encodeURIComponent(c.tenfwdCalId)}`;
+    let src = 'https://calendar.google.com/calendar/embed?'
+      + 'src='+encodeURIComponent(c.personalCalId)
+      + '&mode='+mode
+      + '&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=1&showTz=1&wkst=1&bgcolor=%23ffffff'
+      + '&ctz='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    if(c.tenfwdCalId) src += '&src='+encodeURIComponent(c.tenfwdCalId);
     embedSrc = src;
   }
   wrap.innerHTML = `
@@ -1967,6 +2103,7 @@ updateNotifBtn();
 updateGAuthBtn();
 updateSupaBtn();
 updateCalBtn();
+updateSettingsBtn();
 if(Notification.permission==='granted') scheduleNotifs();
 // Auto-connect Supabase if credentials already saved
 initSupabase();
@@ -1976,6 +2113,7 @@ if(S.calConfig){
   if(S.calConfig.tenfwdCalId) document.getElementById('cal-tenfwd-id').value=S.calConfig.tenfwdCalId;
   if(S.calConfig.embedUrl) document.getElementById('cal-embed-url').value=S.calConfig.embedUrl;
 }
+if(S.anthropicKey) document.getElementById('settings-anthropic-key').value=S.anthropicKey;
 </script>
 </body>
 </html>
