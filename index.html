@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9</span>
+      <span class="ver">v10.9.1</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -419,6 +419,11 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <input type="password" id="s-anthropic-key" placeholder="sk-ant-...">
       <div class="hint">Required for Aurora chat. Get yours at console.anthropic.com &rarr; API Keys</div>
     </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:.5rem;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Session usage (claude-sonnet-4-6)</div>
+      <div id="s-token-display" style="font-size:13px;color:var(--text2);line-height:1.5;"></div>
+      <button onclick="resetTokenCounter()" style="margin-top:8px;background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:3px 10px;font-size:11px;cursor:pointer;color:var(--text3);font-family:inherit;">Reset counter</button>
+    </div>
     <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
       <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Supabase</div>
@@ -601,6 +606,9 @@ let domMgrOrg = null, editPlantId = null;
 let gisTokenClient = null, gapiReady = false, pendingGAction = null;
 let gSheetColumns = [];
 let conversationHistory = [], auroraThinking = false;
+let tokenUsage = {inputTokens:0, outputTokens:0, queries:0};
+const SONNET_IN = 0.000003;   // $3 per 1M input tokens
+const SONNET_OUT = 0.000015;  // $15 per 1M output tokens
 let calView = 'month', pendingCalPush = null;
 
 function defaultState(){
@@ -754,9 +762,20 @@ function initSupabase(){
 // DATE UTILS
 // ═══════════════════════════════════════════
 function today(){return new Date().toISOString().slice(0,10);}
-function daysUntil(str){if(!str)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(str+'T00:00:00')-t)/86400000);}
+function daysUntil(str){
+  if(!str)return null;
+  const d=new Date(str+'T00:00:00');
+  if(isNaN(d.getTime()))return null;
+  const t=new Date();t.setHours(0,0,0,0);
+  return Math.round((d-t)/86400000);
+}
 function addDays(ds,n){if(!ds)return'';const d=new Date(ds+'T00:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
-function fmtDate(str){if(!str)return'\u2014';return new Date(str+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtDate(str){
+  if(!str)return'\u2014';
+  const d=new Date(str+'T00:00:00');
+  if(isNaN(d.getTime()))return'\u2014';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
 function urgency(days){if(days===null)return'none';if(days<0)return'red';if(days<=30)return'red';if(days<=90)return'amber';return'green';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -765,7 +784,13 @@ function getDue(item,domain){
   if(domain==='Social'){
     const yr=new Date().getFullYear();const t=new Date();t.setHours(0,0,0,0);const c=[];
     ['birthdate','anniversary','spouseBirthdate'].forEach(k=>{
-      if(item[k]){const d=new Date(item[k]+'T00:00:00');let n=new Date(yr,d.getMonth(),d.getDate());if(n<=t)n=new Date(yr+1,d.getMonth(),d.getDate());c.push(n.toISOString().slice(0,10));}
+      if(item[k]){
+        const d=new Date(item[k]+'T00:00:00');
+        if(isNaN(d.getTime()))return;
+        let n=new Date(yr,d.getMonth(),d.getDate());
+        if(n<=t)n=new Date(yr+1,d.getMonth(),d.getDate());
+        c.push(n.toISOString().slice(0,10));
+      }
     });
     c.sort();return c[0]||null;
   }
@@ -920,7 +945,7 @@ function renderOrgContent(){
     const items=(S.items[org]||{})[currentDomain]||[];
     const syncConn=isPS&&S.gConfig.clientId&&S.gConfig.sheetId;
     const syncBtn=isPS?('<button class="sync-btn" id="sync-btn" onclick="'+(syncConn?'syncSheet()':'openSettings()')+'">'+( syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets')+'</button>'):'';
-    const lastSync=syncConn&&S.gConfig.lastSync?('<div class="sync-status">Last synced: '+new Date(S.gConfig.lastSync).toLocaleString()+'</div>'):'';
+    const lastSyncStr=syncConn&&S.gConfig.lastSync?function(){try{const d=new Date(S.gConfig.lastSync);return isNaN(d.getTime())?'':d.toLocaleString();}catch(e){return '';}}():'';const lastSync=lastSyncStr?('<div class="sync-status">Last synced: '+lastSyncStr+'</div>'):'';
     const addOnc='openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
     const cardsHtml=items.length?items.map((item,i)=>renderCard(org,currentDomain,item,i,false)).join(''):'<div class="empty">No items yet \u2014 add your first</div>';
     body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
@@ -1207,6 +1232,7 @@ function openSettings(){
   const hasData=Object.values(S.items||{}).some(o=>Object.values(o).some(d=>d.length>0));
   const mr=document.getElementById('supa-migrate-row');
   if(mr)mr.style.display=(hasData&&!(S.sbConfig&&S.sbConfig.migrationDone))?'block':'none';
+  updateTokenDisplay();
   openOv('settings-ov');
 }
 function saveAllSettings(){
@@ -1372,7 +1398,7 @@ function scheduleNotifs(){
     const db=parseInt(tile.notif);
     tileItems(tile).forEach(r=>{
       if(!r.due)return;
-      const due=new Date(r.due+'T09:00:00');const na=new Date(due);na.setDate(na.getDate()-db);
+      const due=new Date(r.due+'T09:00:00');if(isNaN(due.getTime()))return;const na=new Date(due);na.setDate(na.getDate()-db);
       if(na>now)setTimeout(()=>new Notification('Aurora \u2014 '+tile.label,{body:r.item.name+' due '+fmtDate(r.due)}),Math.min(na-now,2147483647));
     });
   });
@@ -1406,7 +1432,11 @@ function buildAuroraContext(){
   const pnc=(S.plants||[]).filter(p=>{const d=plantCheckDays(p);return d!==null&&d<=0;});
   const contacts=((S.items.personal||{}).Social||[]);
   const t60=new Date();t60.setDate(t60.getDate()-60);
-  const nc=contacts.filter(c=>c.lastContacted&&new Date(c.lastContacted+'T00:00:00')<t60);
+  const nc=contacts.filter(c=>{
+  if(!c.lastContacted)return false;
+  const d=new Date(c.lastContacted+'T00:00:00');
+  return !isNaN(d.getTime())&&d<t60;
+});
   const dlLines=allDL.slice(0,40).map(d=>{const ds=d.daysUntil===null?'no date':d.daysUntil<0?Math.abs(d.daysUntil)+'d overdue':d.daysUntil+'d';return'- ['+d.status+'] '+(d.name||'Unknown')+' | '+d.org+' > '+d.domain+' | Due: '+d.due+' ('+ds+')';}).join('\n');
   const wn=pnw.map(p=>p.name).join(', ')||'none';
   const cn=nc.slice(0,5).map(c=>((c.firstName||'')+(c.lastName?' '+c.lastName:'')).trim()||c.name||'Unknown').join(', ')||'none';
@@ -1427,6 +1457,12 @@ async function callClaude(userMessage){
     if(data.error)throw new Error(data.error.message);
     const reply=(data.content&&data.content[0]&&data.content[0].text)||'No response.';
     conversationHistory.push({role:'assistant',content:reply});
+    if(data.usage){
+      tokenUsage.inputTokens+=(data.usage.input_tokens||0);
+      tokenUsage.outputTokens+=(data.usage.output_tokens||0);
+      tokenUsage.queries+=1;
+      updateTokenDisplay();
+    }
     return reply;
   }catch(e){conversationHistory.pop();throw e;}
 }
