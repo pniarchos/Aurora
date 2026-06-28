@@ -203,6 +203,53 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+/* Aurora Assistant */
+.aurora-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;}
+.aurora-bar-input{flex:1;background:none;border:none;font-size:14px;color:var(--text);font-family:'Space Grotesk',sans-serif;outline:none;padding:2px 0;}
+.aurora-bar-input::placeholder{color:var(--text3);}
+.aurora-bar-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:18px;padding:2px 4px;line-height:1;border-radius:4px;}
+.aurora-bar-btn:hover{background:var(--bg2);color:var(--text);}
+.aurora-bar-expand{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 9px;font-size:12px;cursor:pointer;color:var(--text3);font-family:inherit;white-space:nowrap;}
+.aurora-bar-expand:hover{color:var(--text);border-color:var(--text2);}
+.aurora-inline-resp{background:var(--blue-bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:1.25rem;font-size:14px;color:var(--text);line-height:1.65;font-family:'Space Grotesk',sans-serif;position:relative;}
+.aurora-inline-resp .aurora-resp-close{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 5px;border-radius:3px;}
+.aurora-inline-resp .aurora-resp-close:hover{color:var(--text);background:var(--bg2);}
+
+/* Assistant side panel */
+.aurora-panel{position:fixed;top:0;right:-420px;width:420px;max-width:92vw;height:100vh;background:var(--bg);border-left:1px solid var(--border2);z-index:160;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);}
+.aurora-panel.open{right:0;}
+.aurora-panel-hdr{flex-shrink:0;padding:.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.aurora-panel-hdr-title{flex:1;font-size:15px;font-weight:600;font-family:'Orbitron',sans-serif;letter-spacing:.05em;color:var(--text);}
+.aurora-panel-close{background:none;border:none;cursor:pointer;color:var(--text2);font-size:18px;padding:2px 6px;border-radius:4px;font-family:inherit;}
+.aurora-panel-close:hover{background:var(--bg2);}
+.aurora-panel-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;}
+.aurora-msg{display:flex;flex-direction:column;gap:4px;}
+.aurora-msg-user{align-items:flex-end;}
+.aurora-msg-asst{align-items:flex-start;}
+.aurora-bubble{max-width:88%;padding:10px 13px;border-radius:var(--r);font-size:13px;line-height:1.65;font-family:'Space Grotesk',sans-serif;}
+.aurora-msg-user .aurora-bubble{background:var(--text);color:var(--bg);border-radius:var(--r) var(--r) 4px var(--r);}
+.aurora-msg-asst .aurora-bubble{background:var(--bg2);color:var(--text);border-radius:4px var(--r) var(--r) var(--r);border:1px solid var(--border);}
+.aurora-msg-asst .aurora-bubble.thinking{color:var(--text3);font-style:italic;}
+.aurora-panel-input-wrap{flex-shrink:0;padding:.75rem 1rem;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;}
+.aurora-panel-textarea{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;font-size:14px;font-family:'Space Grotesk',sans-serif;color:var(--text);resize:none;max-height:120px;outline:none;line-height:1.5;}
+.aurora-panel-textarea:focus{border-color:var(--text2);}
+.aurora-panel-send{background:var(--text);color:var(--bg);border:none;border-radius:var(--r-sm);padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;align-self:flex-end;}
+.aurora-panel-send:hover{opacity:.85;}
+.aurora-panel-send:disabled{opacity:.4;cursor:default;}
+.aurora-clear-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;font-family:inherit;padding:2px 0;}
+.aurora-clear-btn:hover{color:var(--text);}
+
+/* Calendar */
+.cal-btn{background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--blue);font-family:inherit;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.cal-btn:hover{opacity:.85;}
+.cal-btn.sent{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.cal-embed-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:1rem;}
+.cal-embed-wrap iframe{width:100%;height:600px;border:none;display:block;}
+.cal-toolbar{display:flex;align-items:center;gap:8px;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+.cal-toolbar-title{font-size:14px;font-weight:600;flex:1;}
+.cal-view-btn{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;}
+.cal-view-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.cal-no-config{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px;}
 </style>
 </head>
 <body>
@@ -213,10 +260,11 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
     </div>
     <div class="tbr">
-      <span class="ver">v7.0</span>
+      <span class="ver">v9.0</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">🔔 Notifications</button>
       <button class="tb-btn" id="supa-btn" onclick="openOv('supa-ov')">⬡ Supabase</button>
       <button class="tb-btn" id="gauth-btn" onclick="openOv('gsetup-ov')">⬡ Google Sheets</button>
+      <button class="tb-btn" id="cal-settings-btn" onclick="openCalSettings()">📅 Calendar</button>
       <div class="top-date" id="top-date"></div>
     </div>
   </div>
@@ -224,6 +272,15 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   <div class="main-scroll">
     <div class="main-inner">
       <div class="dash">
+        <div class="aurora-bar">
+          <span style="font-size:16px;flex-shrink:0;">✦</span>
+          <input class="aurora-bar-input" id="aurora-bar-input" type="text"
+            placeholder="Ask Aurora — What's due this week? Who haven't I contacted recently?"
+            onkeydown="if(event.key==='Enter'){sendAuroraBarQuery();}">
+          <button class="aurora-bar-btn" onclick="sendAuroraBarQuery()" title="Ask">↵</button>
+          <button class="aurora-bar-expand" onclick="openAuroraPanel()" title="Open full assistant">Open ›</button>
+        </div>
+        <div id="aurora-inline-resp-wrap"></div>
         <div class="dash-hdr">
           <div class="dash-lbl">Dashboard</div>
           <button class="dash-edit-btn" id="dash-edit-btn" onclick="toggleDashEdit()">✎ Customize</button>
@@ -234,6 +291,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
         <button class="org-tab active" data-org="personal" onclick="switchOrg('personal')">Personal</button>
         <button class="org-tab" data-org="fee" onclick="switchOrg('fee')">Foundation for Economic Education</button>
         <button class="org-tab" data-org="tenfwd" onclick="switchOrg('tenfwd')">10Forward Technologies</button>
+        <button class="org-tab" data-org="calendar" onclick="switchOrg('calendar')">📅 Calendar</button>
       </div>
       <div id="org-content"></div>
     </div>
@@ -404,6 +462,66 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
+<!-- Calendar settings -->
+<div class="overlay" id="cal-ov" onclick="ovBg(event,'cal-ov')">
+  <div class="modal">
+    <h3>Calendar settings</h3>
+    <div class="modal-desc">Connect Aurora to your Google Calendars. Events are pushed manually via the 📅 button on each item card.</div>
+    <div id="cal-alert"></div>
+    <div class="fg">
+      <label>Personal calendar ID</label>
+      <input type="text" id="cal-personal-id" placeholder="yourname@gmail.com">
+      <div class="hint">Settings → click calendar name → Integrate calendar → Calendar ID</div>
+    </div>
+    <div class="fg">
+      <label>10Forward calendar ID</label>
+      <input type="text" id="cal-tenfwd-id" placeholder="abc123@group.calendar.google.com">
+    </div>
+    <div class="fg">
+      <label>Default reminder — Personal (days before)</label>
+      <select id="cal-remind-personal">
+        <option value="1">1 day before</option>
+        <option value="3">3 days before</option>
+        <option value="7" selected>7 days before</option>
+        <option value="14">14 days before</option>
+        <option value="30">30 days before</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Default reminder — 10Forward (days before)</label>
+      <select id="cal-remind-tenfwd">
+        <option value="1">1 day before</option>
+        <option value="3">3 days before</option>
+        <option value="7">7 days before</option>
+        <option value="14" selected>14 days before</option>
+        <option value="30">30 days before</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Embedded calendar view (optional)</label>
+      <input type="text" id="cal-embed-url" placeholder="Paste Google Calendar embed URL">
+      <div class="hint">Google Calendar → Settings → Integrate calendar → Embed code → copy the src="..." URL only</div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('cal-ov')">Cancel</button>
+      <button class="btn-save" onclick="saveCalConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Send to Calendar confirm -->
+<div class="overlay" id="cal-push-ov" onclick="ovBg(event,'cal-push-ov')">
+  <div class="modal">
+    <h3>Send to Calendar</h3>
+    <div id="cal-push-body"></div>
+    <div id="cal-push-alert"></div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('cal-push-ov')">Cancel</button>
+      <button class="btn-blue" id="cal-push-confirm-btn" onclick="confirmPushToCalendar()">Add to calendar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Delete confirm -->
 <div class="overlay" id="del-ov" onclick="ovBg(event,'del-ov')">
   <div class="modal">
@@ -415,6 +533,24 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     </div>
   </div>
 </div>
+
+<!-- Aurora Assistant Panel -->
+<div class="aurora-panel" id="aurora-panel">
+  <div class="aurora-panel-hdr">
+    <div class="aurora-panel-hdr-title">Aurora</div>
+    <button class="aurora-clear-btn" onclick="clearConversation()">Clear</button>
+    <button class="aurora-panel-close" onclick="closeAuroraPanel()">✕</button>
+  </div>
+  <div class="aurora-panel-msgs" id="aurora-msgs"></div>
+  <div class="aurora-panel-input-wrap">
+    <textarea class="aurora-panel-textarea" id="aurora-panel-input" rows="1"
+      placeholder="Ask Aurora anything…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAuroraMessage();}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+    <button class="aurora-panel-send" id="aurora-panel-send" onclick="sendAuroraMessage()">Send</button>
+  </div>
+</div>
+
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════
@@ -576,6 +712,7 @@ function loadLS(){
   if(!S.tiles) S.tiles = [...DEFAULT_TILES];
   if(!S.plants) S.plants = [...DEFAULT_PLANTS];
   if(!S.gConfig) S.gConfig = {clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null};
+  if(!S.calConfig) S.calConfig = {personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}};
   if(!S.sbConfig) S.sbConfig = {url:'',key:''};
 }
 
@@ -962,6 +1099,7 @@ function closeDrill(){ document.getElementById('drill-panel').classList.remove('
 function switchOrg(org){
   currentOrg=org;
   document.querySelectorAll('.org-tab').forEach(b=>b.classList.toggle('active',b.dataset.org===org));
+  if(org==='calendar'){ renderCalendarView(); return; }
   if(!currentDomain||!(S.domains[org]||[]).includes(currentDomain))
     currentDomain=(S.domains[org]||[])[0]||null;
   renderOrgContent();
@@ -1126,6 +1264,7 @@ function renderCard(org, domain, item, idx, fromDrill){
       <div><div class="card-name">${esc(displayName||'Unnamed')}</div>${displaySub?`<div class="card-sub">${esc(displaySub)}</div>`:''}</div>${drillNote}
       <div class="card-acts">
         ${lbl?`<span class="badge ${bCls}">${lbl}</span>`:''}
+        ${(getDue(item,domain)&&(org==='personal'||org==='tenfwd'))?`<button class="iBtn${item._calPushed?' cal-sent':''}" onclick="pushToCalendar('${esc(org)}','${esc(domain)}',${JSON.stringify(item).replace(/'/g,"&#39;")},${idx})" title="${item._calPushed?'Pushed to calendar — push again':'Send to calendar'}">📅</button>`:''}
         <button class="iBtn" onclick="openItemModal('${esc(org)}','${esc(domain)}',${idx})">✎</button>
         <button class="iBtn" onclick="askDelete('${esc(org)}','${esc(domain)}',${idx})">✕</button>
       </div>
@@ -1258,7 +1397,12 @@ function loadGapiAndGis(cb){
   if(window.gapi&&gapiReady){gapiDone=true;check();}
   else{
     const s1=document.createElement('script'); s1.src='https://apis.google.com/js/api.js';
-    s1.onload=()=>{ gapi.load('client',()=>{ gapi.client.init({}).then(()=>gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4')).then(()=>{gapiReady=true;gapiDone=true;check();}); }); };
+    s1.onload=()=>{ gapi.load('client',()=>{ gapi.client.init({}).then(()=>Promise.all([
+          gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4'),
+          gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'),
+          gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'),
+          gapi.client.load('https://docs.googleapis.com/$discovery/rest?version=v1')
+        ])).then(()=>{gapiReady=true;gapiDone=true;check();}); }); };
     document.head.appendChild(s1);
   }
   if(window.google&&window.google.accounts){gisDone=true;check();}
@@ -1271,7 +1415,7 @@ function requestGToken(){
   if(!gisTokenClient){
     gisTokenClient=google.accounts.oauth2.initTokenClient({
       client_id:S.gConfig.clientId,
-      scope:'https://www.googleapis.com/auth/spreadsheets',
+      scope:'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar',
       callback:(r)=>{ if(r.error){alert('Auth error: '+r.error);return;} if(pendingGAction){pendingGAction();pendingGAction=null;} }
     });
   }
@@ -1388,6 +1532,413 @@ function ovBg(e,id){ if(e.target===document.getElementById(id)) closeOv(id); }
 function setAlert(elId,msg,type){ document.getElementById(elId).innerHTML=`<div class="alert alert-${type}">${esc(msg)}</div>`; }
 
 // ═══════════════════════════════════════════════════════════════════════
+// AURORA ASSISTANT (Claude API)
+// ═══════════════════════════════════════════════════════════════════════
+
+let conversationHistory = []; // persists for session
+let auroraThinking = false;
+
+function buildAuroraContext(){
+  // Snapshot of all hub data to feed Claude as context
+  const today = new Date().toISOString().slice(0,10);
+  const allDeadlines = [];
+  Object.keys(S.domains).forEach(org=>{
+    (S.domains[org]||[]).forEach(domain=>{
+      if(domain==='Plants') return;
+      ((S.items[org]||{})[domain]||[]).forEach(item=>{
+        const due = getDue(item,domain);
+        const days = daysUntil(due);
+        if(due) allDeadlines.push({
+          name: item.name||(item.firstName?' '+item.firstName+' '+(item.lastName||''):''),
+          org: ORG_LABELS[org], domain, due, daysUntil: days,
+          status: days===null?'no date':days<0?'OVERDUE':days===0?'TODAY':days<=7?'THIS WEEK':days<=30?'THIS MONTH':'UPCOMING'
+        });
+      });
+    });
+  });
+  allDeadlines.sort((a,b)=>(a.daysUntil===null?999:a.daysUntil)-(b.daysUntil===null?999:b.daysUntil));
+
+  // Plants summary
+  const plantsNeedWater = (S.plants||[]).filter(p=>{ const d=plantWaterDays(p); return d!==null&&d<=0; });
+  const plantsNeedCheck = (S.plants||[]).filter(p=>{ const d=plantCheckDays(p); return d!==null&&d<=0; });
+
+  // Social contacts summary
+  const contacts = ((S.items.personal||{}).Social||[]);
+  const today60 = new Date(); today60.setDate(today60.getDate()-60);
+  const notContacted = contacts.filter(c=>{
+    if(!c.lastContacted) return false;
+    return new Date(c.lastContacted+'T00:00:00') < today60;
+  });
+
+  // Count items per org/domain
+  const counts = {};
+  Object.keys(S.domains).forEach(org=>{
+    counts[ORG_LABELS[org]] = {};
+    (S.domains[org]||[]).forEach(d=>{
+      counts[ORG_LABELS[org]][d] = ((S.items[org]||{})[d]||[]).length;
+    });
+  });
+
+  return `You are Aurora, an intelligent personal and professional assistant system built for Pericles Niarchos. You have access to his real-time hub data. Today is ${today}.
+
+ORGANIZATION CONTEXTS:
+- Personal: home, vehicles, finances, health, legal, social/contacts, plants
+- Foundation for Economic Education (FEE): Pericles is Chief Programs & Innovation Officer
+- 10Forward Technologies Corporation: Pericles's invention company (solo founder)
+
+CURRENT HUB DATA SNAPSHOT:
+
+DEADLINES (${allDeadlines.length} total with due dates):
+${allDeadlines.slice(0,40).map(d=>`- [${d.status}] ${d.name} | ${d.org} > ${d.domain} | Due: ${d.due} (${d.daysUntil===null?'no date':d.daysUntil<0?Math.abs(d.daysUntil)+'d overdue':d.daysUntil+'d'})`).join('
+')}
+
+ITEM COUNTS BY ORG & DOMAIN:
+${Object.entries(counts).map(([org,domains])=>
+  Object.entries(domains).map(([d,n])=>`- ${org} > ${d}: ${n} items`).join('
+')
+).join('
+')}
+
+PLANTS:
+- Total: ${(S.plants||[]).length}
+- Need water now: ${plantsNeedWater.length} (${plantsNeedWater.map(p=>p.name).join(', ')||'none'})
+- Need checking: ${plantsNeedCheck.length}
+
+SOCIAL CONTACTS:
+- Total contacts: ${contacts.length}
+- Not contacted in 60+ days: ${notContacted.length} (${notContacted.slice(0,5).map(c=>((c.firstName||'')+(c.lastName?' '+c.lastName:'')).trim()||c.name||'Unknown').join(', ')||'none'})
+
+Respond conversationally and specifically. Reference actual item names and dates from the data above. Be concise but thorough. If the user asks a follow-up, use context from the conversation.`;
+}
+
+async function callClaude(userMessage){
+  conversationHistory.push({role:'user', content: userMessage});
+  const systemPrompt = buildAuroraContext();
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system: systemPrompt,
+        messages: conversationHistory
+      })
+    });
+    const data = await resp.json();
+    if(data.error) throw new Error(data.error.message);
+    const reply = data.content&&data.content[0]&&data.content[0].text||'No response.';
+    conversationHistory.push({role:'assistant', content: reply});
+    return reply;
+  } catch(e){
+    conversationHistory.pop(); // remove failed user message
+    throw e;
+  }
+}
+
+// ── Compact bar (single query, inline response) ──────────────────────
+async function sendAuroraBarQuery(){
+  const inp = document.getElementById('aurora-bar-input');
+  const q = inp.value.trim(); if(!q) return;
+  inp.value=''; inp.disabled=true;
+  const wrap = document.getElementById('aurora-inline-resp-wrap');
+  wrap.innerHTML=`<div class="aurora-inline-resp"><span class="spinner"></span> Aurora is thinking…</div>`;
+  try{
+    const reply = await callClaude(q);
+    wrap.innerHTML=`<div class="aurora-inline-resp">
+      <button class="aurora-resp-close" onclick="document.getElementById('aurora-inline-resp-wrap').innerHTML=''">✕</button>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;">Aurora</div>
+      <div>${esc(reply).replace(/
+/g,'<br>')}</div>
+      <div style="margin-top:10px;">
+        <button class="aurora-bar-expand" onclick="openAuroraPanel()">Continue in assistant ›</button>
+      </div>
+    </div>`;
+  } catch(e){
+    wrap.innerHTML=`<div class="aurora-inline-resp" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">Error: ${esc(e.message)}</div>`;
+  }
+  inp.disabled=false; inp.focus();
+}
+
+// ── Full panel (conversational thread) ───────────────────────────────
+function openAuroraPanel(){
+  document.getElementById('aurora-panel').classList.add('open');
+  renderPanelMessages();
+  setTimeout(()=>document.getElementById('aurora-panel-input').focus(),300);
+}
+function closeAuroraPanel(){
+  document.getElementById('aurora-panel').classList.remove('open');
+}
+function clearConversation(){
+  conversationHistory=[];
+  document.getElementById('aurora-msgs').innerHTML='';
+  document.getElementById('aurora-inline-resp-wrap').innerHTML='';
+}
+
+function renderPanelMessages(){
+  const el = document.getElementById('aurora-msgs');
+  if(!conversationHistory.length){
+    el.innerHTML=`<div style="text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;">
+      <div style="font-size:28px;margin-bottom:10px;">✦</div>
+      <div style="font-weight:600;color:var(--text);margin-bottom:6px;">Aurora Assistant</div>
+      <div style="line-height:1.6;">Ask anything about your deadlines, contacts, plants, or obligations across all three orgs.</div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+        ${["What's overdue right now?","Who haven't I contacted recently?","Summarize my 10Forward obligations","Which plants need water?"].map(q=>`<button onclick="quickQuery('${q}')" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;text-align:left;">${q}</button>`).join('')}
+      </div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = conversationHistory.map(m=>`
+    <div class="aurora-msg aurora-msg-${m.role==='user'?'user':'asst'}">
+      <div class="aurora-bubble">${esc(m.content).replace(/
+/g,'<br>')}</div>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function quickQuery(q){
+  document.getElementById('aurora-panel-input').value=q;
+  sendAuroraMessage();
+}
+
+async function sendAuroraMessage(){
+  if(auroraThinking) return;
+  const inp = document.getElementById('aurora-panel-input');
+  const q = inp.value.trim(); if(!q) return;
+  inp.value=''; inp.style.height='auto';
+  auroraThinking=true;
+  const sendBtn = document.getElementById('aurora-panel-send');
+  sendBtn.disabled=true;
+
+  // Add user message and thinking indicator
+  conversationHistory.push({role:'user', content:q});
+  const msgs = document.getElementById('aurora-msgs');
+  msgs.innerHTML += `<div class="aurora-msg aurora-msg-user"><div class="aurora-bubble">${esc(q)}</div></div>
+    <div class="aurora-msg aurora-msg-asst" id="aurora-thinking-msg"><div class="aurora-bubble thinking"><span class="spinner"></span> Thinking…</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try{
+    const systemPrompt = buildAuroraContext();
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system: systemPrompt,
+        messages: conversationHistory
+      })
+    });
+    const data = await resp.json();
+    if(data.error) throw new Error(data.error.message);
+    const reply = data.content&&data.content[0]&&data.content[0].text||'No response.';
+    conversationHistory.push({role:'assistant', content:reply});
+
+    // Replace thinking with real response
+    const thinkEl = document.getElementById('aurora-thinking-msg');
+    if(thinkEl) thinkEl.outerHTML=`<div class="aurora-msg aurora-msg-asst"><div class="aurora-bubble">${esc(reply).replace(/
+/g,'<br>')}</div></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch(e){
+    conversationHistory.pop(); // remove failed user turn
+    const thinkEl = document.getElementById('aurora-thinking-msg');
+    if(thinkEl) thinkEl.outerHTML=`<div class="aurora-msg aurora-msg-asst"><div class="aurora-bubble" style="color:var(--red);">Error: ${esc(e.message)}</div></div>`;
+  }
+  auroraThinking=false;
+  sendBtn.disabled=false;
+  inp.focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// GOOGLE CALENDAR
+// ═══════════════════════════════════════════════════════════════════════
+
+let pendingCalPush = null; // {item, org, domain}
+
+function openCalSettings(){
+  const c = S.calConfig||{};
+  document.getElementById('cal-personal-id').value = c.personalCalId||'';
+  document.getElementById('cal-tenfwd-id').value = c.tenfwdCalId||'';
+  document.getElementById('cal-embed-url').value = c.embedUrl||'';
+  document.getElementById('cal-remind-personal').value = String((c.remindersByOrg&&c.remindersByOrg.personal)||7);
+  document.getElementById('cal-remind-tenfwd').value = String((c.remindersByOrg&&c.remindersByOrg.tenfwd)||14);
+  openOv('cal-ov');
+}
+
+function saveCalConfig(){
+  if(!S.calConfig) S.calConfig={};
+  S.calConfig.personalCalId = document.getElementById('cal-personal-id').value.trim();
+  S.calConfig.tenfwdCalId = document.getElementById('cal-tenfwd-id').value.trim();
+  S.calConfig.embedUrl = document.getElementById('cal-embed-url').value.trim();
+  S.calConfig.remindersByOrg = {
+    personal: parseInt(document.getElementById('cal-remind-personal').value)||7,
+    tenfwd: parseInt(document.getElementById('cal-remind-tenfwd').value)||14,
+  };
+  persistLS();
+  closeOv('cal-ov');
+  updateCalBtn();
+}
+
+function updateCalBtn(){
+  const btn = document.getElementById('cal-settings-btn');
+  if(!btn) return;
+  const c = S.calConfig||{};
+  if(c.personalCalId||c.tenfwdCalId){
+    btn.textContent='📅 Calendar connected'; btn.classList.add('conn');
+  }
+}
+
+function calIdForOrg(org){
+  const c = S.calConfig||{};
+  if(org==='personal') return c.personalCalId||'primary';
+  if(org==='tenfwd') return c.tenfwdCalId||'';
+  return '';
+}
+
+function reminderDaysForOrg(org){
+  const c = S.calConfig||{};
+  return (c.remindersByOrg&&c.remindersByOrg[org])||7;
+}
+
+function pushToCalendar(org, domain, item, idx){
+  // Validate calendar is configured
+  const calId = calIdForOrg(org);
+  if(!calId && org!=='personal'){
+    alert('No calendar configured for '+ORG_LABELS[org]+'. Open Calendar settings to add one.');
+    return;
+  }
+  // Get due date
+  const due = getDue(item, domain);
+  if(!due){
+    alert('This item has no due date. Add a due date first.');
+    return;
+  }
+  // Show confirmation modal
+  pendingCalPush = {org, domain, item, idx, calId, due};
+  const reminderDays = reminderDaysForOrg(org);
+  const calLabel = org==='personal'?'Personal Calendar':ORG_LABELS[org]+' Calendar';
+  const isSocial = domain==='Social';
+  const displayName = isSocial
+    ? [item.salutation,item.firstName,item.lastName].filter(Boolean).join(' ')
+    : (item.name||'Unnamed');
+  document.getElementById('cal-push-body').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
+      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Event</div>
+        <div style="font-size:15px;font-weight:600;">${esc(displayName)}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${esc(domain)} · ${esc(ORG_LABELS[org])}</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Date</div>
+        <div style="font-size:15px;font-weight:600;">${fmtDate(due)}</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Calendar</div>
+        <div style="font-size:15px;font-weight:600;">${esc(calLabel)}</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Reminder</div>
+        <div style="font-size:15px;font-weight:600;">${reminderDays} day${reminderDays===1?'':'s'} before</div>
+      </div>
+    </div>`;
+  document.getElementById('cal-push-alert').innerHTML='';
+  openOv('cal-push-ov');
+}
+
+function confirmPushToCalendar(){
+  if(!pendingCalPush) return;
+  const {org, domain, item, calId, due} = pendingCalPush;
+  const btn = document.getElementById('cal-push-confirm-btn');
+  btn.innerHTML='<span class="spinner"></span> Adding…'; btn.disabled=true;
+  const isSocial = domain==='Social';
+  const displayName = isSocial
+    ? [item.salutation,item.firstName,item.lastName].filter(Boolean).join(' ')
+    : (item.name||'Unnamed');
+  const reminderDays = reminderDaysForOrg(org);
+  const reminderMins = reminderDays * 24 * 60;
+  const doAdd = ()=>{
+    const event = {
+      summary: displayName + (domain!==displayName?' — '+domain:''),
+      description: 'Added by Aurora · '+ORG_LABELS[org]+(item.notes?'
+
+'+item.notes:''),
+      start: { date: due },
+      end: { date: due },
+      reminders: { useDefault: false, overrides: [{ method:'popup', minutes: reminderMins }] },
+      colorId: org==='tenfwd'?'5':org==='personal'?'1':'3', // blueberry / tomato / sage
+    };
+    gapi.client.calendar.events.insert({
+      calendarId: calId||'primary',
+      resource: event
+    }).then(()=>{
+      setAlert('cal-push-alert','Added to calendar successfully.','ok');
+      btn.innerHTML='✓ Added'; btn.disabled=false;
+      // Mark item as pushed
+      if(S.items[org]&&S.items[org][domain]&&S.items[org][domain][pendingCalPush.idx]){
+        S.items[org][domain][pendingCalPush.idx]._calPushed=due;
+        persistLS();
+        sbSaveItem(org,domain,S.items[org][domain][pendingCalPush.idx]);
+        renderOrgContent();
+      }
+      pendingCalPush=null;
+      setTimeout(()=>closeOv('cal-push-ov'),1200);
+    }).catch(e=>{
+      const msg = e.result&&e.result.error?e.result.error.message:JSON.stringify(e);
+      setAlert('cal-push-alert','Failed: '+msg,'err');
+      btn.innerHTML='Add to calendar'; btn.disabled=false;
+    });
+  };
+  // Ensure auth covers calendar scope
+  ensureGAuth(doAdd);
+}
+
+// ── Calendar view ───────────────────────────────────────────────────
+let calView = 'month'; // month | week | agenda
+
+function renderCalendarView(){
+  const c = S.calConfig||{};
+  const wrap = document.getElementById('org-content');
+  if(!c.embedUrl && !c.personalCalId){
+    wrap.innerHTML = `
+      <div class="cal-no-config">
+        <div style="font-size:32px;margin-bottom:12px;">📅</div>
+        <div style="font-weight:600;margin-bottom:6px;color:var(--text);">Calendar not configured</div>
+        <div style="margin-bottom:16px;">Add your calendar IDs to see your calendar here.</div>
+        <button class="btn-save" onclick="openCalSettings()">Open calendar settings</button>
+      </div>`;
+    return;
+  }
+  // Build embed URL
+  let embedSrc = c.embedUrl;
+  if(!embedSrc && c.personalCalId){
+    const mode = calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
+    // Add 10Forward cal if configured
+    let src = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(c.personalCalId)}&mode=${mode}&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=1&showTz=1`;
+    if(c.tenfwdCalId) src += `&src=${encodeURIComponent(c.tenfwdCalId)}`;
+    embedSrc = src;
+  }
+  wrap.innerHTML = `
+    <div class="sec-hdr">
+      <div class="sec-title">Calendar</div>
+      <div class="sec-acts">
+        <button class="cal-view-btn${calView==='month'?' active':''}" onclick="setCalView('month')">Month</button>
+        <button class="cal-view-btn${calView==='week'?' active':''}" onclick="setCalView('week')">Week</button>
+        <button class="cal-view-btn${calView==='agenda'?' active':''}" onclick="setCalView('agenda')">Agenda</button>
+        <button class="add-btn" onclick="openCalSettings()">⚙ Settings</button>
+      </div>
+    </div>
+    <div class="cal-embed-wrap">
+      <iframe src="${esc(embedSrc)}" frameborder="0" scrolling="no" allowfullscreen></iframe>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;">Calendar view is read-only. Use the 📅 button on any item to push deadlines to your calendar.</div>`;
+}
+
+function setCalView(v){
+  calView=v;
+  renderCalendarView();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════════════════════════════
 document.getElementById('top-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
@@ -1410,9 +1961,16 @@ switchOrg('personal');
 updateNotifBtn();
 updateGAuthBtn();
 updateSupaBtn();
+updateCalBtn();
 if(Notification.permission==='granted') scheduleNotifs();
 // Auto-connect Supabase if credentials already saved
 initSupabase();
+// Pre-fill calendar settings if saved
+if(S.calConfig){
+  if(S.calConfig.personalCalId) document.getElementById('cal-personal-id').value=S.calConfig.personalCalId;
+  if(S.calConfig.tenfwdCalId) document.getElementById('cal-tenfwd-id').value=S.calConfig.tenfwdCalId;
+  if(S.calConfig.embedUrl) document.getElementById('cal-embed-url').value=S.calConfig.embedUrl;
+}
 </script>
 </body>
 </html>
