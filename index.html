@@ -452,17 +452,31 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 <!-- Google setup -->
 <div class="overlay" id="gsetup-ov" onclick="ovBg(event,'gsetup-ov')">
   <div class="modal">
-    <h3>Connect Google Sheets</h3>
-    <div class="modal-desc">Two-way sync between Personal → Social and your Google Sheet.</div>
+    <h3>Connect Google Drive</h3>
+    <div class="modal-desc">Connects Aurora to Google Drive, Calendar, Sheets, and Docs via a single OAuth sign-in. Required for contacts sync, calendar push, and file operations.</div>
     <div id="gsetup-alert"></div>
-    <div class="fg"><label>OAuth Client ID</label><input type="text" id="gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com"></div>
-    <div class="fg"><label>Contacts Sheet ID</label><input type="text" id="gs-sheet-id" placeholder="Sheet ID from URL"><div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div></div>
-    <div class="fg"><label>Sheet tab name (optional)</label><input type="text" id="gs-sheet-tab" placeholder="Sheet1"></div>
+    <div class="fg">
+      <label>OAuth Client ID</label>
+      <input type="text" id="gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
+      <div class="hint">Google Cloud Console &#x2192; APIs &amp; Services &#x2192; Credentials</div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:1rem 0 .75rem;"></div>
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:.75rem;">Contacts sheet (optional)</div>
+    <div class="fg">
+      <label>Google Sheet ID for contacts</label>
+      <input type="text" id="gs-sheet-id" placeholder="Sheet ID from your contacts sheet URL">
+      <div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
+    </div>
+    <div class="fg">
+      <label>Sheet tab name</label>
+      <input type="text" id="gs-sheet-tab" placeholder="Sheet1">
+    </div>
     <div class="modal-acts">
       <button class="btn-cancel" onclick="closeOv('gsetup-ov')">Cancel</button>
-      <button class="btn-blue" onclick="connectGoogle()">Connect</button>
+      <button class="btn-blue" onclick="connectGoogle()">Connect Google</button>
     </div>
   </div>
+</div></div>
 </div>
 
 <!-- Column mapping -->
