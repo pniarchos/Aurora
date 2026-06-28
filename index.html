@@ -136,7 +136,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .empty{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:14px;grid-column:1/-1;}
 
 /* Plant tracker */
-.plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
+.plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:4px;}
 .plant-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;position:relative;}
 .plant-card.overdue{border-color:var(--red);}
 .plant-card.due-soon{border-color:var(--amber);}
@@ -154,7 +154,8 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .plant-btn.water-btn:hover{opacity:.85;}
 .plant-edit-acts{position:absolute;top:8px;right:8px;display:flex;gap:3px;}
 .sunday-section{margin-bottom:1.5rem;}
-.sunday-hdr{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+.sunday-hdr{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.sunday-hdr::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;}
 
 /* Drill panel */
 .drill-panel{display:none;position:fixed;inset:0;background:var(--bg3);z-index:150;overflow-y:auto;}
@@ -273,7 +274,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.0</span>
+      <span class="ver">v10.1</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="supa-btn" onclick="openOv('supa-ov')">Supabase</button>
       <button class="tb-btn" id="gauth-btn" onclick="openOv('gsetup-ov')">Drive</button>
@@ -1172,17 +1173,20 @@ function switchOrgAndDomain(org, domain){
   document.querySelectorAll('.org-tab').forEach(b=>b.classList.toggle('active',b.dataset.org===org));
   renderOrgContent();
 }
-function switchDomain(d){ currentDomain=d; renderOrgContent(); }
+function switchDomain(d){ currentDomain=d; window._plantFilter='all'; renderOrgContent(); }
 
 function renderOrgContent(){
   const org=currentOrg;
   const domains=S.domains[org]||[];
-  let nav=`<div class="dom-nav">`;
-  domains.forEach(d=>{
+  let nav=`<div classconst brandCols=['bc-teal','bc-blue','bc-gold','bc-sage'];
+  let nav='<div class="dom-nav">';
+  domains.forEach(function(d,di){
     const isPlant=(d==='Plants');
-    nav+=`<button class="dom-btn${isPlant?' plant-tab':''}${d===currentDomain?' active':''}" onclick="switchDomain('${esc(d)}')">${isPlant?'🌿 ':''} ${esc(d)}</button>`;
+    const bc=isPlant?'plant-tab':brandCols[di%brandCols.length];
+    const active=d===currentDomain?' active':'';
+    nav+='<button class="dom-btn '+bc+active+'" onclick="switchDomain(this.dataset.d)" data-d="'+esc(d)+'">'+(isPlant?'🌿 ':'')+esc(d)+'</button>';
   });
-  nav+=`<button class="dom-mgr-btn" onclick="openDomMgr('${org}')">⊕ Manage</button></div>`;
+  nav+='<button class="dom-mgr-btn" onclick="openDomMgr(''+org+'')">&#x2295; Manage</button></div>';
 
   let body='';
   if(currentDomain==='Plants'){
@@ -1193,11 +1197,13 @@ function renderOrgContent(){
     const syncConn=isPersonalSocial&&S.gConfig.clientId&&S.gConfig.sheetId;
     const syncAction=syncConn?"syncSheet()":"openOv('gsetup-ov')";
     const syncBtnLabel=syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets';
-    const syncBtn=isPersonalSocial?`<button class="sync-btn" id="sync-btn" onclick="${syncAction}">${syncBtnLabel}</button>`:'';
-    const lastSync=syncConn&&S.gConfig.lastSync?`<div class="sync-status">Last synced: ${new Date(S.gConfig.lastSync).toLocaleString()}</div>`:'';
-    body=`<div class="sec-hdr"><div class="sec-title">${esc(currentDomain)}</div>
-      <div class="sec-acts">${syncBtn}<button class="add-btn" onclick="openItemModal('${org}','${esc(currentDomain)}')">+ Add item</button></div>
-    </div>${lastSync}<div class="cards">${items.length?items.map((item,i)=>renderCard(org,currentDomain,item,i,false)).join(''):'<div class="empty">No items yet — add your first</div>'}</div>`;
+    const syncBtn=isPersonalSocial?('<button class="sync-btn" id="sync-btn" onclick="'+syncAction+'">'+syncBtnLabel+'</button>'):'';
+    const lastSync=syncConn&&S.gConfig.lastSync?('<div class="sync-status">Last synced: '+new Date(S.gConfig.lastSync).toLocaleString()+'</div>'):'';
+    const addOnclick = 'openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
+    const cardsHtml = items.length ? items.map(function(item,i){return renderCard(org,currentDomain,item,i,false);}).join('') : '<div class="empty">No items yet — add your first</div>';
+    body = '<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
+      + '<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnclick+'">+ Add item</button></div>'
+      + '</div>'+lastSync+'<div class="cards">'+cardsHtml+'</div>';
   }
   document.getElementById('org-content').innerHTML=nav+body;
 }
@@ -1356,7 +1362,7 @@ function savePlant(){
 // ═══════════════════════════════════════════════════════════════════════
 function renderCard(org, domain, item, idx, fromDrill){
   const due=getDue(item,domain); const days=daysUntil(due); const u=urgency(days);
-  const lbl=days===null?null:days<0?`${Math.abs(days)}d overdue`:days===0?'Today':`${days}d`;
+  const lbl=days===null?null:days<0?''+(Math.abs(days))+'d overdue':days===0?'Today':''+(days)+'d';
   const bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
   const isSocial=(domain==='Social');
   const displayName=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'');
@@ -1365,8 +1371,8 @@ function renderCard(org, domain, item, idx, fromDrill){
   const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
   const rows=fields.filter(f=>!skipKeys.has(f.k)&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]).slice(0,5);
   const cbFields=fields.filter(f=>f.t==='checkbox'&&item[f.k]==='true');
-  const drillNote=fromDrill?`<div style="font-size:11px;color:var(--text3);margin-top:4px;">${esc(ORG_LABELS[org])} · ${esc(domain)}</div>`:'';
-  return `<div class="card">
+  const drillNote=fromDrill?'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+(esc(ORG_LABELS[org]))+' · '+(esc(domain))+'</div>':'';
+  return '<div class="card">'
     <div class="card-top">
       <div><div class="card-name">${esc(displayName||'Unnamed')}</div>${displaySub?`<div class="card-sub">${esc(displaySub)}</div>`:''}</div>${drillNote}
       <div class="card-acts">
@@ -1390,18 +1396,25 @@ function openItemModal(org, domain, idx){
   const item=idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]||{}:{};
   document.getElementById('item-title').textContent=(idx!==undefined?'Edit — ':'Add — ')+domain;
   const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  document.getElementById('item-body').innerHTML=fields.map(f=>{
+  document.getElementById('item-body').innerHTML=fields.map(function(f){
     const val=item[f.k]||'';
+    if(f.t==='checkbox'){
+      return '<div class="fg-check"><input type="checkbox" id="f-'+f.k+'"'+(val==='true'?' checked':'')+'><label for="f-'+f.k+'">'+f.l+'</label></div>';
+    }
     let inp='';
-    if(f.t==='select') inp=`<select id="f-${f.k}"><option value=""></option>${(f.opts||[]).map(o=>`<option${o===val?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
-    else if(f.t==='textarea') inp=`<textarea id="f-${f.k}">${esc(val)}</textarea>`;
-    else if(f.t==='checkbox') inp=`<input type="checkbox" id="f-${f.k}"${val==='true'?' checked':''} style="width:auto;margin-top:4px;">`;
-    else inp=`<input type="${f.t}" id="f-${f.k}" value="${esc(val)}"${f.req?' required':''}>`;
-    if(f.t==='checkbox') return `<div class="fg-check"><input type="checkbox" id="f-${f.k}"${val==='true'?' checked':''}><label for="f-${f.k}">${f.l}</label></div>`;
-    return `<div class="fg"><label for="f-${f.k}">${f.l}</label>${inp}</div>`;
+    if(f.t==='select'){
+      const opts=(f.opts||[]).map(function(o){ return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'; }).join('');
+      inp='<select id="f-'+f.k+'"><option value=""></option>'+opts+'</select>';
+    } else if(f.t==='textarea'){
+      inp='<textarea id="f-'+f.k+'">'+esc(val)+'</textarea>';
+    } else {
+      inp='<input type="'+f.t+'" id="f-'+f.k+'" value="'+esc(val)+'"'+(f.req?' required':'')+' autocomplete="off">';
+    }
+    return '<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label>'+inp+'</div>';
   }).join('');
   openOv('item-ov');
 }
+
 async function saveItem(){
   const org=editTarget?editTarget.org:currentOrg;
   const domain=editTarget?editTarget.domain:currentDomain;
@@ -2047,16 +2060,16 @@ function renderCalendarView(){
     return;
   }
   // Build embed URL
-  let embedSrc = c.embedUrl;
+  let embedSrc = c.embedUrl||'';
   if(!embedSrc && c.personalCalId){
     const mode = calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
-    let src = 'https://calendar.google.com/calendar/embed?'
-      + 'src='+encodeURIComponent(c.personalCalId)
-      + '&mode='+mode
-      + '&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=1&showTz=1&wkst=1&bgcolor=%23ffffff'
-      + '&ctz='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone);
-    if(c.tenfwdCalId) src += '&src='+encodeURIComponent(c.tenfwdCalId);
-    embedSrc = src;
+    const tz = encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'America/New_York');
+    embedSrc = 'https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23ffffff'
+      + '&ctz='+tz
+      + '&src='+encodeURIComponent(c.personalCalId)
+      + '&color=%230B8043&mode='+mode
+      + '&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTitle=0';
+    if(c.tenfwdCalId) embedSrc += '&src='+encodeURIComponent(c.tenfwdCalId)+'&color=%234285F4';
   }
   wrap.innerHTML = `
     <div class="sec-hdr">
