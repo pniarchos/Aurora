@@ -1908,6 +1908,7 @@ async function sendAuroraMessage(){
 // SETTINGS (unified)
 // ═══════════════════════════════════════════════════════════════════════
 function openSettings(){
+  if(!S) S = defaultState();
   // Anthropic
   document.getElementById('settings-anthropic-key').value = S.anthropicKey||'';
   // Supabase
@@ -2116,19 +2117,8 @@ function setCalView(v){
 // BOOT
 // ═══════════════════════════════════════════════════════════════════════
 document.getElementById('top-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
+load(); // ensure S is initialized before any function can access it
 document.getElementById('supa-sql').textContent = SUPA_SQL;
-
-// Check for existing localStorage data before showing migration option
-loadLS();
-const hasData = Object.values(S.items||{}).some(org=>Object.values(org).some(d=>d.length>0));
-if(hasData) document.getElementById('supa-migrate-row').style.display='block';
-
-// Pre-fill Supabase fields if already configured
-if(S.sbConfig&&S.sbConfig.url) document.getElementById('sb-url').value=S.sbConfig.url;
-if(S.sbConfig&&S.sbConfig.key) document.getElementById('sb-key').value=S.sbConfig.key;
-if(S.gConfig&&S.gConfig.clientId) document.getElementById('gs-client-id').value=S.gConfig.clientId;
-if(S.gConfig&&S.gConfig.sheetId) document.getElementById('gs-sheet-id').value=S.gConfig.sheetId;
-if(S.gConfig&&S.gConfig.sheetTab) document.getElementById('gs-sheet-tab').value=S.gConfig.sheetTab;
 
 renderDash();
 switchOrg('personal');
@@ -2140,13 +2130,7 @@ updateSettingsBtn();
 if(Notification.permission==='granted') scheduleNotifs();
 // Auto-connect Supabase if credentials already saved
 initSupabase();
-// Pre-fill calendar settings if saved
-if(S.calConfig){
-  if(S.calConfig.personalCalId) document.getElementById('cal-personal-id').value=S.calConfig.personalCalId;
-  if(S.calConfig.tenfwdCalId) document.getElementById('cal-tenfwd-id').value=S.calConfig.tenfwdCalId;
-  if(S.calConfig.embedUrl) document.getElementById('cal-embed-url').value=S.calConfig.embedUrl;
-}
-if(S.anthropicKey) document.getElementById('settings-anthropic-key').value=S.anthropicKey;
+// Settings pre-fill handled by openSettings()
 </script>
 </body>
 </html>
