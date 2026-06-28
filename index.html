@@ -926,6 +926,78 @@ function drillTile(id){
 }
 function closeDrill(){document.getElementById('drill-panel').classList.remove('open');}
 
+
+// ═══════════════════════════════════════════
+// SOCIAL FILTER / SORT / SEARCH
+// ═══════════════════════════════════════════
+function setSocialSearch(v){ socialFilter.search=v; renderOrgContent(); }
+function setSocialCircle(v){ socialFilter.circle=v; renderOrgContent(); }
+function setSocialSort(v){ socialFilter.sort=v; renderOrgContent(); }
+function setSocialFlag(v){ socialFilter.flag=v; renderOrgContent(); }
+function resetSocialFilter(){ socialFilter={search:'',circle:'',sort:'lastName',flag:''}; renderOrgContent(); }
+
+function applySocialFilter(items){
+  let out=items.slice();
+  const q=socialFilter.search.toLowerCase().trim();
+  if(q){
+    out=out.filter(c=>{
+      const nm=((c.firstName||'')+' '+(c.lastName||'')+' '+(c.nickname||'')).toLowerCase();
+      return nm.includes(q)||(c.email||'').toLowerCase().includes(q);
+    });
+  }
+  if(socialFilter.circle)
+    out=out.filter(c=>(c.circle||'').toLowerCase()===socialFilter.circle.toLowerCase());
+  if(socialFilter.flag)
+    out=out.filter(c=>c[socialFilter.flag]==='true');
+  out.sort((a,b)=>{
+    if(socialFilter.sort==='lastName') return (a.lastName||'').localeCompare(b.lastName||'');
+    if(socialFilter.sort==='firstName') return (a.firstName||'').localeCompare(b.firstName||'');
+    if(socialFilter.sort==='lastContacted'){
+      const da=a.lastContacted?new Date(a.lastContacted):new Date(0);
+      const db=b.lastContacted?new Date(b.lastContacted):new Date(0);
+      return da-db;
+    }
+    if(socialFilter.sort==='birthday'){
+      const td=new Date(); const yr=td.getFullYear();
+      function nb(c){ if(!c.birthdate)return new Date(9999,0,1); try{ const d=new Date(c.birthdate+'T00:00:00'); let n=new Date(yr,d.getMonth(),d.getDate()); if(n<=td)n=new Date(yr+1,d.getMonth(),d.getDate()); return n; }catch(e){return new Date(9999,0,1);} }
+      return nb(a)-nb(b);
+    }
+    return 0;
+  });
+  return out;
+}
+
+function renderSocialControls(allItems, circles){
+  const f=socialFilter;
+  const activeFilters=(f.search?1:0)+(f.circle?1:0)+(f.flag?1:0);
+  const circleOpts=['<option value="">All circles</option>']
+    .concat(circles.map(c=>'<option value="'+esc(c)+'"'+(f.circle===c?' selected':'')+'>'+esc(c)+'</option>'))
+    .join('');
+  return '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;align-items:center;">'
+    +'<input type="text" id="social-search" value="'+esc(f.search)+'" placeholder="Search name or email\u2026" '
+    +'oninput="setSocialSearch(this.value)" '
+    +'style="flex:1;min-width:160px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<select onchange="setSocialCircle(this.value)" style="padding:7px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +circleOpts+'</select>'
+    +'<select onchange="setSocialFlag(this.value)" style="padding:7px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<option value="">All contacts</option>'
+    +'<option value="birthdayCard"'+(f.flag==='birthdayCard'?' selected':'')+'>Birthday card list</option>'
+    +'<option value="christmasCard"'+(f.flag==='christmasCard'?' selected':'')+'>Christmas card list</option>'
+    +'<option value="weddingInvite"'+(f.flag==='weddingInvite'?' selected':'')+'>Wedding invite list</option>'
+    +'<option value="andreasFuneral"'+(f.flag==='andreasFuneral'?' selected':'')+'>Dad\u2019s funeral list</option>'
+    +'<option value="andreasMemorials"'+(f.flag==='andreasMemorials'?' selected':'')+'>Dad\u2019s memorials list</option>'
+    +'</select>'
+    +'<select onchange="setSocialSort(this.value)" style="padding:7px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+    +'<option value="lastName"'+(f.sort==='lastName'?' selected':'')+'>Sort: Last name</option>'
+    +'<option value="firstName"'+(f.sort==='firstName'?' selected':'')+'>Sort: First name</option>'
+    +'<option value="lastContacted"'+(f.sort==='lastContacted'?' selected':'')+'>Sort: Last contacted</option>'
+    +'<option value="birthday"'+(f.sort==='birthday'?' selected':'')+'>Sort: Upcoming birthday</option>'
+    +'</select>'
+    +(activeFilters>0?'<button onclick="resetSocialFilter()" style="padding:7px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">&#x2715; Reset ('+activeFilters+')</button>':'')
+    +'<span style="font-size:12px;color:var(--text3);white-space:nowrap;">'+allItems.length+' shown</span>'
+    +'</div>';
+}
+
 // ═══════════════════════════════════════════
 // ORG / DOMAIN
 // ═══════════════════════════════════════════
@@ -970,10 +1042,19 @@ function renderOrgContent(){
     const syncBtn=isPS?('<button class="sync-btn" id="sync-btn" onclick="'+(syncConn?'syncSheet()':'openSettings()')+'">'+( syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets')+'</button>'):'';
     const lastSyncStr=syncConn&&S.gConfig.lastSync?function(){try{const d=new Date(S.gConfig.lastSync);return isNaN(d.getTime())?'':d.toLocaleString();}catch(e){return '';}}():'';const lastSync=lastSyncStr?('<div class="sync-status">Last synced: '+lastSyncStr+'</div>'):'';
     const addOnc='openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
-    const cardsHtml=items.length?items.map((item,i)=>renderCard(org,currentDomain,item,i,false)).join(''):'<div class="empty">No items yet \u2014 add your first</div>';
+    // Social: apply filter/sort/search
+    let displayItems=items;
+    let socialControls='';
+    if(isPS){
+      const circles=[...new Set(items.map(c=>c.circle||'').filter(Boolean))].sort();
+      socialControls=renderSocialControls(items,circles);
+      displayItems=applySocialFilter(items);
+    }
+    const emptyMsg=isPS&&(socialFilter.search||socialFilter.circle||socialFilter.flag)?'No contacts match your filters.':'No items yet — add your first';
+    const cardsHtml=displayItems.length?displayItems.map((item,i)=>renderCard(org,currentDomain,item,items.indexOf(item),false)).join(''):'<div class="empty">'+emptyMsg+'</div>';
     body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
       +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc+'">+ Add item</button></div>'
-      +'</div>'+lastSync+'<div class="cards">'+cardsHtml+'</div>';
+      +'</div>'+lastSync+socialControls+'<div class="cards">'+cardsHtml+'</div>';
   }
   document.getElementById('org-content').innerHTML=nav+body;
 }
