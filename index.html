@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+A<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -959,19 +959,17 @@ function updateSupaBtn(){
   else { btn.classList.add('st-off'); }
 }
 function updateSupaModal(){
-  const acts = document.getElementById('supa-modal-acts');
+  var acts=document.getElementById('supa-modal-acts');
   if(!acts) return;
-  if(SB && S.sbConfig && S.sbConfig.url){
-    acts.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;flex:1;">
-        <span style="font-size:12px;color:var(--plant);font-weight:500;">✓ Connected to ${S.sbConfig.url.replace('https://','').split('.')[0]}.supabase.co</span>
-      </div>
-      <button class="btn-cancel" onclick="disconnectSupabase()">Disconnect</button>
-      <button class="btn-save" onclick="closeOv('supa-ov')">Done</button>`;
-  } else {
-    acts.innerHTML = `
-      <button class="btn-cancel" onclick="closeOv('supa-ov')">Cancel</button>
-      <button class="btn-plant" onclick="connectSupabase()">Connect</button>`;
+  if(SB&&S.sbConfig&&S.sbConfig.url){
+    var pn=S.sbConfig.url.replace('https://','').split('.')[0];
+    acts.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex:1;">'
+      +'<span style="font-size:12px;color:var(--plant);font-weight:500;">✓ Connected to '+pn+'.supabase.co</span>'
+      +'</div><button class="btn-cancel" onclick="disconnectSupabase()">Disconnect</button>'
+      +'<button class="btn-save" onclick="closeOv(\x27supa-ov\x27)">Done</button>';
+  }else{
+    acts.innerHTML='<button class="btn-cancel" onclick="closeOv(\x27supa-ov\x27)">Cancel</button>'
+      +'<button class="btn-plant" onclick="connectSupabase()">Connect</button>';
   }
 }
 function disconnectSupabase(){
@@ -1104,16 +1102,25 @@ function tileSub(tile){
   return 'all orgs';
 }
 function renderDash(){
-  let h = S.tiles.map(tile=>{
-    const v=tileValue(tile);
-    const del=dashEditMode?`<button class="tile-del" onclick="deleteTile('${tile.id}',event)">✕</button>`:'';
-    const clickAction=(tile.type==='plants_water'||tile.type==='plants_check')
-      ?`switchOrgAndDomain('personal','Plants')`
-      :`drillTile('${tile.id}')`;
-    return `<div class="tile ${tile.color}" onclick="${clickAction}">${del}<div class="tile-lbl">${esc(tile.label)}</div><div class="tile-val">${v}</div><div class="tile-sub">${esc(tileSub(tile))}</div></div>`;
-  }).join('');
-  if(dashEditMode) h += `<button class="tile-add" onclick="openOv('tile-ov')">+ Add tile</button>`;
-  document.getElementById('tiles-wrap').innerHTML = h;
+  var h='';
+  S.tiles.forEach(function(tile){
+    var v=tileValue(tile);
+    var isPT=(tile.type==='plants_water'||tile.type==='plants_check');
+    var delBtn=dashEditMode?('<button class="tile-del" data-tid="'+esc(tile.id)+'" onclick="deleteTileByData(this)">&#x2715;</button>'):'';
+    var onclk=isPT?'switchOrgAndDomain(\x27personal\x27,\x27Plants\x27)':'drillTile(\x27'+esc(tile.id)+'\x27)';
+    h+='<div class="tile '+esc(tile.color)+'" onclick="'+onclk+'">'
+      +delBtn
+      +'<div class="tile-lbl">'+esc(tile.label)+'</div>'
+      +'<div class="tile-val">'+v+'</div>'
+      +'<div class="tile-sub">'+esc(tileSub(tile))+'</div>'
+      +'</div>';
+  });
+  if(dashEditMode)h+='<button class="tile-add" onclick="openOv(\x27tile-ov\x27)">+ Add tile</button>';
+  document.getElementById('tiles-wrap').innerHTML=h;
+}
+function deleteTileByData(btn){
+  S.tiles=S.tiles.filter(function(t){return t.id!==btn.dataset.tid;});
+  persistLS();sbSaveTiles();renderDash();
 }
 function toggleDashEdit(){
   dashEditMode=!dashEditMode;
@@ -1191,7 +1198,7 @@ function switchDomain(d){ currentDomain=d; window._plantFilter='all'; renderOrgC
 function renderOrgContent(){
   const org=currentOrg;
   const domains=S.domains[org]||[];
-  let nav=`<div classconst brandCols=['bc-teal','bc-blue','bc-gold','bc-sage'];
+
   let nav='<div class="dom-nav">';
   domains.forEach(function(d,di){
     const isPlant=(d==='Plants');
@@ -1199,7 +1206,7 @@ function renderOrgContent(){
     const active=d===currentDomain?' active':'';
     nav+='<button class="dom-btn '+bc+active+'" onclick="switchDomain(this.dataset.d)" data-d="'+esc(d)+'">'+(isPlant?'🌿 ':'')+esc(d)+'</button>';
   });
-  nav+='<button class="dom-mgr-btn" onclick="openDomMgr(''+org+'')">&#x2295; Manage</button></div>';
+  nav+='<button class="dom-mgr-btn" data-org="'+esc(org)+'" onclick="openDomMgr(this.dataset.org)">⊕ Manage</button></div>';
 
   let body='';
   if(currentDomain==='Plants'){
@@ -1374,36 +1381,48 @@ function savePlant(){
 // CARD RENDERER
 // ═══════════════════════════════════════════════════════════════════════
 function renderCard(org, domain, item, idx, fromDrill){
-  const due=getDue(item,domain); const days=daysUntil(due); const u=urgency(days);
-  const lbl=days===null?null:days<0?''+(Math.abs(days))+'d overdue':days===0?'Today':''+(days)+'d';
-  const bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
-  const isSocial=(domain==='Social');
-  const displayName=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'');
-  const displaySub=isSocial?(item.nickname?'"'+item.nickname+'"':item.type||''):(item.category||item.relationship||'');
-  const skipKeys=isSocial?new Set(['firstName','lastName','nickname','salutation','notes','personalize','story','importantNotes']):new Set(['name','notes']);
-  const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
-  const rows=fields.filter(f=>!skipKeys.has(f.k)&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]).slice(0,5);
-  const cbFields=fields.filter(f=>f.t==='checkbox'&&item[f.k]==='true');
-  const drillNote=fromDrill?'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+(esc(ORG_LABELS[org]))+' · '+(esc(domain))+'</div>':'';
+  var due=getDue(item,domain);
+  var days=daysUntil(due);
+  var u=urgency(days);
+  var lbl=days===null?null:days<0?(Math.abs(days)+'d overdue'):days===0?'Today':(days+'d');
+  var bCls=u==='red'?'badge-red':u==='amber'?'badge-amber':'badge-green';
+  var isSocial=(domain==='Social');
+  var displayName=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'');
+  var displaySub=isSocial?(item.nickname?('"'+item.nickname+'"'):item.type||''):(item.category||item.relationship||'');
+  var skipKeys=isSocial?{firstName:1,lastName:1,nickname:1,salutation:1,notes:1,personalize:1,story:1,importantNotes:1}:{name:1,notes:1};
+  var fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+  var rows=fields.filter(function(f){ return !skipKeys[f.k]&&f.t!=='checkbox'&&f.t!=='textarea'&&item[f.k]; }).slice(0,5);
+  var cbFields=fields.filter(function(f){ return f.t==='checkbox'&&item[f.k]==='true'; });
+  var drillNote=fromDrill?('<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+esc(ORG_LABELS[org])+' \xb7 '+esc(domain)+'</div>'):'';
+  var hasDue=!!getDue(item,domain)&&(org==='personal'||org==='tenfwd');
+  window['_card_'+org+'_'+idx]=item;
+  var calLbl=item._calPushed?'Pushed to calendar':'Send to calendar';
+  var calBtn=hasDue?('<button class="iBtn'+(item._calPushed?' cal-sent':'')+'" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="pushToCalendarByData(this)" title="'+calLbl+'">&#x1F4C5;</button>'):'';
+  var lbl2=lbl?('<span class="badge '+bCls+'">'+lbl+'</span>'):'';
+  var editBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="openItemModalByData(this)">&#x270e;</button>';
+  var delBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="askDeleteByData(this)">&#x2715;</button>';
+  var rowsHtml=rows.map(function(f){
+    var v=item[f.k];
+    if(f.t==='date') v=fmtDate(v);
+    return '<div class="crow"><span class="crow-lbl">'+esc(f.l)+'</span><span class="crow-val">'+esc(v)+'</span></div>';
+  }).join('');
+  var cbHtml=cbFields.length?('<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'+cbFields.map(function(f){ return '<span class="badge badge-green">'+esc(f.l)+'</span>'; }).join('')+'</div>'):'';
+  var notesHtml=(item.importantNotes||item.notes)?('<div class="card-notes">'+esc(item.importantNotes||item.notes)+'</div>'):'';
+  var nameHtml='<div class="card-name">'+esc(displayName||'Unnamed')+'</div>'+(displaySub?'<div class="card-sub">'+esc(displaySub)+'</div>':'');
   return '<div class="card">'
-    <div class="card-top">
-      <div><div class="card-name">${esc(displayName||'Unnamed')}</div>${displaySub?`<div class="card-sub">${esc(displaySub)}</div>`:''}</div>${drillNote}
-      <div class="card-acts">
-        ${lbl?`<span class="badge ${bCls}">${lbl}</span>`:''}
-        ${(getDue(item,domain)&&(org==='personal'||org==='tenfwd'))?`<button class="iBtn${item._calPushed?' cal-sent':''}" onclick="pushToCalendar('${esc(org)}','${esc(domain)}',${JSON.stringify(item).replace(/'/g,"&#39;")},${idx})" title="${item._calPushed?'Pushed to calendar — push again':'Send to calendar'}">📅</button>`:''}
-        <button class="iBtn" onclick="openItemModal('${esc(org)}','${esc(domain)}',${idx})">✎</button>
-        <button class="iBtn" onclick="askDelete('${esc(org)}','${esc(domain)}',${idx})">✕</button>
-      </div>
-    </div>
-    <div class="card-rows">${rows.map(f=>{let v=item[f.k];if(f.t==='date')v=fmtDate(v);return`<div class="crow"><span class="crow-lbl">${esc(f.l)}</span><span class="crow-val">${esc(v)}</span></div>`;}).join('')}</div>
-    ${cbFields.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${cbFields.map(f=>`<span class="badge badge-green">${esc(f.l)}</span>`).join('')}</div>`:''}
-    ${(item.importantNotes||item.notes)?`<div class="card-notes">${esc(item.importantNotes||item.notes)}</div>`:''}
-  </div>`;
+    +'<div class="card-top">'
+    +'<div>'+nameHtml+'</div>'+drillNote
+    +'<div class="card-acts">'+lbl2+calBtn+editBtn+delBtn+'</div>'
+    +'</div>'
+    +'<div class="card-rows">'+rowsHtml+'</div>'
+    +cbHtml+notesHtml
+    +'</div>';
 }
+function openItemModalByData(btn){ openItemModal(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx)); }
+function askDeleteByData(btn){ askDelete(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx)); }
+function pushToCalendarByData(btn){ var it=window['_card_'+btn.dataset.org+'_'+btn.dataset.idx]; pushToCalendar(btn.dataset.org,btn.dataset.dom,it,parseInt(btn.dataset.idx)); }
 
-// ═══════════════════════════════════════════════════════════════════════
-// ITEM MODAL
-// ═══════════════════════════════════════════════════════════════════════
+
 function openItemModal(org, domain, idx){
   editTarget=idx!==undefined?{org,domain,idx:parseInt(idx)}:null;
   const item=idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]||{}:{};
@@ -1488,7 +1507,7 @@ function openDomMgr(org){
 function renderDomList(){
   const doms=S.domains[domMgrOrg]||[];
   document.getElementById('dom-list').innerHTML=doms.length
-    ?doms.map((d,i)=>`<div class="dom-item"><span class="dom-item-name">${esc(d)}</span><button class="iBtn" onclick="removeDomain(${i})">✕</button></div>`).join('')
+    ?doms.map((d,i)=>'<div class="dom-item"><span class="dom-item-name">'+(esc(d))+'</span><button class="iBtn" onclick="removeDomain('+(i)+')">✕</button></div>').join('')
     :'<div style="font-size:13px;color:var(--text3);padding:6px 0;">No domains yet.</div>';
 }
 function addDomain(){
@@ -1504,7 +1523,7 @@ function addDomain(){
 function removeDomain(idx){
   const domain=S.domains[domMgrOrg][idx];
   const items=((S.items[domMgrOrg]||{})[domain]||[]);
-  if(items.length>0&&!confirm(`Delete "${domain}" and its ${items.length} item(s)?`)) return;
+  if(items.length>0&&!confirm('Delete "'+(domain)+'" and its '+(items.length)+' item(s)?')) return;
   S.domains[domMgrOrg].splice(idx,1);
   if(S.items[domMgrOrg]) delete S.items[domMgrOrg][domain];
   persistLS(); sbSaveDomains(domMgrOrg); renderDomList();
@@ -1570,8 +1589,8 @@ function fetchSheetColumns(){
 function openMappingModal(){
   const mapping=S.gConfig.mapping||{};
   document.getElementById('map-tbody').innerHTML=SOCIAL_MAP_FIELDS.map(f=>{
-    const opts=['<option value="">— ignore —</option>',...gSheetColumns.map(col=>`<option value="${esc(col)}"${mapping[f.k]===col?' selected':''}>${esc(col)}</option>`)].join('');
-    return `<tr><td>${f.l}</td><td><select id="map-${f.k}">${opts}</select></td></tr>`;
+    const opts=['<option value="">— ignore —</option>',...gSheetColumns.map(col=>'<option value="'+(esc(col))+'"'+(mapping[f.k]===col?' selected':'')+'>'+(esc(col))+'</option>')].join('');
+    return '<tr><td>'+(f.l)+'</td><td><select id="map-'+(f.k)+'">'+(opts)+'</select></td></tr>';
   }).join('');
   openOv('gmap-ov');
 }
@@ -1666,7 +1685,7 @@ function openOv(id){
 }
 function closeOv(id){ document.getElementById(id).classList.remove('open'); }
 function ovBg(e,id){ if(e.target===document.getElementById(id)) closeOv(id); }
-function setAlert(elId,msg,type){ document.getElementById(elId).innerHTML=`<div class="alert alert-${type}">${esc(msg)}</div>`; }
+function setAlert(elId,msg,type){ document.getElementById(elId).innerHTML='<div class="alert alert-'+(type)+'">'+(esc(msg))+'</div>'; }
 
 // ═══════════════════════════════════════════════════════════════════════
 // AURORA ASSISTANT (Claude API)
@@ -1966,47 +1985,27 @@ function reminderDaysForOrg(org){
   return (c.remindersByOrg&&c.remindersByOrg[org])||7;
 }
 
-function pushToCalendar(org, domain, item, idx){
-  // Validate calendar is configured
-  const calId = calIdForOrg(org);
-  if(!calId && org!=='personal'){
-    alert('No calendar configured for '+ORG_LABELS[org]+'. Open Calendar settings to add one.');
-    return;
+function pushToCalendar(org,domain,item,idx){
+  var calId=calIdForOrg(org);
+  if(!calId&&org!=='personal'){alert('No calendar configured for '+ORG_LABELS[org]+'.');return;}
+  var due=getDue(item,domain);
+  if(!due){alert('This item has no due date.');return;}
+  pendingCalPush={org:org,domain:domain,item:item,idx:idx,calId:calId,due:due};
+  var rd=reminderDaysForOrg(org);
+  var calLabel=org==='personal'?'Personal Calendar':ORG_LABELS[org]+' Calendar';
+  var isSocial=domain==='Social';
+  var dn=isSocial?[item.salutation,item.firstName,item.lastName].filter(Boolean).join(' '):(item.name||'Unnamed');
+  function makeRow(lbl,val){
+    return '<div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">'
+      +'<div style="font-size:13px;color:var(--text2);margin-bottom:4px;">'+lbl+'</div>'
+      +'<div style="font-size:15px;font-weight:600;">'+val+'</div></div>';
   }
-  // Get due date
-  const due = getDue(item, domain);
-  if(!due){
-    alert('This item has no due date. Add a due date first.');
-    return;
-  }
-  // Show confirmation modal
-  pendingCalPush = {org, domain, item, idx, calId, due};
-  const reminderDays = reminderDaysForOrg(org);
-  const calLabel = org==='personal'?'Personal Calendar':ORG_LABELS[org]+' Calendar';
-  const isSocial = domain==='Social';
-  const displayName = isSocial
-    ? [item.salutation,item.firstName,item.lastName].filter(Boolean).join(' ')
-    : (item.name||'Unnamed');
-  document.getElementById('cal-push-body').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;">
-      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Event</div>
-        <div style="font-size:15px;font-weight:600;">${esc(displayName)}</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:2px;">${esc(domain)} · ${esc(ORG_LABELS[org])}</div>
-      </div>
-      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Date</div>
-        <div style="font-size:15px;font-weight:600;">${fmtDate(due)}</div>
-      </div>
-      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Calendar</div>
-        <div style="font-size:15px;font-weight:600;">${esc(calLabel)}</div>
-      </div>
-      <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px 14px;">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:4px;">Reminder</div>
-        <div style="font-size:15px;font-weight:600;">${reminderDays} day${reminderDays===1?'':'s'} before</div>
-      </div>
-    </div>`;
+  document.getElementById('cal-push-body').innerHTML='<div style="margin-bottom:1rem;">'
+    +makeRow('Event',esc(dn)+'<br><span style="font-size:12px;color:var(--text2);">'+esc(domain)+' · '+esc(ORG_LABELS[org])+'</span>')
+    +makeRow('Date',fmtDate(due))
+    +makeRow('Calendar',esc(calLabel))
+    +makeRow('Reminder',rd+' day'+(rd===1?'':'s')+' before')
+    +'</div>';
   document.getElementById('cal-push-alert').innerHTML='';
   openOv('cal-push-ov');
 }
@@ -2060,44 +2059,42 @@ function confirmPushToCalendar(){
 let calView = 'month'; // month | week | agenda
 
 function renderCalendarView(){
-  const c = S.calConfig||{};
-  const wrap = document.getElementById('org-content');
-  if(!c.embedUrl && !c.personalCalId){
-    wrap.innerHTML = `
-      <div class="cal-no-config">
-        <div style="font-size:32px;margin-bottom:12px;">📅</div>
-        <div style="font-weight:600;margin-bottom:6px;color:var(--text);">Calendar not configured</div>
-        <div style="margin-bottom:16px;">Add your calendar IDs to see your calendar here.</div>
-        <button class="btn-save" onclick="openCalSettings()">Open calendar settings</button>
-      </div>`;
+  var c=S.calConfig||{};
+  var wrap=document.getElementById('org-content');
+  if(!c.personalCalId&&!c.embedUrl){
+    wrap.innerHTML='<div class="cal-no-config">'
+      +'<div style="font-size:32px;margin-bottom:12px;">&#x1F4C5;</div>'
+      +'<div style="font-weight:600;margin-bottom:6px;color:var(--text);">Calendar not configured</div>'
+      +'<div style="margin-bottom:16px;">Add your calendar IDs in Calendar settings.</div>'
+      +'<button class="btn-save" onclick="openCalSettings()">Open calendar settings</button>'
+      +'</div>';
     return;
   }
-  // Build embed URL
-  let embedSrc = c.embedUrl||'';
-  if(!embedSrc && c.personalCalId){
-    const mode = calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
-    const tz = encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'America/New_York');
-    embedSrc = 'https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23ffffff'
-      + '&ctz='+tz
-      + '&src='+encodeURIComponent(c.personalCalId)
-      + '&color=%230B8043&mode='+mode
-      + '&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTitle=0';
-    if(c.tenfwdCalId) embedSrc += '&src='+encodeURIComponent(c.tenfwdCalId)+'&color=%234285F4';
+  var embedSrc=c.embedUrl||'';
+  if(!embedSrc&&c.personalCalId){
+    var mode=calView==='agenda'?'AGENDA':calView==='week'?'WEEK':'MONTH';
+    var tz=encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'America/New_York');
+    embedSrc='https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23ffffff'
+      +'&ctz='+tz+'&src='+encodeURIComponent(c.personalCalId)
+      +'&color=%230B8043&mode='+mode
+      +'&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTitle=0';
+    if(c.tenfwdCalId) embedSrc+='&src='+encodeURIComponent(c.tenfwdCalId)+'&color=%234285F4';
   }
-  wrap.innerHTML = `
-    <div class="sec-hdr">
-      <div class="sec-title">Calendar</div>
-      <div class="sec-acts">
-        <button class="cal-view-btn${calView==='month'?' active':''}" onclick="setCalView('month')">Month</button>
-        <button class="cal-view-btn${calView==='week'?' active':''}" onclick="setCalView('week')">Week</button>
-        <button class="cal-view-btn${calView==='agenda'?' active':''}" onclick="setCalView('agenda')">Agenda</button>
-        <button class="add-btn" onclick="openCalSettings()">⚙ Settings</button>
-      </div>
-    </div>
-    <div class="cal-embed-wrap">
-      <iframe src="${esc(embedSrc)}" frameborder="0" scrolling="no" allowfullscreen></iframe>
-    </div>
-    <div style="font-size:11px;color:var(--text3);margin-top:8px;">Calendar view is read-only. Use the 📅 button on any item to push deadlines to your calendar.</div>`;
+  var mA=calView==='month'?' active':'';
+  var wA=calView==='week'?' active':'';
+  var aA=calView==='agenda'?' active':'';
+  wrap.innerHTML='<div class="sec-hdr">'
+    +'<div class="sec-title">Calendar</div>'
+    +'<div class="sec-acts">'
+    +'<button class="cal-view-btn'+mA+'" onclick="setCalView(\x27month\x27)">Month</button>'
+    +'<button class="cal-view-btn'+wA+'" onclick="setCalView(\x27week\x27)">Week</button>'
+    +'<button class="cal-view-btn'+aA+'" onclick="setCalView(\x27agenda\x27)">Agenda</button>'
+    +'<button class="add-btn" onclick="openCalSettings()">⚙ Settings</button>'
+    +'</div></div>'
+    +'<div class="cal-embed-wrap">'
+    +'<iframe src="'+esc(embedSrc)+'" frameborder="0" scrolling="no" allowfullscreen></iframe>'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--text3);margin-top:8px;">Calendar view is read-only. Use the &#x1F4C5; button on any item to push deadlines.</div>';
 }
 
 function setCalView(v){
