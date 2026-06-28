@@ -6,10 +6,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Admin Hub">
+<meta name="apple-mobile-web-app-title" content="Aurora">
 <meta name="theme-color" content="#1a1a18">
-<title>Admin Hub</title>
+<title>Aurora</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --bg:#fff;--bg2:#f6f5f1;--bg3:#eeedea;--bg4:#e8e7e3;
@@ -36,7 +37,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 
 /* Top bar */
 .top-bar{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.top-bar h1{font-size:18px;font-weight:600;letter-spacing:-.3px;white-space:nowrap;}
+.top-bar h1{font-size:20px;font-weight:900;letter-spacing:.04em;white-space:nowrap;font-family:'Orbitron',sans-serif;color:var(--text);}
 .tbr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
 .tb-btn{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 9px;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap;}
 .tb-btn:hover{background:var(--bg2);color:var(--text);}
@@ -207,9 +208,12 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 <body>
 <div class="shell">
   <div class="top-bar">
-    <h1>Admin Hub</h1>
+    <div>
+    <h1>Aurora</h1>
+    <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
+    </div>
     <div class="tbr">
-      <span class="ver">v6.0</span>
+      <span class="ver">v7.0</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">🔔 Notifications</button>
       <button class="tb-btn" id="supa-btn" onclick="openOv('supa-ov')">⬡ Supabase</button>
       <button class="tb-btn" id="gauth-btn" onclick="openOv('gsetup-ov')">⬡ Google Sheets</button>
@@ -353,7 +357,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <div class="alert alert-info">Existing localStorage data detected. Migrate it to Supabase?</div>
       <div class="fg-check"><input type="checkbox" id="sb-migrate" checked><label for="sb-migrate">Migrate existing data to Supabase on connect</label></div>
     </div>
-    <div class="modal-acts">
+    <div id="supa-modal-acts" class="modal-acts">
       <button class="btn-cancel" onclick="closeOv('supa-ov')">Cancel</button>
       <button class="btn-plant" onclick="connectSupabase()">Connect</button>
     </div>
@@ -595,15 +599,27 @@ function connectSupabase(){
   const url = document.getElementById('sb-url').value.trim();
   const key = document.getElementById('sb-key').value.trim();
   if(!url || !key){ setAlert('supa-alert','Please enter both URL and anon key.','err'); return; }
+  // If already connected to same project, just close — don't re-migrate
+  if(SB && S.sbConfig.url===url && S.sbConfig.key===key){
+    closeOv('supa-ov'); return;
+  }
   S.sbConfig = {url, key};
   persistLS();
   setAlert('supa-alert','Connecting…','ok');
   loadSupabaseLib(()=>{
     try{
       SB = supabase.createClient(url, key);
-      const doMigrate = document.getElementById('sb-migrate') && document.getElementById('sb-migrate').checked;
-      if(doMigrate){ migrateToSupabase(()=>{ closeOv('supa-ov'); updateSupaBtn(); loadFromSupabase(); }); }
-      else { closeOv('supa-ov'); updateSupaBtn(); loadFromSupabase(); }
+      const migBox = document.getElementById('sb-migrate');
+      const doMigrate = migBox && migBox.checked && !S.sbConfig.migrationDone;
+      if(doMigrate){
+        migrateToSupabase(()=>{
+          S.sbConfig.migrationDone = true;
+          persistLS();
+          closeOv('supa-ov'); updateSupaBtn(); loadFromSupabase();
+        });
+      } else {
+        closeOv('supa-ov'); updateSupaBtn(); loadFromSupabase();
+      }
     } catch(e){ setAlert('supa-alert','Connection failed: '+e.message,'err'); }
   });
 }
@@ -611,11 +627,18 @@ function connectSupabase(){
 async function migrateToSupabase(cb){
   if(!SB) return;
   try{
+    // Check if data already exists — if so, skip to avoid duplicates
+    const {data:existingItems} = await SB.from('hub_items').select('id').eq('user_id',USER_ID).limit(1);
+    if(existingItems && existingItems.length > 0){
+      console.log('Supabase already has data — skipping migration to avoid duplicates.');
+      if(cb) cb(); return;
+    }
     // Migrate items
     for(const org of Object.keys(S.items)){
       for(const domain of Object.keys(S.items[org])){
         for(const item of (S.items[org][domain]||[])){
-          await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:item});
+          const cleanItem = {...item}; delete cleanItem._sbId;
+          await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:cleanItem});
         }
       }
     }
@@ -625,13 +648,16 @@ async function migrateToSupabase(cb){
     }
     // Migrate tiles
     await SB.from('hub_tiles').upsert({user_id:USER_ID,tiles:S.tiles,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-    // Migrate plants
-    for(const p of (S.plants||[])){
-      await SB.from('hub_plants').insert({
-        user_id:USER_ID,name:p.name,nickname:p.nickname||'',
-        check_days:p.checkDays||7,water_days:p.waterDays||10,rule:p.rule||'',
-        last_watered:p.lastWatered||null,last_checked:p.lastChecked||null,notes:p.notes||''
-      });
+    // Migrate plants — check first
+    const {data:existingPlants} = await SB.from('hub_plants').select('id').eq('user_id',USER_ID).limit(1);
+    if(!existingPlants || existingPlants.length === 0){
+      for(const p of (S.plants||[])){
+        await SB.from('hub_plants').insert({
+          user_id:USER_ID,name:p.name,nickname:p.nickname||'',
+          check_days:p.checkDays||7,water_days:p.waterDays||10,rule:p.rule||'',
+          last_watered:p.lastWatered||null,last_checked:p.lastChecked||null,notes:p.notes||''
+        });
+      }
     }
     if(cb) cb();
   } catch(e){ console.warn('Migration error:',e); if(cb) cb(); }
@@ -677,10 +703,11 @@ async function loadFromSupabase(){
 async function sbSaveItem(org, domain, item){
   if(!SB) return;
   try{
+    const payload = {...item}; delete payload._sbId; // never store _sbId inside jsonb data
     if(item._sbId){
-      await SB.from('hub_items').update({data:item,updated_at:new Date().toISOString()}).eq('id',item._sbId);
+      await SB.from('hub_items').update({data:payload,updated_at:new Date().toISOString()}).eq('id',item._sbId);
     } else {
-      const {data} = await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:item}).select();
+      const {data} = await SB.from('hub_items').insert({user_id:USER_ID,org,domain,data:payload}).select();
       if(data&&data[0]) item._sbId = data[0].id;
     }
   } catch(e){ console.warn('sbSaveItem error:',e); }
@@ -731,6 +758,34 @@ async function sbDeletePlant(id){
 function updateSupaBtn(){
   const btn = document.getElementById('supa-btn');
   if(S.sbConfig&&S.sbConfig.url){ btn.textContent='⬡ Supabase connected'; btn.classList.add('supa-on'); }
+}
+function updateSupaModal(){
+  const acts = document.getElementById('supa-modal-acts');
+  if(!acts) return;
+  if(SB && S.sbConfig && S.sbConfig.url){
+    acts.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;flex:1;">
+        <span style="font-size:12px;color:var(--plant);font-weight:500;">✓ Connected to ${S.sbConfig.url.replace('https://','').split('.')[0]}.supabase.co</span>
+      </div>
+      <button class="btn-cancel" onclick="disconnectSupabase()">Disconnect</button>
+      <button class="btn-save" onclick="closeOv('supa-ov')">Done</button>`;
+  } else {
+    acts.innerHTML = `
+      <button class="btn-cancel" onclick="closeOv('supa-ov')">Cancel</button>
+      <button class="btn-plant" onclick="connectSupabase()">Connect</button>`;
+  }
+}
+function disconnectSupabase(){
+  if(!confirm('Disconnect Supabase? Data already saved there is not deleted. Hub will use localStorage only until reconnected.')) return;
+  SB = null;
+  S.sbConfig = {url:'',key:''};
+  persistLS();
+  document.getElementById('sb-url').value='';
+  document.getElementById('sb-key').value='';
+  const btn = document.getElementById('supa-btn');
+  btn.textContent='⬡ Supabase'; btn.classList.remove('supa-on');
+  updateSupaModal();
+  setAlert('supa-alert','Disconnected. Hub is using localStorage.','ok');
 }
 
 function initSupabase(){
@@ -1324,7 +1379,10 @@ function scheduleNotifs(){
 // ═══════════════════════════════════════════════════════════════════════
 // OVERLAY HELPERS
 // ═══════════════════════════════════════════════════════════════════════
-function openOv(id){ document.getElementById(id).classList.add('open'); }
+function openOv(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='supa-ov') updateSupaModal();
+}
 function closeOv(id){ document.getElementById(id).classList.remove('open'); }
 function ovBg(e,id){ if(e.target===document.getElementById(id)) closeOv(id); }
 function setAlert(elId,msg,type){ document.getElementById(elId).innerHTML=`<div class="alert alert-${type}">${esc(msg)}</div>`; }
