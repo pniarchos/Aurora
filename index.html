@@ -1193,6 +1193,7 @@ function switchDomain(d){ currentDomain=d; window._plantFilter='all'; renderOrgC
 function renderOrgContent(){
   const org=currentOrg;
   const domains=S.domains[org]||[];
+  const brandCols=['bc-teal','bc-blue','bc-gold','bc-sage'];
 
   let nav='<div class="dom-nav">';
   domains.forEach(function(d,di){
