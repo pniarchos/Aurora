@@ -225,10 +225,10 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   <div class="top-bar">
     <div>
       <h1>Aurora</h1>
-      <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Intelligent Assistant System</p>
+      <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.1</span>
+      <span class="ver">v10.9.2</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -609,6 +609,25 @@ let conversationHistory = [], auroraThinking = false;
 let tokenUsage = {inputTokens:0, outputTokens:0, queries:0};
 const SONNET_IN = 0.000003;   // $3 per 1M input tokens
 const SONNET_OUT = 0.000015;  // $15 per 1M output tokens
+
+// ═══════════════════════════════════════════════════════════════════════
+// TOKEN COUNTER
+// ═══════════════════════════════════════════════════════════════════════
+function updateTokenDisplay(){
+  const el = document.getElementById('s-token-display');
+  if(!el) return;
+  const cost = (tokenUsage.inputTokens * SONNET_IN) + (tokenUsage.outputTokens * SONNET_OUT);
+  el.innerHTML = tokenUsage.queries === 0
+    ? '<span style="color:var(--text3);">No queries yet this session</span>'
+    : '<strong>' + tokenUsage.queries + '</strong> quer' + (tokenUsage.queries===1?'y':'ies')
+      + ' &nbsp;·&nbsp; '
+      + '<strong>' + (tokenUsage.inputTokens+tokenUsage.outputTokens).toLocaleString() + '</strong> tokens'
+      + ' &nbsp;·&nbsp; estimated <strong>$' + cost.toFixed(4) + '</strong> this session';
+}
+function resetTokenCounter(){
+  tokenUsage = {inputTokens:0, outputTokens:0, queries:0};
+  updateTokenDisplay();
+}
 let calView = 'month', pendingCalPush = null;
 
 function defaultState(){
