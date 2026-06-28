@@ -1,4 +1,4 @@
-A<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,6 +8,7 @@ A<!DOCTYPE html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Aurora">
 <meta name="theme-color" content="#1a1a18">
+<!-- Aurora v10.0 build -->
 <title>Aurora</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap');
@@ -276,10 +277,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
     <div class="tbr">
       <span class="ver">v10.1</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
-      <button class="tb-btn" id="supa-btn" onclick="openOv('supa-ov')">Supabase</button>
-      <button class="tb-btn" id="gauth-btn" onclick="openOv('gsetup-ov')">Drive</button>
-      <button class="tb-btn" id="cal-settings-btn" onclick="openCalSettings()">Calendar</button>
-      <button class="tb-btn" id="settings-btn" onclick="openSettings()">⚙</button>
+      <button class="tb-btn" id="settings-btn" onclick="openSettings()">⚙ Settings</button>
       <div class="top-date" id="top-date"></div>
     </div>
   </div>
@@ -423,31 +421,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Supabase setup -->
-<div class="overlay" id="supa-ov" onclick="ovBg(event,'supa-ov')">
-  <div class="modal">
-    <h3>Connect Supabase</h3>
-    <div class="modal-desc">Enables cross-device sync. All hub data is stored in your Supabase project instead of (or in addition to) localStorage.</div>
-    <div id="supa-alert"></div>
-    <div class="supa-steps">
-      <div class="supa-step"><strong>1.</strong> Create a free project at <strong>supabase.com</strong></div>
-      <div class="supa-step"><strong>2.</strong> Go to Settings → API and copy your Project URL and anon public key</div>
-      <div class="supa-step"><strong>3.</strong> Run this SQL in your Supabase SQL editor:
-        <div class="code-block" id="supa-sql"></div>
-      </div>
-    </div>
-    <div class="fg"><label>Supabase Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co"></div>
-    <div class="fg"><label>Supabase Anon Key</label><input type="text" id="sb-key" placeholder="eyJ..."></div>
-    <div id="supa-migrate-row" style="display:none">
-      <div class="alert alert-info">Existing localStorage data detected. Migrate it to Supabase?</div>
-      <div class="fg-check"><input type="checkbox" id="sb-migrate" checked><label for="sb-migrate">Migrate existing data to Supabase on connect</label></div>
-    </div>
-    <div id="supa-modal-acts" class="modal-acts">
-      <button class="btn-cancel" onclick="closeOv('supa-ov')">Cancel</button>
-      <button class="btn-plant" onclick="connectSupabase()">Connect</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- Google setup -->
 <div class="overlay" id="gsetup-ov" onclick="ovBg(event,'gsetup-ov')">
@@ -502,52 +476,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
   </div>
 </div>
 
-<!-- Calendar settings -->
-<div class="overlay" id="cal-ov" onclick="ovBg(event,'cal-ov')">
-  <div class="modal">
-    <h3>Calendar settings</h3>
-    <div class="modal-desc">Connect Aurora to your Google Calendars. Events are pushed manually via the 📅 button on each item card.</div>
-    <div id="cal-alert"></div>
-    <div class="fg">
-      <label>Personal calendar ID</label>
-      <input type="text" id="cal-personal-id" placeholder="yourname@gmail.com">
-      <div class="hint">Settings → click calendar name → Integrate calendar → Calendar ID</div>
-    </div>
-    <div class="fg">
-      <label>10Forward calendar ID</label>
-      <input type="text" id="cal-tenfwd-id" placeholder="abc123@group.calendar.google.com">
-    </div>
-    <div class="fg">
-      <label>Default reminder — Personal (days before)</label>
-      <select id="cal-remind-personal">
-        <option value="1">1 day before</option>
-        <option value="3">3 days before</option>
-        <option value="7" selected>7 days before</option>
-        <option value="14">14 days before</option>
-        <option value="30">30 days before</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label>Default reminder — 10Forward (days before)</label>
-      <select id="cal-remind-tenfwd">
-        <option value="1">1 day before</option>
-        <option value="3">3 days before</option>
-        <option value="7">7 days before</option>
-        <option value="14" selected>14 days before</option>
-        <option value="30">30 days before</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label>Embedded calendar view (optional)</label>
-      <input type="text" id="cal-embed-url" placeholder="Paste Google Calendar embed URL">
-      <div class="hint">Google Calendar → Settings → Integrate calendar → Embed code → copy the src="..." URL only</div>
-    </div>
-    <div class="modal-acts">
-      <button class="btn-cancel" onclick="closeOv('cal-ov')">Cancel</button>
-      <button class="btn-save" onclick="saveCalConfig()">Save</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- Send to Calendar confirm -->
 <div class="overlay" id="cal-push-ov" onclick="ovBg(event,'cal-push-ov')">
@@ -564,19 +493,90 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 
 <!-- Settings modal -->
 <div class="overlay" id="settings-ov" onclick="ovBg(event,'settings-ov')">
-  <div class="modal">
-    <h3>Aurora Settings</h3>
-    <div class="modal-desc">Credentials are stored locally on this device only — never in the code or repository.</div>
+  <div class="modal" style="max-width:500px;">
+    <h3>⚙ Aurora Settings</h3>
+    <div class="modal-desc">All credentials are stored locally on this device only — never in the code or repository.</div>
+
+    <!-- Aurora AI -->
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Aurora Assistant</div>
     <div class="fg">
       <label>Anthropic API Key</label>
       <input type="password" id="settings-anthropic-key" placeholder="sk-ant-...">
-      <div class="hint">Required for the Aurora Assistant chat feature. Get yours at console.anthropic.com</div>
+      <div class="hint">Required for the Aurora chat bar. Get yours at console.anthropic.com → API Keys</div>
     </div>
+
     <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-    <div class="modal-desc" style="margin-bottom:.5rem;">Supabase and Google credentials are managed via their own buttons in the top bar.</div>
+
+    <!-- Supabase -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Supabase</div>
+      <span id="supa-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
+    </div>
+    <div class="fg"><label>Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co"></div>
+    <div class="fg"><label>Publishable (anon) key</label><input type="text" id="sb-key" placeholder="eyJ..."></div>
+    <div id="supa-migrate-row" style="display:none;">
+      <div class="alert alert-info">Existing data detected. Migrate to Supabase on connect?</div>
+      <div class="fg-check"><input type="checkbox" id="sb-migrate" checked><label for="sb-migrate">Migrate existing data</label></div>
+    </div>
+    <div id="supa-alert"></div>
+    <div style="display:flex;gap:6px;margin-bottom:1rem;">
+      <button class="btn-save" style="font-size:13px;padding:6px 14px;" onclick="connectSupabase()">Connect Supabase</button>
+      <button class="btn-cancel" id="supa-disconnect-btn" style="font-size:13px;padding:6px 14px;display:none;" onclick="disconnectSupabase()">Disconnect</button>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+
+    <!-- Google Drive -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Google Drive</div>
+      <span id="drive-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
+    </div>
+    <div class="fg">
+      <label>OAuth Client ID</label>
+      <input type="text" id="gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
+      <div class="hint">Google Cloud Console → APIs & Services → Credentials</div>
+    </div>
+    <div class="fg">
+      <label>Contacts Sheet ID (optional — for Social sync)</label>
+      <input type="text" id="gs-sheet-id" placeholder="Sheet ID from your contacts sheet URL">
+      <div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
+    </div>
+    <div class="fg"><label>Sheet tab name</label><input type="text" id="gs-sheet-tab" placeholder="Sheet1"></div>
+    <div id="gsetup-alert"></div>
+    <div style="margin-bottom:1rem;">
+      <button class="btn-blue" style="font-size:13px;padding:6px 14px;" onclick="connectGoogle()">Connect Google</button>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+
+    <!-- Calendar -->
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Google Calendar</div>
+    <div class="fg"><label>Personal calendar ID</label><input type="text" id="cal-personal-id" placeholder="yourname@gmail.com"></div>
+    <div class="fg"><label>10Forward calendar ID</label><input type="text" id="cal-tenfwd-id" placeholder="abc123@group.calendar.google.com"></div>
+    <div class="field-row">
+      <div class="fg"><label>Personal reminder (days before)</label>
+        <select id="cal-remind-personal">
+          <option value="1">1 day</option><option value="3">3 days</option>
+          <option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option>
+        </select>
+      </div>
+      <div class="fg"><label>10Forward reminder (days before)</label>
+        <select id="cal-remind-tenfwd">
+          <option value="1">1 day</option><option value="3">3 days</option>
+          <option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Custom embed URL (optional)</label>
+      <input type="text" id="cal-embed-url" placeholder="Leave blank — Aurora builds this automatically">
+      <div class="hint">Only needed if you want a custom Google Calendar embed. Leave blank to use calendar IDs above.</div>
+    </div>
+    <div id="cal-alert"></div>
+
     <div class="modal-acts">
-      <button class="btn-cancel" onclick="closeOv('settings-ov')">Cancel</button>
-      <button class="btn-save" onclick="saveSettings()">Save</button>
+      <button class="btn-cancel" onclick="closeOv('settings-ov')">Close</button>
+      <button class="btn-save" onclick="saveAllSettings()">Save all</button>
     </div>
   </div>
 </div>
@@ -812,10 +812,10 @@ function connectSupabase(){
         migrateToSupabase(()=>{
           S.sbConfig.migrationDone = true;
           persistLS();
-          closeOv('supa-ov'); updateSupaBtn(); loadFromSupabase();
+          updateSettingsBtn(); loadFromSupabase();
         });
       } else {
-        closeOv('supa-ov'); updateSupaBtn(); loadFromSupabase();
+        updateSettingsBtn(); loadFromSupabase();
       }
     } catch(e){ setAlert('supa-alert','Connection failed: '+e.message,'err'); }
   });
@@ -952,12 +952,7 @@ async function sbDeletePlant(id){
   catch(e){ console.warn('sbDeletePlant error:',e); }
 }
 
-function updateSupaBtn(){
-  const btn = document.getElementById('supa-btn');
-  btn.classList.remove('st-on','st-off');
-  if(S.sbConfig&&S.sbConfig.url){ btn.classList.add('st-on'); }
-  else { btn.classList.add('st-off'); }
-}
+function updateSupaBtn(){ updateSettingsBtn(); }
 function updateSupaModal(){
   var acts=document.getElementById('supa-modal-acts');
   if(!acts) return;
@@ -1541,7 +1536,7 @@ function connectGoogle(){
   S.gConfig.clientId=clientId; S.gConfig.sheetId=sheetId; S.gConfig.sheetTab=sheetTab;
   persistLS();
   setAlert('gsetup-alert','Loading Google libraries…','ok');
-  loadGapiAndGis(()=>{ pendingGAction=()=>{closeOv('gsetup-ov');updateGAuthBtn();fetchSheetColumns();}; requestGToken(); });
+  loadGapiAndGis(()=>{ pendingGAction=()=>{updateSettingsBtn();fetchSheetColumns();}; requestGToken(); });
 }
 function loadGapiAndGis(cb){
   let gapiDone=false, gisDone=false;
@@ -1599,12 +1594,7 @@ function saveMapping(){
   SOCIAL_MAP_FIELDS.forEach(f=>{ const v=document.getElementById('map-'+f.k).value; if(v) mapping[f.k]=v; });
   S.gConfig.mapping=mapping; persistLS(); closeOv('gmap-ov'); updateGAuthBtn(); syncSheet();
 }
-function updateGAuthBtn(){
-  const btn=document.getElementById('gauth-btn');
-  btn.classList.remove('st-on','st-off');
-  if(S.gConfig&&S.gConfig.clientId&&S.gConfig.sheetId){btn.classList.add('st-on');}
-  else{btn.classList.add('st-off');}
-}
+function updateGAuthBtn(){ updateSettingsBtn(); }
 function syncSheet(){
   if(!S.gConfig.clientId||!S.gConfig.sheetId){openOv('gsetup-ov');return;}
   const btn=document.getElementById('sync-btn');
@@ -1915,42 +1905,47 @@ async function sendAuroraMessage(){
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// SETTINGS
+// SETTINGS (unified)
 // ═══════════════════════════════════════════════════════════════════════
 function openSettings(){
+  // Anthropic
   document.getElementById('settings-anthropic-key').value = S.anthropicKey||'';
+  // Supabase
+  if(S.sbConfig&&S.sbConfig.url) document.getElementById('sb-url').value=S.sbConfig.url;
+  if(S.sbConfig&&S.sbConfig.key) document.getElementById('sb-key').value=S.sbConfig.key;
+  // Google
+  if(S.gConfig&&S.gConfig.clientId) document.getElementById('gs-client-id').value=S.gConfig.clientId;
+  if(S.gConfig&&S.gConfig.sheetId) document.getElementById('gs-sheet-id').value=S.gConfig.sheetId;
+  if(S.gConfig&&S.gConfig.sheetTab) document.getElementById('gs-sheet-tab').value=S.gConfig.sheetTab;
+  // Calendar
+  if(S.calConfig){
+    if(S.calConfig.personalCalId) document.getElementById('cal-personal-id').value=S.calConfig.personalCalId;
+    if(S.calConfig.tenfwdCalId) document.getElementById('cal-tenfwd-id').value=S.calConfig.tenfwdCalId;
+    if(S.calConfig.embedUrl) document.getElementById('cal-embed-url').value=S.calConfig.embedUrl;
+    if(S.calConfig.remindersByOrg){
+      document.getElementById('cal-remind-personal').value=String(S.calConfig.remindersByOrg.personal||7);
+      document.getElementById('cal-remind-tenfwd').value=String(S.calConfig.remindersByOrg.tenfwd||14);
+    }
+  }
+  // Status labels
+  var supaLbl=document.getElementById('supa-status-lbl');
+  var driveLbl=document.getElementById('drive-status-lbl');
+  var supaDisc=document.getElementById('supa-disconnect-btn');
+  if(supaLbl) supaLbl.textContent=(SB&&S.sbConfig&&S.sbConfig.url)?'✓ Connected':'Not connected';
+  if(supaLbl) supaLbl.style.color=(SB&&S.sbConfig&&S.sbConfig.url)?'var(--green)':'var(--text3)';
+  if(supaDisc) supaDisc.style.display=(SB&&S.sbConfig&&S.sbConfig.url)?'block':'none';
+  if(driveLbl) driveLbl.textContent=(S.gConfig&&S.gConfig.clientId)?'✓ Connected':'Not connected';
+  if(driveLbl) driveLbl.style.color=(S.gConfig&&S.gConfig.clientId)?'var(--green)':'var(--text3)';
+  // Migration hint
+  var hasData=Object.values(S.items||{}).some(function(org){return Object.values(org).some(function(d){return d.length>0;});});
+  var migrRow=document.getElementById('supa-migrate-row');
+  if(migrRow) migrRow.style.display=(hasData&&!S.sbConfig.migrationDone)?'block':'none';
   openOv('settings-ov');
 }
-function saveSettings(){
+function saveAllSettings(){
+  // Anthropic
   S.anthropicKey = document.getElementById('settings-anthropic-key').value.trim();
-  persistLS();
-  closeOv('settings-ov');
-  updateSettingsBtn();
-}
-function updateSettingsBtn(){
-  const btn = document.getElementById('settings-btn');
-  if(!btn) return;
-  if(S.anthropicKey){ btn.classList.add('st-on'); btn.title='Settings (API key set)'; }
-  else { btn.classList.remove('st-on'); btn.title='Settings (API key required for chat)'; }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// GOOGLE CALENDAR
-// ═══════════════════════════════════════════════════════════════════════
-
-let pendingCalPush = null; // {item, org, domain}
-
-function openCalSettings(){
-  const c = S.calConfig||{};
-  document.getElementById('cal-personal-id').value = c.personalCalId||'';
-  document.getElementById('cal-tenfwd-id').value = c.tenfwdCalId||'';
-  document.getElementById('cal-embed-url').value = c.embedUrl||'';
-  document.getElementById('cal-remind-personal').value = String((c.remindersByOrg&&c.remindersByOrg.personal)||7);
-  document.getElementById('cal-remind-tenfwd').value = String((c.remindersByOrg&&c.remindersByOrg.tenfwd)||14);
-  openOv('cal-ov');
-}
-
-function saveCalConfig(){
+  // Calendar config
   if(!S.calConfig) S.calConfig={};
   S.calConfig.personalCalId = document.getElementById('cal-personal-id').value.trim();
   S.calConfig.tenfwdCalId = document.getElementById('cal-tenfwd-id').value.trim();
@@ -1960,18 +1955,33 @@ function saveCalConfig(){
     tenfwd: parseInt(document.getElementById('cal-remind-tenfwd').value)||14,
   };
   persistLS();
-  closeOv('cal-ov');
+  updateSettingsBtn();
   updateCalBtn();
+  closeOv('settings-ov');
+}
+// Keep saveSettings as alias for backward compat
+function saveSettings(){ saveAllSettings(); }
+function updateSettingsBtn(){
+  var btn=document.getElementById('settings-btn');
+  if(!btn) return;
+  var allOk=S.anthropicKey&&S.sbConfig&&S.sbConfig.url&&S.gConfig&&S.gConfig.clientId;
+  btn.classList.remove('st-on','st-off','st-partial');
+  if(allOk) btn.classList.add('st-on');
+  else if(S.anthropicKey||S.sbConfig&&S.sbConfig.url) btn.classList.add('st-partial');
+  else btn.classList.add('st-off');
 }
 
-function updateCalBtn(){
-  const btn = document.getElementById('cal-settings-btn');
-  if(!btn) return;
-  btn.classList.remove('st-on','st-off');
-  const c = S.calConfig||{};
-  if(c.personalCalId||c.tenfwdCalId){ btn.classList.add('st-on'); }
-  else { btn.classList.add('st-off'); }
-}
+// ═══════════════════════════════════════════════════════════════════════
+// GOOGLE CALENDAR
+// ═══════════════════════════════════════════════════════════════════════
+
+let pendingCalPush = null; // {item, org, domain}
+
+function openCalSettings(){ openSettings(); }
+
+function saveCalConfig(){ saveAllSettings(); }
+
+function updateCalBtn(){ updateSettingsBtn(); }
 
 function calIdForOrg(org){
   const c = S.calConfig||{};
