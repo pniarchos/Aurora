@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.2</span>
+      <span class="ver">v10.9.3</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -606,6 +606,7 @@ let domMgrOrg = null, editPlantId = null;
 let gisTokenClient = null, gapiReady = false, pendingGAction = null;
 let gSheetColumns = [];
 let conversationHistory = [], auroraThinking = false;
+let socialFilter = {search:'', circle:'', sort:'lastName', flag:''};
 let tokenUsage = {inputTokens:0, outputTokens:0, queries:0};
 const SONNET_IN = 0.000003;   // $3 per 1M input tokens
 const SONNET_OUT = 0.000015;  // $15 per 1M output tokens
@@ -635,7 +636,7 @@ function defaultState(){
     domains:{}, items:{},
     tiles: DEFAULT_TILES.map(t=>({...t})),
     plants: DEFAULT_PLANTS.map(p=>({...p})),
-    gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null},
+    gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null,accessToken:'',tokenExpiry:0},
     calConfig:{personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}},
     sbConfig:{url:'',key:'',migrationDone:false},
     anthropicKey:''
@@ -941,7 +942,10 @@ function switchOrgAndDomain(org,domain){
   document.querySelectorAll('.org-tab').forEach(b=>b.classList.toggle('active',b.dataset.org===org));
   renderOrgContent();
 }
-function switchDomain(d){currentDomain=d;window._plantFilter='all';renderOrgContent();}
+function switchDomain(d){
+  if(d!=='Social') socialFilter={search:'',circle:'',sort:'lastName',flag:''};
+  currentDomain=d;window._plantFilter='all';renderOrgContent();
+}
 
 function renderOrgContent(){
   const org=currentOrg;
@@ -1315,20 +1319,64 @@ function loadGapiAndGis(cb){
   if(window.google&&window.google.accounts){gi=true;check();}
   else{const s2=document.createElement('script');s2.src='https://accounts.google.com/gsi/client';s2.onload=()=>{gi=true;check();};document.head.appendChild(s2);}
 }
-function requestGToken(){
+function requestGToken(silent){
   if(!gisTokenClient){
     gisTokenClient=google.accounts.oauth2.initTokenClient({
       client_id:S.gConfig.clientId,
       scope:'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar',
-      callback:r=>{if(r.error){alert('Auth error: '+r.error);return;}if(pendingGAction){pendingGAction();pendingGAction=null;}}
+      callback:r=>{
+        if(r.error){
+          if(!silent) alert('Auth error: '+r.error);
+          return;
+        }
+        // Persist token so it survives page reload
+        S.gConfig.accessToken = r.access_token;
+        S.gConfig.tokenExpiry = Date.now() + ((r.expires_in||3600)-120)*1000; // 2min buffer
+        persistLS();
+        updateSettingsBtn();
+        if(pendingGAction){pendingGAction();pendingGAction=null;}
+      }
     });
   }
-  gisTokenClient.requestAccessToken({prompt:'consent'});
+  gisTokenClient.requestAccessToken({prompt: silent?'':'consent'});
+}
+
+function restoreGToken(){
+  // Restore a previously saved token into gapi.client if still valid
+  if(!S.gConfig.accessToken||!S.gConfig.tokenExpiry) return false;
+  if(Date.now() >= S.gConfig.tokenExpiry) return false;
+  if(!gapiReady) return false;
+  try{
+    gapi.client.setToken({access_token: S.gConfig.accessToken});
+    return true;
+  }catch(e){ return false; }
+}
+
+function tokenValid(){
+  return !!(S.gConfig.accessToken && S.gConfig.tokenExpiry && Date.now() < S.gConfig.tokenExpiry);
 }
 function ensureGAuth(action){
   if(!S.gConfig.clientId){openSettings();return;}
   pendingGAction=action;
-  loadGapiAndGis(()=>{const tok=gapi.client.getToken();if(tok&&tok.access_token){action();pendingGAction=null;}else requestGToken();});
+  loadGapiAndGis(()=>{
+    // Try restoring persisted token first
+    if(tokenValid() && restoreGToken()){
+      action(); pendingGAction=null; return;
+    }
+    // Try existing in-memory token
+    const tok=gapi.client.getToken();
+    if(tok&&tok.access_token&&tokenValid()){action();pendingGAction=null;return;}
+    // Need fresh token — try silent first, fall back to consent
+    requestGToken(false);
+  });
+}
+
+function silentTokenRefresh(){
+  // Called on page load if we have a client ID and saved token
+  if(!S.gConfig.clientId||!gapiReady) return;
+  if(tokenValid()){restoreGToken();return;}
+  // Token expired — try silent refresh (no UI)
+  loadGapiAndGis(()=>requestGToken(true));
 }
 function fetchSheetColumns(){
   const range=(S.gConfig.sheetTab||'Sheet1')+'!1:1';
@@ -1678,6 +1726,10 @@ updateNotifBtn();
 updateSettingsBtn(); // single settings button replaces all three individual ones
 if(Notification.permission==='granted')scheduleNotifs();
 initSupabase();
+// Restore Google token silently if previously authenticated
+if(S.gConfig.clientId && S.gConfig.accessToken){
+  loadGapiAndGis(()=>{ if(restoreGToken()) updateSettingsBtn(); });
+}
 </script>
 </body>
 </html>
