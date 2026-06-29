@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.4</span>
+      <span class="ver">v10.9.5</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -515,7 +515,7 @@ const ORG_LABELS = {personal:'Personal',fee:'Foundation for Economic Education',
 // FIX: BRAND_COLS declared as global constant so renderOrgContent always has it
 const BRAND_COLS = ['bc-teal','bc-blue','bc-gold','bc-sage'];
 const DEFAULT_DOMAINS = {
-  personal:['Home','Vehicles','Finances & taxes','Health','Legal & admin','Social','Plants'],
+  personal:['Home','Vehicles','Finances & taxes','Health','Legal & admin','Social','Budget','Plants'],
   fee:['Finances','Legal & compliance','HR & staff','Vendor contracts','Events & deadlines','Board & governance'],
   tenfwd:['Finances','Legal & IP','Projects','Suppliers','Filings & compliance','Products']
 };
@@ -615,6 +615,225 @@ const SONNET_OUT = 0.000015;  // $15 per 1M output tokens
 // ═══════════════════════════════════════════════════════════════════════
 // TOKEN COUNTER
 // ═══════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════
+// WRITE MODE — Phase 3.1
+// ═══════════════════════════════════
+function isWriteIntent(text){
+  var t=text.toLowerCase();
+  return [/^add\b/,/^create\b/,/^new\b/,/^log\b/,/^schedule\b/,/^remind/,
+    /^note\b/,/^track\b/,/\btask\b/,/\bto.?do\b/,/\bfollow.?up\b/,
+    /\bdue\b.*\b(by|on|before)\b/].some(function(p){return p.test(t);});
+}
+function parseWriteItems(text){
+  try{
+    var c=text.replace(/```json/g,'').replace(/```/g,'').trim();
+    var p=JSON.parse(c);
+    if(Array.isArray(p)) return p;
+  }catch(e){}
+  return null;
+}
+function buildWritePrompt(){
+  var od=Object.keys(S.domains).map(function(org){
+    return ORG_LABELS[org]+': '+S.domains[org].filter(function(d){return d!=='Plants';}).join(', ');
+  }).join('\n');
+  return '\n\nWRITE MODE: Return ONLY a JSON array:\n'
+    +'[{"name":"...","org":"personal|fee|tenfwd","domain":"...","dueDate":"YYYY-MM-DD or null"}]\n'
+    +'Domains:\n'+od+'\nSplit compound inputs. Return ONLY the JSON array.';
+}
+function openWriteReview(items){
+  var html='<div style="display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
+  items.forEach(function(item,i){
+    var org=item.org||'personal';
+    var domOpts=(S.domains[org]||[]).filter(function(d){return d!=='Plants';}).map(function(d){
+      return '<option value="'+esc(d)+'"'+(d===item.domain?' selected':'')+'>'+esc(d)+'</option>';
+    }).join('');
+    html+='<div class="wi-item" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">'
+      +'<div style="display:flex;justify-content:space-between;margin-bottom:8px;">'
+      +'<span style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;">Item '+(i+1)+'</span>'
+      +'<button data-idx="'+i+'" onclick="this.closest(\'.wi-item\').style.display=\'none\'" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;">&#x2715;</button>'
+      +'</div>'
+      +'<div class="fg" style="margin-bottom:7px;"><label>Name</label>'
+      +'<input type="text" id="wi-name-'+i+'" value="'+esc(item.name||'')+'" autocomplete="off" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;"></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px;">'
+      +'<div class="fg" style="margin:0;"><label>Org</label>'
+      +'<select id="wi-org-'+i+'" data-idx="'+i+'" onchange="updateWriteDomains(this)" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">'
+      +Object.keys(ORG_LABELS).map(function(k){return '<option value="'+k+'"'+(k===org?' selected':'')+'>'+ORG_LABELS[k]+'</option>';}).join('')
+      +'</select></div>'
+      +'<div class="fg" style="margin:0;"><label>Domain</label>'
+      +'<select id="wi-domain-'+i+'" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">'
+      +domOpts+'</select></div></div>'
+      +'<div class="fg" style="margin:0;"><label>Due date (optional)</label>'
+      +'<input type="date" id="wi-due-'+i+'" value="'+(item.dueDate||'')+'" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;"></div>'
+      +'</div>';
+  });
+  html+='</div>';
+  document.getElementById('write-review-body').innerHTML=html;
+  document.getElementById('write-review-modal').dataset.count=items.length;
+  openOv('write-review-ov');
+}
+function updateWriteDomains(sel){
+  var i=sel.dataset.idx; var org=sel.value;
+  var ds=document.getElementById('wi-domain-'+i);
+  ds.innerHTML=(S.domains[org]||[]).filter(function(d){return d!=='Plants';}).map(function(d){
+    return '<option value="'+esc(d)+'">'+esc(d)+'</option>';
+  }).join('');
+}
+async function confirmWriteItems(){
+  var count=parseInt(document.getElementById('write-review-modal').dataset.count||'0');
+  var btn=document.getElementById('write-confirm-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Saving\u2026';
+  var saved=0;
+  for(var i=0;i<count;i++){
+    var nameEl=document.getElementById('wi-name-'+i);
+    if(!nameEl)continue;
+    var row=nameEl.closest('.wi-item');
+    if(row&&row.style.display==='none')continue;
+    var name=nameEl.value.trim();if(!name)continue;
+    var org=document.getElementById('wi-org-'+i).value;
+    var domain=document.getElementById('wi-domain-'+i).value;
+    var dueDate=document.getElementById('wi-due-'+i).value||null;
+    if(!org||!domain)continue;
+    var fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+    var item={};fields.forEach(function(f){item[f.k]='';});
+    item.name=name;if(dueDate)item.dueDate=dueDate;
+    if(!S.items[org])S.items[org]={};
+    if(!S.items[org][domain])S.items[org][domain]=[];
+    S.items[org][domain].push(item);
+    persistLS();await sbSaveItem(org,domain,item);saved++;
+  }
+  btn.disabled=false;btn.innerHTML='Add all';
+  closeOv('write-review-ov');renderDash();renderOrgContent();
+  var wrap=document.getElementById('aurora-inline-resp-wrap');
+  wrap.innerHTML='<div class="aurora-inline-resp" style="border-color:var(--green);background:var(--green-bg);color:var(--green);">'
+    +'\u2713 '+saved+' item'+(saved===1?'':'s')+' added.</div>';
+  setTimeout(function(){wrap.innerHTML='';},3000);
+}
+
+// ═══════════════════════════════════
+// SMART NOTIFICATIONS — Level 1
+// ═══════════════════════════════════
+function smartNotificationsOnLoad(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  if(!S||!S.items)return;
+  var td=new Date().toISOString().slice(0,10);
+  if(S.lastSmartNotif===td)return;
+  S.lastSmartNotif=td;persistLS();
+  var ov=[],ds2=[],pw=plantsNeedingWater();
+  Object.keys(S.domains).forEach(function(org){
+    (S.domains[org]||[]).forEach(function(domain){
+      if(domain==='Plants')return;
+      ((S.items[org]||{})[domain]||[]).forEach(function(item){
+        var due=getDue(item,domain);var days=daysUntil(due);
+        var name=item.name||((item.firstName||'')+' '+(item.lastName||'')).trim()||'Unnamed';
+        if(days!==null&&days<0)ov.push(name+' ('+domain+')');
+        else if(days!==null&&days<=7)ds2.push(name+' \u2014 '+days+'d');
+      });
+    });
+  });
+  if(ov.length>0)setTimeout(function(){
+    new Notification('Aurora \u2014 '+ov.length+' overdue',{body:ov.slice(0,3).join(', ')+(ov.length>3?' +more':'')});},2000);
+  if(ds2.length>0)setTimeout(function(){
+    new Notification('Aurora \u2014 '+ds2.length+' due this week',{body:ds2.slice(0,3).join(', ')+(ds2.length>3?' +more':'')});},4000);
+  if(pw.length>0)setTimeout(function(){
+    new Notification('Aurora \u2014 plants need water',{body:pw.map(function(p){return p.name;}).slice(0,4).join(', ')});},6000);
+}
+
+// ═══════════════════════════════════
+// SOCIAL FIELD CONFIG
+// ═══════════════════════════════════
+function openSocialFieldConfig(){
+  var skip=['firstName','lastName','salutation','nickname','name'];
+  var fields=SPECIAL_FIELDS['Social'].filter(function(f){return !skip.includes(f.k)&&f.t!=='textarea';});
+  var html='<div style="max-height:300px;overflow-y:auto;margin-bottom:1rem;">'
+    +'<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Uncheck to hide from contact cards</div>';
+  fields.forEach(function(f){
+    var hidden=socialHiddenFields.includes(f.k);
+    html+='<div class="fg-check"><input type="checkbox" id="scf-'+f.k+'"'+(hidden?'':' checked')+'>'
+      +'<label for="scf-'+f.k+'">'+f.l+'</label></div>';
+  });
+  html+='</div>';
+  document.getElementById('social-field-config-body').innerHTML=html;
+  openOv('social-field-config-ov');
+}
+function saveSocialFieldConfig(){
+  var skip=['firstName','lastName','salutation','nickname','name'];
+  var fields=SPECIAL_FIELDS['Social'].filter(function(f){return !skip.includes(f.k)&&f.t!=='textarea';});
+  socialHiddenFields=[];
+  fields.forEach(function(f){var el=document.getElementById('scf-'+f.k);if(el&&!el.checked)socialHiddenFields.push(f.k);});
+  S.socialHiddenFields=socialHiddenFields;persistLS();
+  closeOv('social-field-config-ov');renderOrgContent();
+}
+
+// ═══════════════════════════════════════════
+// BUDGET MODULE (Phase 1 scaffold)
+// ═══════════════════════════════════════════
+function renderBudgetSection(){
+  if(!S.budget)S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
+  var b=S.budget;
+  var inc=b.income||{};
+  var fix=b.fixedExpenses||{};
+  var vari=b.variableExpenses||{};
+  var totalInc=Object.values(inc).reduce(function(a,v){return a+(parseFloat(v)||0);},0);
+  var totalFix=Object.values(fix).reduce(function(a,v){return a+(parseFloat(v)||0);},0);
+  var totalVar=Object.values(vari).reduce(function(a,v){return a+(parseFloat(v)||0);},0);
+  var totalExp=totalFix+totalVar;
+  var net=totalInc-totalExp;
+  function fm(n){return'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function brow(label,key,btype){
+    var store=btype==='income'?inc:btype==='fixed'?fix:vari;
+    var val=store[key]||'';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">'
+      +'<span style="flex:1;font-size:13px;color:var(--text2);">'+esc(label)+'</span>'
+      +'<input type="number" step="0.01" value="'+esc(val)+'" placeholder="0.00" '
+      +'data-bkey="'+esc(key)+'" data-btype="'+btype+'" onchange="onBudgetChange(this)" '
+      +'style="width:110px;text-align:right;padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
+      +'</div>';
+  }
+  var incomeLabels={trust:'Trust',socialSecurity:'Social Security',mammaManos:"Mamma's House",chanting:'Chanting',freelance:'Freelance Editing'};
+  var fixedLabels={rent:'Rent, fees & water',therapist:'Therapist',stateFarm:'State Farm insurance',cleaner:'Cleaner',utilities:'Utilities',cell:'Cell phone',cable:'Cable',aetna:'Aetna penalty',msi:'MSI rent insurance',aaa:'AAA'};
+  var incKeys=Object.keys(Object.assign({trust:'',socialSecurity:'',mammaManos:'',chanting:'',freelance:''},inc));
+  var fixKeys=Object.keys(Object.assign({rent:'',therapist:'',stateFarm:'',cleaner:'',utilities:''},fix));
+
+  return '<div class="sec-hdr"><div class="sec-title">Budget</div>'
+    +'<div class="sec-acts"><span style="font-size:12px;color:var(--text3);">Monthly overview</span></div></div>'
+    // Summary tiles
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem;">'
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;">'
+    +'<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Income</div>'
+    +'<div style="font-size:22px;font-weight:600;color:var(--green);">'+fm(totalInc)+'</div></div>'
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;">'
+    +'<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Expenses</div>'
+    +'<div style="font-size:22px;font-weight:600;color:var(--red);">'+fm(totalExp)+'</div></div>'
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;">'
+    +'<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Net</div>'
+    +'<div style="font-size:22px;font-weight:600;color:'+(net>=0?'var(--green)':'var(--red)')+';">'+(net>=0?'+':'')+fm(net)+'</div></div>'
+    +'</div>'
+    // Income
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">'
+    +'<div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--green);margin-bottom:8px;">Income</div>'
+    +incKeys.map(function(k){return brow(incomeLabels[k]||k,k,'income');}).join('')
+    +'<div style="text-align:right;padding-top:8px;font-size:13px;font-weight:600;color:var(--green);">Total: '+fm(totalInc)+'</div>'
+    +'</div>'
+    // Fixed expenses
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:1rem;">'
+    +'<div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--red);margin-bottom:8px;">Fixed Expenses</div>'
+    +fixKeys.map(function(k){return brow(fixedLabels[k]||k,k,'fixed');}).join('')
+    +'<div style="text-align:right;padding-top:8px;font-size:13px;font-weight:600;color:var(--red);">Total: '+fm(totalFix)+'</div>'
+    +'</div>'
+    +'<div style="background:var(--blue-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);">'
+    +'ℹ Budget scaffold — full Sophia-style tracker with variable expenses, sinking funds, and month history coming in next major build.'
+    +'</div>';
+}
+function onBudgetChange(el){
+  var key=el.dataset.bkey; var type=el.dataset.btype; var val=el.value.trim();
+  if(!S.budget)S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
+  if(type==='income')S.budget.income[key]=val;
+  else if(type==='fixed')S.budget.fixedExpenses[key]=val;
+  else S.budget.variableExpenses[key]=val;
+  persistLS();renderOrgContent();renderDash();
+}
+
 function updateTokenDisplay(){
   const el = document.getElementById('s-token-display');
   if(!el) return;
@@ -640,7 +859,8 @@ function defaultState(){
     gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null,accessToken:'',tokenExpiry:0},
     calConfig:{personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}},
     sbConfig:{url:'',key:'',migrationDone:false},
-    anthropicKey:''
+    anthropicKey:'',
+    budget:{income:{},fixedExpenses:{},variableExpenses:{},months:[]}
   };
   Object.keys(DEFAULT_DOMAINS).forEach(org=>{
     s.domains[org] = [...DEFAULT_DOMAINS[org]];
@@ -662,6 +882,7 @@ function loadLS(){
   if(!S.sbConfig) S.sbConfig={url:'',key:'',migrationDone:false};
   if(S.sbConfig.migrationDone===undefined) S.sbConfig.migrationDone=false;
   if(S.socialHiddenFields) socialHiddenFields=S.socialHiddenFields;
+  if(!S.budget) S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
 }
 function persistLS(){ localStorage.setItem(LS_KEY,JSON.stringify(S)); }
 
@@ -1017,6 +1238,82 @@ function renderSocialControls(allItems, circles){
     +'</div>';
 }
 
+
+// ═══════════════════════════════════════════
+// DOMAIN SUMMARY VIEWS
+// ═══════════════════════════════════════════
+function renderDomainSummary(org, domain, items){
+  if(!items.length) return '';
+  if(domain==='Vehicles') return renderVehicleBay(items);
+  if(domain==='Health') return renderHealthSummary(items);
+  if(domain==='Finances & taxes') return renderFinancesSummary(items, org);
+  return '';
+}
+
+function summaryCard(fields){
+  return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:6px;">'
+    +fields.map(([l,v])=>v?('<div style="display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:2px 0;">'
+      +'<span style="color:var(--text2);flex-shrink:0;">'+esc(l)+'</span>'
+      +'<span style="color:var(--text);font-weight:500;text-align:right;">'+esc(String(v))+'</span>'
+      +'</div>'):'').join('')
+    +'</div>';
+}
+
+function renderVehicleBay(items){
+  const cards = items.map(v=>{
+    const nextDue=[
+      v.regExpiry&&('Reg expires '+fmtDate(v.regExpiry)),
+      v.insExpiry&&('Insurance expires '+fmtDate(v.insExpiry)),
+      v.nextService&&('Service due '+fmtDate(v.nextService))
+    ].filter(Boolean).join(' · ');
+    return summaryCard([
+      ['Vehicle', (v.year?v.year+' ':'')+v.name],
+      ['Plate', v.plate],
+      ['Insurer', v.insurer],
+      ['Mileage', v.mileage],
+      ['Next due', nextDue],
+    ]);
+  }).join('');
+  return '<div style="margin-bottom:1.25rem;">'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;">&#x1F697; Vehicle Bay</div>'
+    +cards+'</div>';
+}
+
+function renderHealthSummary(items){
+  const byCategory={};
+  items.forEach(i=>{
+    const cat=i.category||'Other';
+    if(!byCategory[cat]) byCategory[cat]=[];
+    byCategory[cat].push(i);
+  });
+  const html=Object.entries(byCategory).map(([cat,its])=>{
+    const cards=its.map(i=>summaryCard([
+      ['Item', i.name],
+      ['Provider', i.provider],
+      ['Next date', i.nextDue&&fmtDate(i.nextDue)],
+    ])).join('');
+    return '<div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">'+esc(cat)+'</div>'+cards+'</div>';
+  }).join('');
+  return '<div style="margin-bottom:1.25rem;">'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;">&#x2665; Health Summary</div>'
+    +html+'</div>';
+}
+
+function renderFinancesSummary(items, org){
+  // Show items with amounts prominently
+  const withAmt=items.filter(i=>i.amount);
+  if(!withAmt.length) return '';
+  const html=withAmt.map(i=>summaryCard([
+    ['Item', i.name],
+    ['Amount', i.amount],
+    ['Category', i.category],
+    ['Due', i.dueDate&&fmtDate(i.dueDate)],
+  ])).join('');
+  return '<div style="margin-bottom:1.25rem;">'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;">&#x1F4B0; Financial Summary</div>'
+    +html+'</div>';
+}
+
 // ═══════════════════════════════════════════
 // ORG / DOMAIN
 // ═══════════════════════════════════════════
@@ -1052,7 +1349,9 @@ function renderOrgContent(){
   nav+='<button class="dom-mgr-btn" data-org="'+esc(org)+'" onclick="openDomMgr(this.dataset.org)">\u2295 Manage</button></div>';
 
   let body='';
-  if(currentDomain==='Plants'){
+  if(currentDomain==='Budget'){
+    body=renderBudgetSection();
+  } else if(currentDomain==='Plants'){
     body=renderPlantSection();
   } else if(currentDomain&&domains.includes(currentDomain)){
     const isPS=org==='personal'&&currentDomain==='Social';
@@ -1071,9 +1370,10 @@ function renderOrgContent(){
     }
     const emptyMsg=isPS&&(socialFilter.search||socialFilter.circle||socialFilter.flag)?'No contacts match your filters.':'No items yet — add your first';
     const cardsHtml=displayItems.length?displayItems.map((item,i)=>renderCard(org,currentDomain,item,items.indexOf(item),false)).join(''):'<div class="empty">'+emptyMsg+'</div>';
+    const domSummary=!isPS?renderDomainSummary(org,currentDomain,items):'';
     body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
       +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc+'">+ Add item</button></div>'
-      +'</div>'+lastSync+socialControls+'<div class="cards">'+cardsHtml+'</div>';
+      +'</div>'+lastSync+domSummary+socialControls+'<div class="cards">'+cardsHtml+'</div>';
   }
   document.getElementById('org-content').innerHTML=nav+body;
 }
@@ -1585,12 +1885,29 @@ function setAlert(elId,msg,type){const el=document.getElementById(elId);if(el)el
 function buildAuroraContext(){
   const td=new Date().toISOString().slice(0,10);
   const allDL=[];
+  // Full item data per domain for Aurora to reference
+  const itemLines=[];
   Object.keys(S.domains).forEach(org=>{
     (S.domains[org]||[]).forEach(domain=>{
       if(domain==='Plants')return;
-      ((S.items[org]||{})[domain]||[]).forEach(item=>{
+      const domItems=(S.items[org]||{})[domain]||[];
+      if(!domItems.length)return;
+      // Add domain header
+      itemLines.push('\n'+ORG_LABELS[org]+' > '+domain+' ('+domItems.length+' items):');
+      domItems.forEach((item,i)=>{
         const due=getDue(item,domain);const days=daysUntil(due);
-        if(due)allDL.push({name:item.name||((item.firstName||'')+' '+(item.lastName||'')).trim(),org:ORG_LABELS[org],domain,due,daysUntil:days,status:days===null?'no date':days<0?'OVERDUE':days===0?'TODAY':days<=7?'THIS WEEK':days<=30?'THIS MONTH':'UPCOMING'});
+        const name=item.name||((item.firstName||'')+' '+(item.lastName||'')).trim()||'Unnamed';
+        if(due)allDL.push({name,org:ORG_LABELS[org],domain,due,daysUntil:days,
+          status:days===null?'no date':days<0?'OVERDUE':days===0?'TODAY':days<=7?'THIS WEEK':days<=30?'THIS MONTH':'UPCOMING'});
+        // Build compact field summary — skip empty, internal, and long text fields
+        const skipFields=new Set(['name','firstName','lastName','_sbId','_fromSheet','_calPushed',
+          'personalize','story','importantNotes','notes']);
+        const flds=Object.entries(item)
+          .filter(([k,v])=>v&&!skipFields.has(k)&&String(v).length<80)
+          .map(([k,v])=>k+': '+String(v).trim())
+          .slice(0,8);
+        itemLines.push('  '+(i+1)+'. '+name+(due?' [due '+due+']':'')+
+          (flds.length?' — '+flds.join(', '):''));
       });
     });
   });
@@ -1600,14 +1917,27 @@ function buildAuroraContext(){
   const contacts=((S.items.personal||{}).Social||[]);
   const t60=new Date();t60.setDate(t60.getDate()-60);
   const nc=contacts.filter(c=>{
-  if(!c.lastContacted)return false;
-  const d=new Date(c.lastContacted+'T00:00:00');
-  return !isNaN(d.getTime())&&d<t60;
-});
-  const dlLines=allDL.slice(0,40).map(d=>{const ds=d.daysUntil===null?'no date':d.daysUntil<0?Math.abs(d.daysUntil)+'d overdue':d.daysUntil+'d';return'- ['+d.status+'] '+(d.name||'Unknown')+' | '+d.org+' > '+d.domain+' | Due: '+d.due+' ('+ds+')';}).join('\n');
+    if(!c.lastContacted)return false;
+    const d=new Date(c.lastContacted+'T00:00:00');
+    return !isNaN(d.getTime())&&d<t60;
+  });
+  const dlLines=allDL.slice(0,40).map(d=>{
+    const ds=d.daysUntil===null?'no date':d.daysUntil<0?Math.abs(d.daysUntil)+'d overdue':d.daysUntil+'d';
+    return'- ['+d.status+'] '+(d.name||'Unknown')+' | '+d.org+' > '+d.domain+' | Due: '+d.due+' ('+ds+')';
+  }).join('\n');
   const wn=pnw.map(p=>p.name).join(', ')||'none';
   const cn=nc.slice(0,5).map(c=>((c.firstName||'')+(c.lastName?' '+c.lastName:'')).trim()||c.name||'Unknown').join(', ')||'none';
-  return'You are Aurora, an intelligent personal and professional assistant built for Pericles Niarchos. Today is '+td+'.\n\nCONTEXTS:\n- Personal: home, vehicles, finances, health, legal, contacts, plants\n- FEE: Pericles is Chief Programs & Innovation Officer\n- 10Forward: solo-founder invention company\n\nDEADLINES ('+allDL.length+' with due dates):\n'+dlLines+'\n\nPLANTS: '+((S.plants||[]).length)+' total. Need water now: '+pnw.length+' ('+wn+'). Need checking: '+pnc.length+'.\n\nCONTACTS: '+contacts.length+' total. Not contacted in 60+ days: '+nc.length+' ('+cn+').\n\nRespond conversationally and specifically using the real data above.';
+  return 'You are Aurora, an intelligent personal and professional assistant built for Pericles Niarchos. Today is '+td+'.\n\n'
+    +'CONTEXTS:\n- Personal: home, vehicles, finances, health, legal, contacts, plants\n'
+    +'- FEE: Pericles is Chief Programs & Innovation Officer\n'
+    +'- 10Forward: solo-founder invention company\n\n'
+    +'DEADLINES ('+allDL.length+' with due dates):\n'+dlLines+'\n\n'
+    +'ALL ITEM DATA (reference for specific questions about vehicles, health, finances, etc.):'
+    +itemLines.join('\n')+'\n\n'
+    +'PLANTS: '+((S.plants||[]).length)+' total. Need water now: '+pnw.length+' ('+wn+'). Need checking: '+pnc.length+'.\n\n'
+    +'CONTACTS: '+contacts.length+' total. Not contacted in 60+ days: '+nc.length+' ('+cn+').\n\n'
+    +'Respond conversationally and specifically. Reference actual names, fields, and values from the data above. '
+    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.';
 }
 
 async function callClaude(userMessage){
@@ -1639,8 +1969,27 @@ async function sendAuroraBarQuery(){
   const q=inp.value.trim();if(!q)return;
   inp.value='';inp.disabled=true;
   const wrap=document.getElementById('aurora-inline-resp-wrap');
-  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span> Aurora is thinking\u2026</div>';
+  var writeMode=isWriteIntent(q);
+  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span>'+(writeMode?' Creating items…':' Aurora is thinking…')+'</div>';
   try{
+    if(writeMode){
+      conversationHistory.push({role:'user',content:q});
+      var sys2=buildAuroraContext()+buildWritePrompt();
+      if(!S.anthropicKey)throw new Error('No Anthropic API key. Open ⚙ Settings.');
+      var wr=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys2,messages:conversationHistory})
+      });
+      var wd=await wr.json();if(wd.error)throw new Error(wd.error.message);
+      var wreply=(wd.content&&wd.content[0]&&wd.content[0].text)||'';
+      if(wd.usage){tokenUsage.inputTokens+=(wd.usage.input_tokens||0);tokenUsage.outputTokens+=(wd.usage.output_tokens||0);tokenUsage.queries+=1;updateTokenDisplay();}
+      conversationHistory.push({role:'assistant',content:wreply});
+      var witems=parseWriteItems(wreply);
+      if(witems&&witems.length>0){wrap.innerHTML='';inp.disabled=false;openWriteReview(witems);return;}
+      wrap.innerHTML='<div class="aurora-inline-resp">'+esc(wreply)+'</div>';
+      inp.disabled=false;inp.focus();return;
+    }
     const reply=await callClaude(q);
     const rh=esc(reply).split('\n').join('<br>');
     wrap.innerHTML='<div class="aurora-inline-resp">'
@@ -1830,7 +2179,22 @@ initSupabase();
 if(S.gConfig.clientId && S.gConfig.accessToken){
   loadGapiAndGis(()=>{ if(restoreGToken()) updateSettingsBtn(); });
 }
+setTimeout(smartNotificationsOnLoad,1500);
 </script>
+
+
+<!-- Write review modal -->
+<div class="overlay" id="write-review-ov" onclick="ovBg(event,'write-review-ov')">
+  <div class="modal" id="write-review-modal" style="max-width:520px;">
+    <h3>&#x270e; Review items to add</h3>
+    <div class="modal-desc">Aurora parsed your input. Edit any field, remove items you don't want, then confirm.</div>
+    <div id="write-review-body"></div>
+    <div class="modal-acts">
+      <button class="btn-cancel" onclick="closeOv('write-review-ov')">Cancel</button>
+      <button class="btn-save" id="write-confirm-btn" onclick="confirmWriteItems()">Add all</button>
+    </div>
+  </div>
+</div>
 
 <!-- Social field config modal -->
 <div class="overlay" id="social-field-config-ov" onclick="ovBg(event,'social-field-config-ov')">
@@ -1844,6 +2208,5 @@ if(S.gConfig.clientId && S.gConfig.accessToken){
     </div>
   </div>
 </div>
-
 </body>
 </html>
