@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.7</span>
+      <span class="ver">v10.9.8</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -331,6 +331,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
           <option value="org_total">Total in one org</option>
           <option value="plants_water">Plants to water</option>
           <option value="plants_check">Plants to check</option>
+          <option value="completed">Tasks completed</option>
         </select>
       </div>
       <div class="fg"><label>Color</label>
@@ -613,6 +614,7 @@ const DEFAULT_TILES = [
   {id:'t3',label:'Total items',type:'total',color:'t-neutral',days:null,org:null,notif:''},
   {id:'t4',label:'Water soon',type:'plants_water',color:'t-plant',days:7,org:null,notif:''},
   {id:'t5',label:'Check today',type:'plants_check',color:'t-neutral',days:null,org:null,notif:''},
+  {id:'t6',label:'Tasks completed',type:'completed',color:'t-green',days:null,org:null,notif:''},
 ];
 const DEFAULT_PLANTS = [
   {id:'p1',name:'Monstera #1',nickname:'',checkDays:6,waterDays:8,rule:'Water when top 2 inches are dry',lastWatered:'',lastChecked:'',status:'healthy',notes:''},
@@ -865,6 +867,67 @@ function onBudgetChange(el){
   persistLS();renderOrgContent();renderDash();
 }
 
+
+// ═══════════════════════════════════════════
+// COMPLETE TASK
+// ═══════════════════════════════════════════
+function completeAction(org,domain,idx){
+  var items=(S.items[org]||{})[domain]||[];
+  var act=items[parseInt(idx)];
+  if(!act)return;
+  var parentName='';
+  if(act._parentId){
+    var parent=items.find(function(r){return r._id===act._parentId;});
+    if(parent)parentName=parent.name||'';
+  }
+  if(!S.completedTasks)S.completedTasks=[];
+  S.completedTasks.unshift({
+    name:act.name||'',org:org,domain:domain,parentName:parentName,
+    completedAt:new Date().toISOString().slice(0,10),
+    originalDue:act.dueDate||'',notes:act.notes||''
+  });
+  items.splice(parseInt(idx),1);
+  persistLS();
+  if(SB&&act._sbId)sbDeleteItem(act._sbId);
+  renderDash();renderOrgContent();
+}
+
+function renderCompletedTasks(){
+  var tasks=S.completedTasks||[];
+  var wrap=document.getElementById('drill-cards');
+  if(!wrap)return;
+  if(!tasks.length){wrap.innerHTML='<div class="empty">No completed tasks yet.</div>';return;}
+  wrap.innerHTML=tasks.map(function(t,i){
+    return '<div class="card" style="opacity:.85;">'
+      +'<div class="card-top"><div>'
+      +'<div class="card-name" style="text-decoration:line-through;color:var(--text2);">'+esc(t.name)+'</div>'
+      +(t.parentName?'<div class="card-sub">'+esc(t.parentName)+'</div>':'')
+      +'</div>'
+      +'<div class="card-acts"><span class="badge badge-green" style="font-size:10px;">✓ Done</span>'
+      +'<button class="iBtn" data-i="'+i+'" onclick="uncompleteTask(parseInt(this.dataset.i))" title="Remove from history" style="font-size:11px;">&#x2715;</button>'
+      +'</div></div>'
+      +'<div class="card-rows">'
+      +'<div class="crow"><span class="crow-lbl">Completed</span><span class="crow-val">'+esc(t.completedAt)+'</span></div>'
+      +(t.org?'<div class="crow"><span class="crow-lbl">From</span><span class="crow-val">'+esc(t.org)+' · '+esc(t.domain)+'</span></div>':'')
+      +(t.originalDue?'<div class="crow"><span class="crow-lbl">Was due</span><span class="crow-val">'+esc(t.originalDue)+'</span></div>':'')
+      +(t.notes?'<div class="card-notes">'+esc(t.notes)+'</div>':'')
+      +'</div></div>';
+  }).join('');
+}
+
+function uncompleteTask(i){
+  if(!confirm('Remove from completed history?'))return;
+  S.completedTasks.splice(i,1);
+  persistLS();renderCompletedTasks();renderDash();
+}
+
+function drillCompletedTasks(){
+  var count=(S.completedTasks||[]).length;
+  document.getElementById('drill-title').textContent='Completed tasks ('+count+')';
+  document.getElementById('drill-panel').classList.add('open');
+  renderCompletedTasks();
+}
+
 function updateTokenDisplay(){
   const el = document.getElementById('s-token-display');
   if(!el) return;
@@ -891,7 +954,8 @@ function defaultState(){
     calConfig:{personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}},
     sbConfig:{url:'',key:'',migrationDone:false},
     anthropicKey:'',
-    budget:{income:{},fixedExpenses:{},variableExpenses:{},months:[]}
+    budget:{income:{},fixedExpenses:{},variableExpenses:{},months:[]},
+    completedTasks:[]
   };
   Object.keys(DEFAULT_DOMAINS).forEach(org=>{
     s.domains[org] = [...DEFAULT_DOMAINS[org]];
@@ -914,6 +978,7 @@ function loadLS(){
   if(S.sbConfig.migrationDone===undefined) S.sbConfig.migrationDone=false;
   if(S.socialHiddenFields) socialHiddenFields=S.socialHiddenFields;
   if(!S.budget) S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
+  if(!S.completedTasks) S.completedTasks=[];
   if(S.domains&&S.domains.personal&&!S.domains.personal.includes('Budget')){
     var pli=S.domains.personal.indexOf('Plants');
     if(pli>=0)S.domains.personal.splice(pli,0,'Budget');
@@ -1126,6 +1191,7 @@ function allItems(orgFilter){
 // DASHBOARD
 // ═══════════════════════════════════════════
 function tileValue(tile){
+  if(tile.type==='completed')return(S.completedTasks||[]).length;
   if(tile.type==='plants_water')return plantsWaterSoon(tile.days||7).length;
   if(tile.type==='plants_check')return plantsNeedingCheck().length;
   const items=allItems(tile.org||null);
@@ -1136,6 +1202,7 @@ function tileValue(tile){
   return 0;
 }
 function tileItems(tile){
+  if(tile.type==='completed')return(S.completedTasks||[]).map(function(t){return{item:{name:t.name},org:t.org,domain:t.domain,idx:0,due:t.completedAt,days:0};});
   if(tile.type==='plants_check')return[];
   if(tile.type==='plants_water')return plantsWaterSoon(tile.days||7).map(p=>({item:{name:p.name},org:'personal',domain:'Plants',idx:0,due:plantNextWater(p),days:plantWaterDays(p)}));
   const items=allItems(tile.org||null);
@@ -1146,6 +1213,7 @@ function tileItems(tile){
   return[];
 }
 function tileSub(tile){
+  if(tile.type==='completed')return'all time';
   if(tile.type==='plants_water')return'within '+(tile.days||7)+'d';
   if(tile.type==='plants_check')return'need checking';
   if(tile.type==='due_days')return'within '+tile.days+'d';
@@ -1359,6 +1427,8 @@ function renderRecordCard(org,domain,rec,recIdx,recActions){
     return '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);">'
       +'<span style="flex:1;font-size:13px;">'+esc(act.name||'')+'</span>'
       +(lbl?'<span class="badge '+bCls+'" style="font-size:10px;">'+lbl+'</span>':'')
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+actIdx+'" '
+      +'onclick="completeAction(this.dataset.org,this.dataset.dom,this.dataset.idx)" title="Mark complete" style="color:var(--green);">&#x2713;</button>'
       +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+actIdx+'" '
       +'onclick="pushToCalendarByData(this)" title="Calendar">&#x1F4C5;</button>'
       +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+actIdx+'" data-recid="'+rid+'" '
@@ -1684,6 +1754,8 @@ function renderCard(org,domain,item,idx,fromDrill){
       return '<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);">'
         +'<span style="flex:1;font-size:12px;">'+esc(act.name||'')+'</span>'
         +(lbl3?'<span class="badge '+bCls2+'" style="font-size:10px;">'+lbl3+'</span>':'')
+        +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+aIdx+'" '
+        +'onclick="completeAction(this.dataset.org,this.dataset.dom,this.dataset.idx)" title="Mark complete" style="color:var(--green);">&#x2713;</button>'
         +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+aIdx+'" data-recid="'+esc(contactId)+'" '
         +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,parseInt(this.dataset.idx))">&#x270e;</button>'
         +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+aIdx+'" '
