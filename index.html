@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.5</span>
+      <span class="ver">v10.9.6</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -526,6 +526,37 @@ const COMMON_FIELDS = [
   {k:'amount',l:'Amount / cost',t:'text'},
   {k:'notes',l:'Notes',t:'textarea'},
 ];
+const RECORD_FIELDS = {
+  'Vehicles':[
+    {k:'name',l:'Vehicle name',t:'text',req:true},{k:'year',l:'Year / make / model',t:'text'},
+    {k:'plate',l:'License plate',t:'text'},{k:'vin',l:'VIN',t:'text'},
+    {k:'color',l:'Color',t:'text'},{k:'insurer',l:'Insurer',t:'text'},
+    {k:'policyNum',l:'Policy number',t:'text'},{k:'insExpiry',l:'Insurance expiry',t:'date'},
+    {k:'regExpiry',l:'Registration expiry',t:'date'},{k:'mileage',l:'Current mileage',t:'text'},
+    {k:'lastOilChange',l:'Last oil change',t:'date'},{k:'oilChangeMiles',l:'Mileage at last oil change',t:'text'},
+    {k:'nextService',l:'Next service date',t:'date'},{k:'notes',l:'Notes',t:'textarea'},
+  ],
+  'Health':[
+    {k:'name',l:'Name / description',t:'text',req:true},
+    {k:'category',l:'Category',t:'select',opts:['Condition','Prescription','Provider','Insurance','Dental','Vision','Other']},
+    {k:'provider',l:'Provider / pharmacy / insurer',t:'text'},{k:'dosage',l:'Dosage / details',t:'text'},
+    {k:'startDate',l:'Start date',t:'date'},{k:'nextDue',l:'Next due / renewal',t:'date'},
+    {k:'notes',l:'Notes',t:'textarea'},
+  ],
+  'Finances & taxes':[
+    {k:'name',l:'Account / policy / obligation name',t:'text',req:true},
+    {k:'category',l:'Category',t:'select',opts:['Bank account','Investment','Credit card','Loan','Insurance policy','Tax obligation','Subscription','Other']},
+    {k:'institution',l:'Institution / provider',t:'text'},{k:'accountNum',l:'Account / policy number',t:'text'},
+    {k:'amount',l:'Balance / amount',t:'text'},{k:'nextDue',l:'Next due date',t:'date'},
+    {k:'notes',l:'Notes',t:'textarea'},
+  ],
+};
+const ACTION_FIELDS = [
+  {k:'name',l:'Task / action',t:'text',req:true},
+  {k:'dueDate',l:'Due date',t:'date'},
+  {k:'notes',l:'Notes',t:'textarea'},
+];
+const TWO_LAYER_DOMAINS = new Set(['Vehicles','Health','Finances & taxes','Social']);
 const SPECIAL_FIELDS = {
   'Vehicles':[
     {k:'name',l:'Vehicle name',t:'text',req:true},{k:'year',l:'Year / make / model',t:'text'},
@@ -883,6 +914,13 @@ function loadLS(){
   if(S.sbConfig.migrationDone===undefined) S.sbConfig.migrationDone=false;
   if(S.socialHiddenFields) socialHiddenFields=S.socialHiddenFields;
   if(!S.budget) S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
+  if(S.domains&&S.domains.personal&&!S.domains.personal.includes('Budget')){
+    var pli=S.domains.personal.indexOf('Plants');
+    if(pli>=0)S.domains.personal.splice(pli,0,'Budget');
+    else S.domains.personal.push('Budget');
+    if(!S.items.personal)S.items.personal={};
+    if(!S.items.personal['Budget'])S.items.personal['Budget']=[];
+  }
 }
 function persistLS(){ localStorage.setItem(LS_KEY,JSON.stringify(S)); }
 
@@ -1023,6 +1061,10 @@ function urgency(days){if(days===null)return'none';if(days<0)return'red';if(days
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function getDue(item,domain){
+  if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'){
+    if(item._type==='record') return null;
+    return item.dueDate||null;
+  }
   if(domain==='Vehicles'){const ds=[item.regExpiry,item.insExpiry,item.nextService].filter(Boolean).sort();return ds[0]||null;}
   if(domain==='Social'){
     const yr=new Date().getFullYear();const t=new Date();t.setHours(0,0,0,0);const c=[];
@@ -1059,8 +1101,9 @@ function allItems(orgFilter){
   const out=[];
   (orgFilter?[orgFilter]:Object.keys(S.domains)).forEach(org=>{
     (S.domains[org]||[]).forEach(domain=>{
-      if(domain==='Plants')return;
+      if(domain==='Plants'||domain==='Budget')return;
       ((S.items[org]||{})[domain]||[]).forEach((item,idx)=>{
+        if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'&&item._type==='record')return;
         const due=getDue(item,domain);
         out.push({item,org,domain,idx,due,days:daysUntil(due)});
       });
@@ -1240,81 +1283,155 @@ function renderSocialControls(allItems, circles){
 
 
 // ═══════════════════════════════════════════
-// DOMAIN SUMMARY VIEWS
+// TWO-LAYER DOMAIN RENDERING
 // ═══════════════════════════════════════════
-function renderDomainSummary(org, domain, items){
-  if(!items.length) return '';
-  if(domain==='Vehicles') return renderVehicleBay(items);
-  if(domain==='Health') return renderHealthSummary(items);
-  if(domain==='Finances & taxes') return renderFinancesSummary(items, org);
-  return '';
+function renderDomainSummary(org,domain,items){
+  if(!TWO_LAYER_DOMAINS.has(domain)||domain==='Social')return'';
+  var records=items.filter(function(i){return i._type==='record';});
+  var actions=items.filter(function(i){return i._type==='action';});
+  return renderTwoLayerDomain(org,domain,records,actions);
 }
 
-function summaryCard(fields){
-  return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:6px;">'
-    +fields.map(([l,v])=>v?('<div style="display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:2px 0;">'
-      +'<span style="color:var(--text2);flex-shrink:0;">'+esc(l)+'</span>'
-      +'<span style="color:var(--text);font-weight:500;text-align:right;">'+esc(String(v))+'</span>'
-      +'</div>'):'').join('')
+function renderTwoLayerDomain(org,domain,records,allActions){
+  var icons={'Vehicles':'&#x1F697;','Health':'&#x2665;','Finances & taxes':'&#x1F4B0;'};
+  var labels={'Vehicles':'Vehicle Bay','Health':'Health Summary','Finances & taxes':'Finance Summary'};
+  var typeMap={'Vehicles':'vehicle','Health':'health record','Finances & taxes':'account or policy'};
+  var icon=icons[domain]||''; var label=labels[domain]||domain; var typeShort=typeMap[domain]||'record';
+  var html='<div style="margin-bottom:1.5rem;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+    +'<div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">'+icon+' '+esc(label)+'</div>'
+    +'<button class="add-btn" style="font-size:12px;padding:4px 10px;" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" '
+    +'onclick="openRecordModal(this.dataset.org,this.dataset.dom,null)">+ Add '+esc(typeShort)+'</button>'
     +'</div>';
+  if(!records.length){
+    html+='<div style="font-size:13px;color:var(--text3);padding:8px 0;">No records yet. Click + Add to get started.</div>';
+  } else {
+    records.forEach(function(rec){
+      var recIdx=((S.items[org]||{})[domain]||[]).indexOf(rec);
+      var recActions=allActions.filter(function(a){return a._parentId===rec._id;});
+      html+=renderRecordCard(org,domain,rec,recIdx,recActions);
+    });
+  }
+  return html+'</div>';
 }
 
-function renderVehicleBay(items){
-  const cards = items.map(v=>{
-    const nextDue=[
-      v.regExpiry&&('Reg expires '+fmtDate(v.regExpiry)),
-      v.insExpiry&&('Insurance expires '+fmtDate(v.insExpiry)),
-      v.nextService&&('Service due '+fmtDate(v.nextService))
-    ].filter(Boolean).join(' · ');
-    return summaryCard([
-      ['Vehicle', (v.year?v.year+' ':'')+v.name],
-      ['Plate', v.plate],
-      ['Insurer', v.insurer],
-      ['Mileage', v.mileage],
-      ['Next due', nextDue],
-    ]);
+function renderRecordCard(org,domain,rec,recIdx,recActions){
+  var overdueCount=recActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d<0;}).length;
+  var dueCount=recActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=14;}).length;
+  var badgeHtml=(overdueCount>0?'<span class="badge badge-red" style="font-size:10px;">'+overdueCount+' overdue</span>':'')
+    +(dueCount>0&&!overdueCount?'<span class="badge badge-amber" style="font-size:10px;">'+dueCount+' due soon</span>':'');
+  var keyFields=[];
+  if(domain==='Vehicles'){
+    keyFields=[rec.year&&['Make/model',rec.year],rec.plate&&['Plate',rec.plate],
+      rec.insurer&&['Insurer',rec.insurer],rec.mileage&&['Mileage',rec.mileage],
+      rec.insExpiry&&['Ins. expiry',fmtDate(rec.insExpiry)],rec.regExpiry&&['Reg. expiry',fmtDate(rec.regExpiry)],
+      rec.nextService&&['Next service',fmtDate(rec.nextService)],rec.lastOilChange&&['Last oil change',fmtDate(rec.lastOilChange)],
+    ].filter(Boolean);
+  } else if(domain==='Health'){
+    keyFields=[rec.category&&['Category',rec.category],rec.provider&&['Provider',rec.provider],
+      rec.dosage&&['Dosage',rec.dosage],rec.nextDue&&['Next due',fmtDate(rec.nextDue)]].filter(Boolean);
+  } else if(domain==='Finances & taxes'){
+    keyFields=[rec.category&&['Category',rec.category],rec.institution&&['Institution',rec.institution],
+      rec.amount&&['Amount',rec.amount],rec.nextDue&&['Next due',fmtDate(rec.nextDue)]].filter(Boolean);
+  }
+  var fieldsHtml=keyFields.map(function(f){
+    return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:2px 0;">'
+      +'<span style="color:var(--text2);">'+esc(f[0])+'</span>'
+      +'<span style="color:var(--text);font-weight:500;">'+esc(String(f[1]))+'</span></div>';
   }).join('');
-  return '<div style="margin-bottom:1.25rem;">'
-    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;">&#x1F697; Vehicle Bay</div>'
-    +cards+'</div>';
-}
-
-function renderHealthSummary(items){
-  const byCategory={};
-  items.forEach(i=>{
-    const cat=i.category||'Other';
-    if(!byCategory[cat]) byCategory[cat]=[];
-    byCategory[cat].push(i);
-  });
-  const html=Object.entries(byCategory).map(([cat,its])=>{
-    const cards=its.map(i=>summaryCard([
-      ['Item', i.name],
-      ['Provider', i.provider],
-      ['Next date', i.nextDue&&fmtDate(i.nextDue)],
-    ])).join('');
-    return '<div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">'+esc(cat)+'</div>'+cards+'</div>';
+  var drawerId='rd-'+esc(rec._id);
+  var rid=esc(rec._id);
+  var actionsHtml=recActions.map(function(act){
+    var actIdx=((S.items[org]||{})[domain]||[]).indexOf(act);
+    var days=daysUntil(act.dueDate);
+    var lbl=days===null?'':days<0?(Math.abs(days)+'d overdue'):days===0?'Today':(days+'d');
+    var bCls=days===null?'':days<0?'badge-red':days<=7?'badge-amber':'badge-green';
+    return '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);">'
+      +'<span style="flex:1;font-size:13px;">'+esc(act.name||'')+'</span>'
+      +(lbl?'<span class="badge '+bCls+'" style="font-size:10px;">'+lbl+'</span>':'')
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+actIdx+'" '
+      +'onclick="pushToCalendarByData(this)" title="Calendar">&#x1F4C5;</button>'
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+actIdx+'" data-recid="'+rid+'" '
+      +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,parseInt(this.dataset.idx))">&#x270e;</button>'
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+actIdx+'" '
+      +'onclick="askDeleteByData(this)">&#x2715;</button>'
+      +'</div>';
   }).join('');
-  return '<div style="margin-bottom:1.25rem;">'
-    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;">&#x2665; Health Summary</div>'
-    +html+'</div>';
+  return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:10px;">'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;">'
+    +'<div><div style="font-size:15px;font-weight:600;">'+esc(rec.name||'Unnamed')+'</div>'
+    +(rec.notes?'<div style="font-size:12px;color:var(--text3);margin-top:2px;">'+esc(rec.notes)+'</div>':'')
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">'
+    +badgeHtml
+    +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+recIdx+'" '
+    +'onclick="openRecordModal(this.dataset.org,this.dataset.dom,parseInt(this.dataset.idx))">&#x270e;</button>'
+    +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+recIdx+'" '
+    +'onclick="askDeleteByData(this)">&#x2715;</button>'
+    +'</div></div>'
+    +(fieldsHtml?'<div style="margin-bottom:10px;">'+fieldsHtml+'</div>':'')
+    +'<div style="border-top:1px solid var(--border);padding-top:8px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+    +'<button data-did="'+drawerId+'" onclick="toggleActionsDrawer(this.dataset.did)" '
+    +'style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text2);font-family:inherit;">'
+    +'<span id="'+drawerId+'-arrow">&#x25bc;</span> '
+    +recActions.length+' action'+(recActions.length===1?'':'s')
+    +'</button>'
+    +'<button class="add-btn" style="font-size:11px;padding:3px 8px;" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-recid="'+rid+'" '
+    +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,null)">+ Action</button>'
+    +'</div>'
+    +'<div id="'+drawerId+'" style="display:none;">'
+    +(actionsHtml||'<div style="font-size:12px;color:var(--text3);padding:4px 0;">No actions yet.</div>')
+    +'</div></div></div>';
 }
 
-function renderFinancesSummary(items, org){
-  // Show items with amounts prominently
-  const withAmt=items.filter(i=>i.amount);
-  if(!withAmt.length) return '';
-  const html=withAmt.map(i=>summaryCard([
-    ['Item', i.name],
-    ['Amount', i.amount],
-    ['Category', i.category],
-    ['Due', i.dueDate&&fmtDate(i.dueDate)],
-  ])).join('');
-  return '<div style="margin-bottom:1.25rem;">'
-    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;">&#x1F4B0; Financial Summary</div>'
-    +html+'</div>';
+function toggleActionsDrawer(id){
+  var el=document.getElementById(id); var arrow=document.getElementById(id+'-arrow');
+  if(!el)return;
+  var open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(arrow)arrow.innerHTML=open?'&#x25b2;':'&#x25bc;';
 }
 
-// ═══════════════════════════════════════════
+function openRecordModal(org,domain,idx){
+  var item=idx!==null&&idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]:null;
+  var fields=RECORD_FIELDS[domain]||COMMON_FIELDS;
+  var domLabel={'Vehicles':'Vehicle','Health':'Health record','Finances & taxes':'Finance record'}[domain]||'Record';
+  document.getElementById('item-title').textContent=(item?'Edit ':'Add ')+domLabel;
+  document.getElementById('item-body').innerHTML=fields.map(function(f){
+    var val=item?item[f.k]||'':'';
+    if(f.t==='checkbox')return'<div class="fg-check"><input type="checkbox" id="f-'+f.k+'"'+(val==='true'?' checked':'')+'><label for="f-'+f.k+'">'+f.l+'</label></div>';
+    var inp='';
+    if(f.t==='select'){var opts=(f.opts||[]).map(function(o){return'<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>';}).join('');inp='<select id="f-'+f.k+'"><option value=""></option>'+opts+'</select>';}
+    else if(f.t==='textarea')inp='<textarea id="f-'+f.k+'">'+esc(val)+'</textarea>';
+    else inp='<input type="'+f.t+'" id="f-'+f.k+'" value="'+esc(val)+'"'+(f.req?' required':'')+' autocomplete="off">';
+    return'<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label>'+inp+'</div>';
+  }).join('');
+  var ov=document.getElementById('item-ov');
+  ov.dataset.recordMode='true';ov.dataset.org=org;ov.dataset.domain=domain;
+  ov.dataset.idx=idx!==null&&idx!==undefined?String(idx):'';ov.dataset.parentId='';
+  openOv('item-ov');
+}
+
+function openActionModal(org,domain,parentId,idx){
+  var item=idx!==null&&idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]:null;
+  var parentRec=((S.items[org]||{})[domain]||[]).find(function(r){return r._id===parentId;});
+  var parentName=parentRec?parentRec.name:'';
+  document.getElementById('item-title').textContent=(item?'Edit action':'New action')+(parentName?' — '+parentName:'');
+  document.getElementById('item-body').innerHTML=
+    '<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Linked to: <strong>'+esc(parentName)+'</strong></div>'
+    +ACTION_FIELDS.map(function(f){
+      var val=item?item[f.k]||'':'';
+      if(f.t==='textarea')return'<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label><textarea id="f-'+f.k+'">'+esc(val)+'</textarea></div>';
+      return'<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label><input type="'+f.t+'" id="f-'+f.k+'" value="'+esc(val)+'"'+(f.req?' required':'')+' autocomplete="off"></div>';
+    }).join('');
+  var ov=document.getElementById('item-ov');
+  ov.dataset.recordMode='false';ov.dataset.org=org;ov.dataset.domain=domain;
+  ov.dataset.idx=idx!==null&&idx!==undefined?String(idx):'';ov.dataset.parentId=parentId||'';
+  openOv('item-ov');
+}
+
+
 // ORG / DOMAIN
 // ═══════════════════════════════════════════
 function switchOrg(org){
@@ -1359,21 +1476,27 @@ function renderOrgContent(){
     const syncConn=isPS&&S.gConfig.clientId&&S.gConfig.sheetId;
     const syncBtn=isPS?('<button class="sync-btn" id="sync-btn" onclick="'+(syncConn?'syncSheet()':'openSettings()')+'">'+( syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets')+'</button>'):'';
     const lastSyncStr=syncConn&&S.gConfig.lastSync?function(){try{const d=new Date(S.gConfig.lastSync);return isNaN(d.getTime())?'':d.toLocaleString();}catch(e){return '';}}():'';const lastSync=lastSyncStr?('<div class="sync-status">Last synced: '+lastSyncStr+'</div>'):'';
-    const addOnc='openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
-    // Social: apply filter/sort/search
-    let displayItems=items;
-    let socialControls='';
-    if(isPS){
-      const circles=['Inner','Circle 2','Circle 3','Outer'];
-      socialControls=renderSocialControls(items,circles);
-      displayItems=applySocialFilter(items);
+    var isTwoLayer=TWO_LAYER_DOMAINS.has(currentDomain)&&currentDomain!=='Social';
+    if(isTwoLayer){
+      body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
+        +'<div class="sec-acts"><button class="add-btn" data-org="'+esc(org)+'" data-dom="'+esc(currentDomain)+'" '
+        +'onclick="openRecordModal(this.dataset.org,this.dataset.dom,null)">+ Add record</button></div>'
+        +'</div>'+renderDomainSummary(org,currentDomain,items);
+    } else {
+      var addOnc2='openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
+      var displayItems2=items;
+      var socialControls2='';
+      if(isPS){
+        var circles2=['Inner','Circle 2','Circle 3','Outer'];
+        socialControls2=renderSocialControls(items,circles2);
+        displayItems2=applySocialFilter(items);
+      }
+      var emptyMsg2=isPS&&(socialFilter.search||socialFilter.circle||socialFilter.flag)?'No contacts match your filters.':'No items yet — add your first';
+      var cardsHtml2=displayItems2.length?displayItems2.map(function(it2,i2){return renderCard(org,currentDomain,it2,items.indexOf(it2),false);}).join(''):'<div class="empty">'+emptyMsg2+'</div>';
+      body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
+        +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc2+'">+ Add item</button></div>'
+        +'</div>'+lastSync+socialControls2+'<div class="cards">'+cardsHtml2+'</div>';
     }
-    const emptyMsg=isPS&&(socialFilter.search||socialFilter.circle||socialFilter.flag)?'No contacts match your filters.':'No items yet — add your first';
-    const cardsHtml=displayItems.length?displayItems.map((item,i)=>renderCard(org,currentDomain,item,items.indexOf(item),false)).join(''):'<div class="empty">'+emptyMsg+'</div>';
-    const domSummary=!isPS?renderDomainSummary(org,currentDomain,items):'';
-    body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
-      +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc+'">+ Add item</button></div>'
-      +'</div>'+lastSync+domSummary+socialControls+'<div class="cards">'+cardsHtml+'</div>';
   }
   document.getElementById('org-content').innerHTML=nav+body;
 }
@@ -1539,6 +1662,14 @@ function askDeleteByData(btn){askDelete(btn.dataset.org,btn.dataset.dom,parseInt
 function pushToCalendarByData(btn){const it=window['_card_'+btn.dataset.org+'_'+btn.dataset.idx];pushToCalendar(btn.dataset.org,btn.dataset.dom,it,parseInt(btn.dataset.idx));}
 
 function openItemModal(org,domain,idx){
+  if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'){
+    if(idx!==undefined){
+      var itr=((S.items[org]||{})[domain]||[])[parseInt(idx)];
+      if(itr&&itr._type==='action')openActionModal(org,domain,itr._parentId,idx);
+      else openRecordModal(org,domain,idx);
+    }else openRecordModal(org,domain,null);
+    return;
+  }
   editTarget=idx!==undefined?{org,domain,idx:parseInt(idx)}:null;
   const item=idx!==undefined?((S.items[org]||{})[domain]||[])[parseInt(idx)]||{}:{};
   document.getElementById('item-title').textContent=(idx!==undefined?'Edit \u2014 ':'Add \u2014 ')+domain;
@@ -1555,10 +1686,19 @@ function openItemModal(org,domain,idx){
   openOv('item-ov');
 }
 async function saveItem(){
-  const org=editTarget?editTarget.org:currentOrg;
-  const domain=editTarget?editTarget.domain:currentDomain;
+  var ov=document.getElementById('item-ov');
+  var isRecordMode=ov.dataset.recordMode==='true';
+  var isActionMode=ov.dataset.recordMode==='false';
+  var org=ov.dataset.org||currentOrg;
+  var domain=ov.dataset.domain||currentDomain;
+  var idxStr=ov.dataset.idx;
+  var idx=idxStr!==''&&idxStr!==undefined?parseInt(idxStr):undefined;
+  var parentId=ov.dataset.parentId||'';
   if(!org||!domain)return;
-  const fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
+  var fields;
+  if(isRecordMode&&RECORD_FIELDS[domain])fields=RECORD_FIELDS[domain];
+  else if(isActionMode)fields=ACTION_FIELDS;
+  else fields=SPECIAL_FIELDS[domain]||COMMON_FIELDS;
   const item={};let valid=true;
   fields.forEach(f=>{
     const el=document.getElementById('f-'+f.k);
@@ -1568,17 +1708,30 @@ async function saveItem(){
     item[f.k]=val;
   });
   if(!valid)return;
+  if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'){
+    if(isRecordMode){
+      item._type='record';
+      var existingRec=idx!==undefined?((S.items[org]||{})[domain]||[])[idx]:null;
+      item._id=existingRec&&existingRec._id?existingRec._id:('rec_'+Date.now());
+    } else if(isActionMode){
+      item._type='action';
+      item._parentId=parentId;
+    }
+  }
   if(!S.items[org])S.items[org]={};
   if(!S.items[org][domain])S.items[org][domain]=[];
-  if(editTarget&&editTarget.idx!==undefined){
-    const existing=S.items[org][domain][editTarget.idx];
-    if(existing&&existing._sbId)item._sbId=existing._sbId;
-    S.items[org][domain][editTarget.idx]=item;
+  if(idx!==undefined){
+    var ex=S.items[org][domain][idx];
+    if(ex&&ex._sbId)item._sbId=ex._sbId;
+    if(ex&&ex._id&&!item._id)item._id=ex._id;
+    S.items[org][domain][idx]=item;
   }else S.items[org][domain].push(item);
+  ov.dataset.recordMode='';ov.dataset.org='';ov.dataset.domain='';ov.dataset.idx='';ov.dataset.parentId='';
+  editTarget=null;
   persistLS();await sbSaveItem(org,domain,item);
-  closeOv('item-ov');editTarget=null;renderDash();renderOrgContent();
+  closeOv('item-ov');renderDash();renderOrgContent();
   if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId)
-    ensureGAuth(()=>pushContactToSheet(item));
+    ensureGAuth(function(){pushContactToSheet(item);});
 }
 
 // ═══════════════════════════════════════════
