@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.6</span>
+      <span class="ver">v10.9.7</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -1059,6 +1059,10 @@ function fmtDate(str){
 }
 function urgency(days){if(days===null)return'none';if(days<0)return'red';if(days<=30)return'red';if(days<=90)return'amber';return'green';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getSocialId(contact){
+  // Use contactId field if present (from Contact ID column), else _id, else name key
+  return contact.contactId||contact._id||((contact.firstName||'')+'_'+(contact.lastName||'')).replace(/\s+/g,'_').toLowerCase()||('c_'+Math.random().toString(36).slice(2));
+}
 
 function getDue(item,domain){
   if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'){
@@ -1067,6 +1071,11 @@ function getDue(item,domain){
   }
   if(domain==='Vehicles'){const ds=[item.regExpiry,item.insExpiry,item.nextService].filter(Boolean).sort();return ds[0]||null;}
   if(domain==='Social'){
+    // Only action items have due dates; contact records do not feed tiles
+    if(item._type==='action') return item.dueDate||null;
+    // Legacy contacts (no _type) — keep birthday logic for backward compat
+    // but flag them so they don't appear in tile counts (handled in allItems)
+    if(item._type==='record') return null;
     const yr=new Date().getFullYear();const t=new Date();t.setHours(0,0,0,0);const c=[];
     ['birthdate','anniversary','spouseBirthdate'].forEach(k=>{
       if(item[k]){
@@ -1103,7 +1112,8 @@ function allItems(orgFilter){
     (S.domains[org]||[]).forEach(domain=>{
       if(domain==='Plants'||domain==='Budget')return;
       ((S.items[org]||{})[domain]||[]).forEach((item,idx)=>{
-        if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'&&item._type==='record')return;
+        // In all two-layer domains (including Social), only action items count for tiles
+        if(TWO_LAYER_DOMAINS.has(domain)&&item._type!=='action')return;
         const due=getDue(item,domain);
         out.push({item,org,domain,idx,due,days:daysUntil(due)});
       });
@@ -1653,9 +1663,50 @@ function renderCard(org,domain,item,idx,fromDrill){
   const cbHtml=cbFields.length?('<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'+cbFields.map(f=>'<span class="badge badge-green">'+esc(f.l)+'</span>').join('')+'</div>'):'';
   const notesHtml=(item.importantNotes||item.notes)?('<div class="card-notes">'+esc(item.importantNotes||item.notes)+'</div>'):'';
   const nameHtml='<div class="card-name">'+esc(displayName||'Unnamed')+'</div>'+(displaySub?'<div class="card-sub">'+esc(displaySub)+'</div>':'');
+
+  // Social: add actions drawer
+  let socialActionsHtml='';
+  if(isSocial&&!fromDrill){
+    const contactId=getSocialId(item);
+    const contactActions=((S.items[org]||{})[domain]||[]).filter(function(a){
+      return a._type==='action'&&a._parentId===contactId;
+    });
+    const overdue=contactActions.filter(function(a){const d=daysUntil(a.dueDate);return d!==null&&d<0;}).length;
+    const soon=contactActions.filter(function(a){const d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=14;}).length;
+    const drawerId='sd-'+esc(contactId);
+    const actBadge=(overdue>0?'<span class="badge badge-red" style="font-size:10px;margin-left:4px;">'+overdue+' overdue</span>'
+      :(soon>0?'<span class="badge badge-amber" style="font-size:10px;margin-left:4px;">'+soon+' due soon</span>':''));
+    const actRows=contactActions.map(function(act){
+      const aIdx=((S.items[org]||{})[domain]||[]).indexOf(act);
+      const days2=daysUntil(act.dueDate);
+      const lbl3=days2===null?'':days2<0?(Math.abs(days2)+'d overdue'):days2===0?'Today':(days2+'d');
+      const bCls2=days2===null?'':days2<0?'badge-red':days2<=7?'badge-amber':'badge-green';
+      return '<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);">'
+        +'<span style="flex:1;font-size:12px;">'+esc(act.name||'')+'</span>'
+        +(lbl3?'<span class="badge '+bCls2+'" style="font-size:10px;">'+lbl3+'</span>':'')
+        +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+aIdx+'" data-recid="'+esc(contactId)+'" '
+        +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,parseInt(this.dataset.idx))">&#x270e;</button>'
+        +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+aIdx+'" '
+        +'onclick="askDeleteByData(this)">&#x2715;</button>'
+        +'</div>';
+    }).join('');
+    socialActionsHtml='<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:6px;">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;">'
+      +'<button data-did="'+drawerId+'" onclick="toggleActionsDrawer(this.dataset.did)" '
+      +'style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);font-family:inherit;display:flex;align-items:center;gap:3px;">'
+      +'<span id="'+drawerId+'-arrow">&#x25bc;</span> '+contactActions.length+' follow-up'+(contactActions.length===1?'':'s')+actBadge
+      +'</button>'
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-recid="'+esc(contactId)+'" '
+      +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,null)" title="Add follow-up" style="font-size:11px;color:var(--blue);">+ Follow-up</button>'
+      +'</div>'
+      +'<div id="'+drawerId+'" style="display:none;margin-top:4px;">'
+      +(actRows||'<div style="font-size:11px;color:var(--text3);padding:3px 0;">No follow-ups yet.</div>')
+      +'</div></div>';
+  }
+
   return'<div class="card"><div class="card-top"><div>'+nameHtml+'</div>'+drillNote
     +'<div class="card-acts">'+lbl2+calBtn+editBtn+delBtn+'</div></div>'
-    +'<div class="card-rows">'+rowsHtml+'</div>'+cbHtml+notesHtml+'</div>';
+    +'<div class="card-rows">'+rowsHtml+'</div>'+cbHtml+notesHtml+socialActionsHtml+'</div>';
 }
 function openItemModalByData(btn){openItemModal(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx));}
 function askDeleteByData(btn){askDelete(btn.dataset.org,btn.dataset.dom,parseInt(btn.dataset.idx));}
@@ -1708,7 +1759,7 @@ async function saveItem(){
     item[f.k]=val;
   });
   if(!valid)return;
-  if(TWO_LAYER_DOMAINS.has(domain)&&domain!=='Social'){
+  if(TWO_LAYER_DOMAINS.has(domain)){
     if(isRecordMode){
       item._type='record';
       var existingRec=idx!==undefined?((S.items[org]||{})[domain]||[])[idx]:null;
