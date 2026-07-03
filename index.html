@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.2</span>
+      <span class="ver">v11.3</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -638,6 +638,7 @@ let currentOrg = 'personal', currentDomain = null;
 let dashEditMode = false, editTarget = null, deleteTarget = null;
 let domMgrOrg = null, editPlantId = null;
 let gisTokenClient = null, gapiReady = false, pendingGAction = null, _gAuthInProgress = false;
+var CONTACT_ID_COL = 'Contact ID';
 let gSheetColumns = [];
 let conversationHistory = [], auroraThinking = false;
 let socialFilter = {search:'', circle:'', sort:'lastName', flag:''};
@@ -2016,6 +2017,7 @@ function renderOrgContent(){
         +'onclick="openRecordModal(this.dataset.org,this.dataset.dom,null)">+ Add record</button></div>'
         +'</div>'+renderDomainSummary(org,currentDomain,items);
     } else {
+      var addLabel2=currentDomain==='Social'?'+ Add person':'+ Add item';
       var addOnc2='openItemModal(\''+org+'\',\''+esc(currentDomain)+'\')';
       var displayItems2=items;
       var socialControls2='';
@@ -2027,7 +2029,7 @@ function renderOrgContent(){
       var emptyMsg2=isPS&&(socialFilter.search||socialFilter.circle||socialFilter.flag)?'No contacts match your filters.':'No items yet — add your first';
       var cardsHtml2=displayItems2.length?displayItems2.map(function(it2,i2){return renderCard(org,currentDomain,it2,items.indexOf(it2),false);}).join(''):'<div class="empty">'+emptyMsg2+'</div>';
       body='<div class="sec-hdr"><div class="sec-title">'+esc(currentDomain)+'</div>'
-        +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc2+'">+ Add item</button></div>'
+        +'<div class="sec-acts">'+syncBtn+'<button class="add-btn" onclick="'+addOnc2+'">'+addLabel2+'</button></div>'
         +'</div>'+lastSync+socialControls2+'<div class="cards">'+cardsHtml2+'</div>';
     }
   }
@@ -2671,72 +2673,247 @@ function silentTokenRefresh(){
   // Token expired — try silent refresh (no UI)
   loadGapiAndGis(()=>requestGToken(true));
 }
-function fetchSheetColumns(){
-  const range=(S.gConfig.sheetTab||'Sheet1')+'!1:1';
-  gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range})
-    .then(r=>{gSheetColumns=(r.result.values&&r.result.values[0])||[];openMappingModal();})
-    .catch(()=>gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:'1:1'})
-      .then(r=>{gSheetColumns=(r.result.values&&r.result.values[0])||[];openMappingModal();})
-      .catch(()=>alert('Could not read sheet headers.')));
+
+// ═══════════════════════════════════════════
+// SHEET SYNC v2 — Contact ID + Bidirectional
+// ═══════════════════════════════════════════
+
+
+// Generate a stable contact ID
+function generateContactId(){
+  return 'cid_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
 }
+
+function fetchSheetColumns(){
+  var range=(S.gConfig.sheetTab||'Sheet1')+'!1:1';
+  gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:range})
+    .then(function(r){
+      gSheetColumns=(r.result.values&&r.result.values[0])||[];
+      openMappingModal();
+    })
+    .catch(function(){
+      gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:'1:1'})
+        .then(function(r){gSheetColumns=(r.result.values&&r.result.values[0])||[];openMappingModal();})
+        .catch(function(){alert('Could not read sheet headers.');});
+    });
+}
+
 function openMappingModal(){
-  const mapping=S.gConfig.mapping||{};
-  document.getElementById('map-tbody').innerHTML=SOCIAL_MAP_FIELDS.map(f=>{
-    const opts='<option value="">\u2014 ignore \u2014</option>'+gSheetColumns.map(col=>'<option value="'+esc(col)+'"'+(mapping[f.k]===col?' selected':'')+'>'+esc(col)+'</option>').join('');
+  var mapping=S.gConfig.mapping||{};
+  document.getElementById('map-tbody').innerHTML=SOCIAL_MAP_FIELDS.map(function(f){
+    var opts='<option value="">\u2014 ignore \u2014</option>'+gSheetColumns.map(function(col){
+      return '<option value="'+esc(col)+'"'+(mapping[f.k]===col?' selected':'')+'>'+esc(col)+'</option>';
+    }).join('');
     return'<tr><td>'+f.l+'</td><td><select id="map-'+f.k+'">'+opts+'</select></td></tr>';
   }).join('');
   openOv('gmap-ov');
 }
+
 function saveMapping(){
-  const mapping={};
-  SOCIAL_MAP_FIELDS.forEach(f=>{const v=document.getElementById('map-'+f.k).value;if(v)mapping[f.k]=v;});
-  S.gConfig.mapping=mapping;persistLS();closeOv('gmap-ov');syncSheet();
-}
-function syncSheet(){
-  if(!S.gConfig.clientId||!S.gConfig.sheetId){openSettings();return;}
-  const btn=document.getElementById('sync-btn');
-  if(btn)btn.innerHTML='<span class="spinner"></span> Syncing\u2026';
-  ensureGAuth(doSync);
-}
-function doSync(){
-  const tab=S.gConfig.sheetTab||'Sheet1';
-  gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:tab})
-    .then(r=>{
-      const rows=r.result.values||[];if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
-      const headers=rows[0],mapping=S.gConfig.mapping||{},revMap={};
-      Object.entries(mapping).forEach(([hk,col])=>{const ci=headers.indexOf(col);if(ci>=0)revMap[ci]=hk;});
-      const existing=S.items.personal.Social||[];let added=0,updated=0;
-      rows.slice(1).forEach(row=>{
-        const c={_fromSheet:true};
-        row.forEach((val,ci)=>{if(revMap[ci])c[revMap[ci]]=val;});
-        if(!c.name&&(c.firstName||c.lastName))c.name=((c.firstName||'')+' '+(c.lastName||'')).trim();
-        ['birthdayCard','christmasCard','weddingInvite','andreasFuneral','andreasMemorials'].forEach(k=>{
-          if(c[k]!==undefined){const v=String(c[k]).toLowerCase().trim();c[k]=(v==='yes'||v==='y'||v==='true'||v==='1'||v==='x')?'true':'false';}
-        });
-        const nk=(c.firstName||c.name||'').toLowerCase();if(!nk)return;
-        const ei=existing.findIndex(x=>(x.firstName||x.name||'').toLowerCase()===nk);
-        if(ei>=0){existing[ei]={...existing[ei],...c};updated++;}else{existing.push(c);added++;}
-      });
-      S.items.personal.Social=existing;S.gConfig.lastSync=Date.now();
-      persistLS();renderDash();renderOrgContent();resetSyncBtn();
-      const el=document.querySelector('.sync-status');
-      if(el)el.textContent='Last synced: '+new Date().toLocaleString()+' \xb7 '+added+' added, '+updated+' updated.';
-    })
-    .catch(e=>{resetSyncBtn();alert('Sync failed: '+JSON.stringify(e.result||e));});
-}
-function resetSyncBtn(){const btn=document.getElementById('sync-btn');if(btn)btn.innerHTML='\u21f3 Sync Google Sheets';}
-function pushContactToSheet(contact){
-  if(!S.gConfig.sheetId||!gapi||!gapi.client||!gapi.client.sheets)return;
-  const tab=S.gConfig.sheetTab||'Sheet1';
-  gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:tab+'!1:1'})
-    .then(r=>{
-      const headers=(r.result.values&&r.result.values[0])||[],mapping=S.gConfig.mapping||{};
-      const row=headers.map(h=>{const hk=Object.entries(mapping).find(([k,v])=>v===h)?.[0];return hk?contact[hk]||'':'';});
-      return gapi.client.sheets.spreadsheets.values.append({spreadsheetId:S.gConfig.sheetId,range:tab,valueInputOption:'USER_ENTERED',resource:{values:[row]}});
-    }).catch(e=>console.warn('Push to sheet failed:',e));
+  var mapping={};
+  SOCIAL_MAP_FIELDS.forEach(function(f){
+    var v=document.getElementById('map-'+f.k).value;
+    if(v) mapping[f.k]=v;
+  });
+  S.gConfig.mapping=mapping;
+  persistLS();
+  closeOv('gmap-ov');
+  syncSheet();
 }
 
-// ═══════════════════════════════════════════
+function syncSheet(){
+  if(!S.gConfig.clientId||!S.gConfig.sheetId){openSettings();return;}
+  var btn=document.getElementById('sync-btn');
+  if(btn) btn.innerHTML='<span class="spinner"></span> Syncing\u2026';
+  ensureGAuth(doSync);
+}
+
+function remapColumns(){
+  if(!S.gConfig.clientId||!S.gConfig.sheetId){openSettings();return;}
+  ensureGAuth(fetchSheetColumns);
+}
+
+function doSync(){
+  var tab=S.gConfig.sheetTab||'Sheet1';
+  gapi.client.sheets.spreadsheets.values.get({spreadsheetId:S.gConfig.sheetId,range:tab})
+    .then(function(r){
+      var rows=r.result.values||[];
+      if(!rows.length){alert('Sheet appears empty.');resetSyncBtn();return;}
+      var headers=rows[0];
+      var mapping=S.gConfig.mapping||{};
+      var revMap={};
+      Object.entries(mapping).forEach(function(e){
+        var ci=headers.indexOf(e[1]);
+        if(ci>=0) revMap[ci]=e[0];
+      });
+
+      // Find Contact ID column index (Column B = index 1, but use header name for safety)
+      var cidColIdx=headers.indexOf(CONTACT_ID_COL);
+      if(cidColIdx<0) cidColIdx=1; // fallback to column B
+
+      var existing=S.items.personal.Social||[];
+      var added=0, updated=0;
+      var rowsNeedingIds=[]; // {rowNum, contactId} for writing back
+
+      rows.slice(1).forEach(function(row, ri){
+        var c={_fromSheet:true};
+        row.forEach(function(val,ci){if(revMap[ci]) c[revMap[ci]]=val;});
+        if(!c.name&&(c.firstName||c.lastName))
+          c.name=((c.firstName||'')+' '+(c.lastName||'')).trim();
+
+        // Boolean fields
+        ['birthdayCard','christmasCard','weddingInvite','andreasFuneral','andreasMemorials'].forEach(function(k){
+          if(c[k]!==undefined){
+            var v=String(c[k]).toLowerCase().trim();
+            c[k]=(v==='yes'||v==='y'||v==='true'||v==='1'||v==='x')?'true':'false';
+          }
+        });
+
+        // Get or generate Contact ID
+        var sheetCid=(row[cidColIdx]||'').trim();
+        if(sheetCid){
+          c.contactId=sheetCid;
+          // Find by Contact ID first (most reliable)
+          var ei=existing.findIndex(function(x){return x.contactId===sheetCid;});
+          if(ei>=0){
+            // Preserve Aurora-specific fields not in sheet
+            var preserved={};
+            ['isKeyRelationship','isSignificantOther','_type','_sbId'].forEach(function(k){
+              if(existing[ei][k]) preserved[k]=existing[ei][k];
+            });
+            existing[ei]=Object.assign({},existing[ei],c,preserved);
+            updated++;
+          } else {
+            existing.push(c);
+            added++;
+          }
+        } else {
+          // No Contact ID in sheet — match by name, then assign new ID
+          var nk=(c.firstName||c.name||'').toLowerCase();
+          if(!nk) return;
+          var ei=existing.findIndex(function(x){
+            return (x.firstName||x.name||'').toLowerCase()===nk;
+          });
+          var newCid=generateContactId();
+          c.contactId=newCid;
+          if(ei>=0){
+            var preserved2={};
+            ['isKeyRelationship','isSignificantOther','_type','_sbId'].forEach(function(k){
+              if(existing[ei][k]) preserved2[k]=existing[ei][k];
+            });
+            existing[ei]=Object.assign({},existing[ei],c,preserved2);
+            updated++;
+          } else {
+            existing.push(c);
+            added++;
+          }
+          // Queue this row to get its ID written back to sheet
+          rowsNeedingIds.push({rowNum: ri+2, colIdx: cidColIdx, contactId: newCid});
+        }
+      });
+
+      S.items.personal.Social=existing;
+      S.gConfig.lastSync=Date.now();
+      persistLS();
+      renderDash();
+      renderOrgContent();
+      resetSyncBtn();
+
+      var el=document.querySelector('.sync-status');
+      if(el) el.textContent='Last synced: '+new Date().toLocaleString()+' \xb7 '+added+' added, '+updated+' updated.';
+
+      // Write Contact IDs back to sheet for rows that didn't have one
+      if(rowsNeedingIds.length>0){
+        writeContactIdsToSheet(tab, cidColIdx, rowsNeedingIds);
+      }
+    })
+    .catch(function(e){resetSyncBtn();alert('Sync failed: '+JSON.stringify(e.result||e));});
+}
+
+function writeContactIdsToSheet(tab, cidColIdx, rows){
+  // Write each new Contact ID back to Column B (or wherever cidColIdx is)
+  var colLetter=String.fromCharCode(65+cidColIdx); // A=0, B=1, etc.
+  var requests=rows.map(function(r){
+    var range=tab+'!'+colLetter+r.rowNum+':'+colLetter+r.rowNum;
+    return gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId:S.gConfig.sheetId,
+      range:range,
+      valueInputOption:'USER_ENTERED',
+      resource:{values:[[r.contactId]]}
+    });
+  });
+  // Execute sequentially to avoid rate limits
+  requests.reduce(function(p,req){return p.then(function(){return req;});}, Promise.resolve())
+    .then(function(){
+      console.log('Wrote '+rows.length+' Contact IDs back to sheet.');
+    })
+    .catch(function(e){console.warn('Failed to write Contact IDs back:', e);});
+}
+
+function resetSyncBtn(){
+  var btn=document.getElementById('sync-btn');
+  if(btn) btn.innerHTML='\u21f3 Sync Google Sheets';
+}
+
+async function pushContactToSheet(contact){
+  if(!S.gConfig.sheetId||!gapi||!gapi.client||!gapi.client.sheets) return;
+  var tab=S.gConfig.sheetTab||'Sheet1';
+
+  try{
+    var r=await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId:S.gConfig.sheetId,
+      range:tab
+    });
+    var rows=r.result.values||[];
+    var headers=rows[0]||[];
+    var mapping=S.gConfig.mapping||{};
+    var cidColIdx=headers.indexOf(CONTACT_ID_COL);
+    if(cidColIdx<0) cidColIdx=1;
+
+    // Build the row data
+    var row=headers.map(function(h){
+      var hk=Object.entries(mapping).find(function(e){return e[1]===h;});
+      if(hk) return contact[hk[0]]||'';
+      if(h===CONTACT_ID_COL) return contact.contactId||'';
+      return '';
+    });
+
+    // If contact has a contactId, find and update its row
+    if(contact.contactId){
+      var existingRowIdx=-1;
+      for(var i=1;i<rows.length;i++){
+        if((rows[i][cidColIdx]||'').trim()===contact.contactId){
+          existingRowIdx=i+1; // 1-indexed sheet row
+          break;
+        }
+      }
+      if(existingRowIdx>0){
+        // Update existing row
+        await gapi.client.sheets.spreadsheets.values.update({
+          spreadsheetId:S.gConfig.sheetId,
+          range:tab+'!A'+existingRowIdx+':'+String.fromCharCode(65+headers.length-1)+existingRowIdx,
+          valueInputOption:'USER_ENTERED',
+          resource:{values:[row]}
+        });
+        return;
+      }
+    }
+
+    // No existing row found — append
+    await gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId:S.gConfig.sheetId,
+      range:tab,
+      valueInputOption:'USER_ENTERED',
+      resource:{values:[row]}
+    });
+  }catch(e){
+    console.warn('Push to sheet failed:',e);
+  }
+}
+
+
+
+
 // NOTIFICATIONS
 // ═══════════════════════════════════════════
 function updateNotifBtn(){
@@ -2830,7 +3007,7 @@ function buildAuroraContext(){
     +'PLANTS: '+((S.plants||[]).length)+' total. Need water now: '+pnw.length+' ('+wn+'). Need checking: '+pnc.length+'.\n\n'
     +'CONTACTS: '+contacts.length+' total. Not contacted in 60+ days: '+nc.length+' ('+cn+').\n\n'
     +'Respond conversationally and specifically. Reference actual names, fields, and values from the data above. '
-    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.\n\n'    +'WRITE CAPABILITY: You CAN create items for the user. When asked to add, create, schedule, or track something, '    +'tell them you are creating it — do not say you cannot save data. '    +'The interface will open a review screen for the user to confirm before saving.';
+    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.';
 }
 
 async function callClaude(userMessage){
@@ -2863,7 +3040,7 @@ async function sendAuroraBarQuery(){
   inp.value='';inp.disabled=true;
   const wrap=document.getElementById('aurora-inline-resp-wrap');
   var writeMode=isWriteIntent(q);
-  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span>'+(writeMode?' Parsing items for review…':' Aurora is thinking…')+'</div>';
+  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span>'+(writeMode?' Creating items…':' Aurora is thinking…')+'</div>';
   try{
     if(writeMode){
       conversationHistory.push({role:'user',content:q});
@@ -3069,10 +3246,11 @@ updateSettingsBtn(); // single settings button replaces all three individual one
 if(Notification.permission==='granted')scheduleNotifs();
 initSupabase();
 // Restore Google token silently if previously authenticated
-if(S.gConfig.clientId && S.gConfig.accessToken){
-  loadGapiAndGis(()=>{ if(restoreGToken()) updateSettingsBtn(); });
+if(S.gConfig.clientId && (S.gConfig.refreshToken || S.gConfig.accessToken)){
+  loadGapi(function(){ if(tokenValid()){ setGapiToken(S.gConfig.accessToken); } updateSettingsBtn(); });
 }
 setTimeout(smartNotificationsOnLoad,1500);
+setTimeout(checkAuthCodeRedirect,100);
 </script>
 
 
