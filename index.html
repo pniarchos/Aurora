@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.1.4</span>
+      <span class="ver">v11.2</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -637,7 +637,7 @@ let S = null, SB = null;
 let currentOrg = 'personal', currentDomain = null;
 let dashEditMode = false, editTarget = null, deleteTarget = null;
 let domMgrOrg = null, editPlantId = null;
-let gisTokenClient = null, gapiReady = false, pendingGAction = null;
+let gisTokenClient = null, gapiReady = false, pendingGAction = null, _gAuthInProgress = false;
 let gSheetColumns = [];
 let conversationHistory = [], auroraThinking = false;
 let socialFilter = {search:'', circle:'', sort:'lastName', flag:''};
@@ -1387,7 +1387,7 @@ function defaultState(){
     domains:{}, items:{},
     tiles: DEFAULT_TILES.map(t=>({...t})),
     plants: DEFAULT_PLANTS.map(p=>({...p})),
-    gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null,accessToken:'',tokenExpiry:0},
+    gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null,accessToken:'',tokenExpiry:0,refreshToken:''},
     calConfig:{personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}},
     sbConfig:{url:'',key:'',migrationDone:false},
     anthropicKey:'',
@@ -1417,6 +1417,7 @@ function loadLS(){
   if(S.socialHiddenFields) socialHiddenFields=S.socialHiddenFields;
   if(!S.budget) S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
   if(!S.completedTasks) S.completedTasks=[];
+  if(!S.gConfig.refreshToken) S.gConfig.refreshToken='';
   if(!S.relationships) S.relationships={};
   if(S.domains&&S.domains.personal&&!S.domains.personal.includes('Budget')){
     var pli=S.domains.personal.indexOf('Plants');
@@ -2445,74 +2446,223 @@ function connectGoogle(){
     requestGToken();
   });
 }
-function loadGapiAndGis(cb){
-  let gd=false,gi=false;
-  function check(){if(gd&&gi)cb();}
-  if(window.gapi&&gapiReady){gd=true;check();}
-  else{
-    const s1=document.createElement('script');s1.src='https://apis.google.com/js/api.js';
-    s1.onload=()=>{gapi.load('client',()=>{gapi.client.init({}).then(()=>Promise.all([
-      gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4'),
-      gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'),
-      gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'),
-      gapi.client.load('https://docs.googleapis.com/$discovery/rest?version=v1')
-    ])).then(()=>{gapiReady=true;gd=true;check();});});};
-    document.head.appendChild(s1);
-  }
-  if(window.google&&window.google.accounts){gi=true;check();}
-  else{const s2=document.createElement('script');s2.src='https://accounts.google.com/gsi/client';s2.onload=()=>{gi=true;check();};document.head.appendChild(s2);}
-}
-function requestGToken(silent){
-  if(!gisTokenClient){
-    gisTokenClient=google.accounts.oauth2.initTokenClient({
-      client_id:S.gConfig.clientId,
-      scope:'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar',
-      callback:r=>{
-        if(r.error){
-          if(!silent) alert('Auth error: '+r.error);
-          return;
-        }
-        // Persist token so it survives page reload
-        S.gConfig.accessToken = r.access_token;
-        S.gConfig.tokenExpiry = Date.now() + ((r.expires_in||3600)-120)*1000; // 2min buffer
-        persistLS();
-        updateSettingsBtn();
-        if(pendingGAction){pendingGAction();pendingGAction=null;}
-      }
-    });
-  }
-  gisTokenClient.requestAccessToken({prompt: silent?'':'consent'});
-}
 
-function restoreGToken(){
-  // Restore a previously saved token into gapi.client if still valid
-  if(!S.gConfig.accessToken||!S.gConfig.tokenExpiry) return false;
-  if(Date.now() >= S.gConfig.tokenExpiry) return false;
-  if(!gapiReady) return false;
-  try{
-    gapi.client.setToken({access_token: S.gConfig.accessToken});
-    return true;
-  }catch(e){ return false; }
-}
+// ═══════════════════════════════════════════
+// GOOGLE OAUTH v2 — Auth Code + Refresh Token
+// ═══════════════════════════════════════════
+
+const EDGE_FN_URL = 'https://meodbshyzglhfpegacuc.supabase.co/functions/v1/google-oauth';
+const GSCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/drive';
+const REDIRECT_URI = 'https://pniarchos.github.io/AdminHub';
+
 
 function tokenValid(){
   return !!(S.gConfig.accessToken && S.gConfig.tokenExpiry && Date.now() < S.gConfig.tokenExpiry);
 }
-function ensureGAuth(action){
-  if(!S.gConfig.clientId){openSettings();return;}
-  pendingGAction=action;
-  loadGapiAndGis(()=>{
-    // Try restoring persisted token first
-    if(tokenValid() && restoreGToken()){
-      action(); pendingGAction=null; return;
+
+function loadGapi(cb){
+  if(window.gapi && gapiReady){ cb(); return; }
+  var s=document.createElement('script');
+  s.src='https://apis.google.com/js/api.js';
+  s.onload=function(){
+    gapi.load('client',function(){
+      gapi.client.init({}).then(function(){
+        return Promise.all([
+          gapi.client.load('https://sheets.googleapis.com/$discovery/rest?version=v4'),
+          gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'),
+          gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'),
+          gapi.client.load('https://docs.googleapis.com/$discovery/rest?version=v1')
+        ]);
+      }).then(function(){ gapiReady=true; cb(); });
+    });
+  };
+  document.head.appendChild(s);
+}
+
+function setGapiToken(accessToken){
+  if(window.gapi && gapi.client){
+    gapi.client.setToken({access_token: accessToken});
+  }
+}
+
+async function exchangeCodeForTokens(code){
+  var resp = await fetch(EDGE_FN_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({code: code, redirect_uri: REDIRECT_URI})
+  });
+  var data = await resp.json();
+  if(data.error) throw new Error(data.error);
+  return data;
+}
+
+async function refreshAccessToken(){
+  if(!S.gConfig.refreshToken) throw new Error('No refresh token stored.');
+  var resp = await fetch(EDGE_FN_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({refresh_token: S.gConfig.refreshToken})
+  });
+  var data = await resp.json();
+  if(data.error) throw new Error(data.error);
+  // Refresh response doesn't include a new refresh_token — keep existing
+  S.gConfig.accessToken = data.access_token;
+  S.gConfig.tokenExpiry = Date.now() + ((data.expires_in||3600) - 120) * 1000;
+  persistLS();
+  setGapiToken(data.access_token);
+  return data.access_token;
+}
+
+async function ensureGAuth(action){
+  if(!S.gConfig.clientId){ openSettings(); return; }
+  pendingGAction = action;
+  loadGapi(async function(){
+    try {
+      // 1. Token still valid — use it
+      if(tokenValid()){
+        setGapiToken(S.gConfig.accessToken);
+        action(); pendingGAction=null; return;
+      }
+      // 2. Have refresh token — silently get new access token
+      if(S.gConfig.refreshToken){
+        await refreshAccessToken();
+        action(); pendingGAction=null; return;
+      }
+      // 3. No refresh token — need full auth code flow
+      startAuthCodeFlow();
+    } catch(e) {
+      console.error('ensureGAuth error:', e.message);
+      // Refresh failed — clear tokens and start fresh
+      S.gConfig.accessToken=''; S.gConfig.tokenExpiry=0; S.gConfig.refreshToken='';
+      persistLS();
+      startAuthCodeFlow();
     }
-    // Try existing in-memory token
-    const tok=gapi.client.getToken();
-    if(tok&&tok.access_token&&tokenValid()){action();pendingGAction=null;return;}
-    // Need fresh token — try silent first, fall back to consent
-    requestGToken(false);
   });
 }
+
+function startAuthCodeFlow(){
+  if(_gAuthInProgress) return;
+  _gAuthInProgress = true;
+  var clientId = S.gConfig.clientId;
+  var state = Math.random().toString(36).slice(2);
+  sessionStorage.setItem('gauth_state', state);
+  var params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: REDIRECT_URI,
+    response_type: 'code',
+    scope: GSCOPES,
+    access_type: 'offline',
+    prompt: 'consent',
+    state: state
+  });
+  var authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+  var popup = window.open(authUrl, 'google-auth', 'width=500,height=620,left=200,top=100');
+  // Poll for redirect back
+  var poll = setInterval(async function(){
+    try {
+      var url = popup.location.href;
+      if(url.indexOf(REDIRECT_URI) === 0){
+        clearInterval(poll);
+        popup.close();
+        _gAuthInProgress = false;
+        var urlParams = new URLSearchParams(popup.location.search || url.split('?')[1] || '');
+        var code = urlParams.get('code');
+        var retState = urlParams.get('state');
+        if(!code){ alert('Google auth failed — no code returned.'); return; }
+        if(retState !== sessionStorage.getItem('gauth_state')){ alert('Auth state mismatch.'); return; }
+        // Exchange code for tokens via Edge Function
+        setAlert('gsetup-alert','Exchanging auth code...','ok');
+        var tokens = await exchangeCodeForTokens(code);
+        S.gConfig.accessToken = tokens.access_token;
+        S.gConfig.tokenExpiry = Date.now() + ((tokens.expires_in||3600) - 120) * 1000;
+        if(tokens.refresh_token) S.gConfig.refreshToken = tokens.refresh_token;
+        persistLS();
+        setGapiToken(tokens.access_token);
+        updateSettingsBtn();
+        setAlert('gsetup-alert','Google connected permanently.','ok');
+        if(pendingGAction){ pendingGAction(); pendingGAction=null; }
+      }
+    } catch(e){
+      // Cross-origin access before redirect — normal, keep polling
+    }
+  }, 500);
+  // Timeout after 3 minutes
+  setTimeout(function(){
+    if(_gAuthInProgress){
+      clearInterval(poll);
+      _gAuthInProgress = false;
+      try{ popup.close(); }catch(e){}
+      setAlert('gsetup-alert','Auth timed out. Try again.','err');
+    }
+  }, 180000);
+}
+
+// Check for auth code redirect on page load
+async function checkAuthCodeRedirect(){
+  var url = window.location.href;
+  if(url.indexOf('?code=') < 0 && url.indexOf('&code=') < 0) return;
+  var urlParams = new URLSearchParams(window.location.search);
+  var code = urlParams.get('code');
+  var state = urlParams.get('state');
+  if(!code) return;
+  // This page was the redirect target — exchange code
+  try {
+    var tokens = await exchangeCodeForTokens(code);
+    S.gConfig.accessToken = tokens.access_token;
+    S.gConfig.tokenExpiry = Date.now() + ((tokens.expires_in||3600) - 120) * 1000;
+    if(tokens.refresh_token) S.gConfig.refreshToken = tokens.refresh_token;
+    persistLS();
+    // Clean URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setAlert('gsetup-alert','Google connected permanently.','ok');
+    updateSettingsBtn();
+  } catch(e) {
+    console.error('Token exchange failed:', e.message);
+  }
+}
+
+function connectGoogle(){
+  const clientId = document.getElementById('s-gs-client-id').value.trim();
+  const sheetId = document.getElementById('s-gs-sheet-id').value.trim();
+  const sheetTab = document.getElementById('s-gs-sheet-tab').value.trim();
+  if(!clientId){ setAlert('gsetup-alert','Please enter your OAuth Client ID.','err'); return; }
+  S.gConfig.clientId = clientId;
+  S.gConfig.sheetId = sheetId;
+  S.gConfig.sheetTab = sheetTab;
+  // Clear old tokens to force fresh auth
+  S.gConfig.accessToken = '';
+  S.gConfig.tokenExpiry = 0;
+  S.gConfig.refreshToken = '';
+  persistLS();
+  loadGapi(function(){
+    pendingGAction = function(){
+      updateSettingsBtn();
+      if(sheetId) fetchSheetColumns();
+      else setAlert('gsetup-alert','Google connected permanently.','ok');
+    };
+    startAuthCodeFlow();
+  });
+}
+
+function updateSettingsBtn(){
+  var btn = document.getElementById('settings-btn');
+  if(!btn || !S) return;
+  var allOk = !!(S.anthropicKey && S.sbConfig && S.sbConfig.url && S.gConfig && S.gConfig.clientId);
+  var someOk = !!(S.anthropicKey || (S.sbConfig && S.sbConfig.url) || (S.gConfig && S.gConfig.clientId));
+  btn.classList.remove('st-on','st-off','st-partial');
+  if(allOk) btn.classList.add('st-on');
+  else if(someOk) btn.classList.add('st-partial');
+  // Show token status in settings if open
+  var statusEl = document.getElementById('s-gtoken-status');
+  if(statusEl){
+    if(S.gConfig.refreshToken) statusEl.textContent = tokenValid() ? 'Connected — token valid' : 'Connected — will auto-refresh';
+    else if(S.gConfig.accessToken && tokenValid()) statusEl.textContent = 'Connected (session only)';
+    else statusEl.textContent = 'Not connected';
+    statusEl.style.color = S.gConfig.refreshToken ? 'var(--green)' : S.gConfig.accessToken ? 'var(--amber)' : 'var(--text3)';
+  }
+}
+
+
 
 function silentTokenRefresh(){
   // Called on page load if we have a client ID and saved token
