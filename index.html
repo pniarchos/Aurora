@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.0</span>
+      <span class="ver">v11.1</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -584,6 +584,7 @@ const SPECIAL_FIELDS = {
     {k:'andreasFuneral',l:'Dads funeral',t:'checkbox'},{k:'andreasMemorials',l:'Dads memorial list',t:'checkbox'},
     {k:'personalize',l:'Personalize',t:'textarea'},{k:'story',l:'Story',t:'textarea'},
     {k:'importantNotes',l:'Important notes',t:'textarea'},{k:'notes',l:'Notes',t:'textarea'},
+    {k:'isKeyRelationship',l:'Key relationship (enables relationship dashboard)',t:'checkbox'},
   ],
   'Health':[
     {k:'name',l:'Item / provider / medication',t:'text',req:true},
@@ -981,6 +982,267 @@ function drillCompletedTasks(){
   renderCompletedTasks();
 }
 
+
+// ═══════════════════════════════════════════
+// RELATIONSHIP FEATURE
+// ═══════════════════════════════════════════
+
+function getRelData(contactId){
+  if(!S.relationships) S.relationships={};
+  if(!S.relationships[contactId]) S.relationships[contactId]={milestones:[],sharedGoals:[],agendaTemplates:[]};
+  return S.relationships[contactId];
+}
+
+function renderRelationshipCard(org, domain, contact, idx){
+  var contactId=getSocialId(contact);
+  var rel=getRelData(contactId);
+  var name=[contact.salutation,contact.firstName,contact.lastName].filter(Boolean).join(' ')||'Unnamed';
+  var actions=((S.items[org]||{})[domain]||[]).filter(function(a){return a._type==='action'&&a._parentId===contactId;});
+  var overdue=actions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d<0;}).length;
+  var soon=actions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=14;}).length;
+
+  var milestonesHtml=(rel.milestones||[]).map(function(m,mi){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">'
+      +'<span style="font-size:16px;">'+esc(m.emoji||'*')+'</span>'
+      +'<div style="flex:1;"><div style="font-size:13px;font-weight:500;">'+esc(m.name)+'</div>'
+      +(m.date?'<div style="font-size:11px;color:var(--text3);">'+fmtDate(m.date)+'</div>':'')+'</div>'
+      +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-mi="'+mi+'" onclick="editMilestone(this.dataset.cid,parseInt(this.dataset.mi))">&#x270e;</button>'
+      +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-mi="'+mi+'" onclick="deleteMilestone(this.dataset.cid,parseInt(this.dataset.mi))">&#x2715;</button>'
+      +'</div>';
+  }).join('');
+
+  var goalsHtml=(rel.sharedGoals||[]).map(function(g,gi){
+    var prog=g.progress||0;
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">'
+      +'<span style="flex:1;font-size:13px;font-weight:500;">'+esc(g.name)+'</span>'
+      +(g.targetDate?'<span style="font-size:11px;color:var(--text3);">'+fmtDate(g.targetDate)+'</span>':'')
+      +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-gi="'+gi+'" onclick="editGoal(this.dataset.cid,parseInt(this.dataset.gi))">&#x270e;</button>'
+      +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-gi="'+gi+'" onclick="deleteGoal(this.dataset.cid,parseInt(this.dataset.gi))">&#x2715;</button>'
+      +'</div>'
+      +(g.notes?'<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">'+esc(g.notes)+'</div>':'')
+      +'<div style="background:var(--bg3);border-radius:4px;height:6px;overflow:hidden;">'
+      +'<div style="background:var(--green);height:100%;width:'+prog+'%;transition:width .3s;"></div></div>'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">'
+      +'<input type="range" min="0" max="100" value="'+prog+'" data-cid="'+esc(contactId)+'" data-gi="'+gi+'" '
+      +'oninput="updateGoalProgress(this.dataset.cid,parseInt(this.dataset.gi),parseInt(this.value))" '
+      +'style="flex:1;accent-color:var(--green);">'
+      +'<span style="font-size:11px;color:var(--text3);width:32px;">'+prog+'%</span>'
+      +'</div></div>';
+  }).join('');
+
+  var actionsHtml=actions.map(function(act){
+    var ai=((S.items[org]||{})[domain]||[]).indexOf(act);
+    var days=daysUntil(act.dueDate);
+    var lbl=days===null?'':days<0?(Math.abs(days)+'d overdue'):days===0?'Today':(days+'d');
+    var bc=days===null?'':days<0?'badge-red':days<=7?'badge-amber':'badge-green';
+    return '<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);">'
+      +'<span style="flex:1;font-size:12px;">'+esc(act.name||'')+'</span>'
+      +(lbl?'<span class="badge '+bc+'" style="font-size:10px;">'+lbl+'</span>':'')
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+ai+'" '
+      +'onclick="completeAction(this.dataset.org,this.dataset.dom,this.dataset.idx)" title="Complete" style="color:var(--green);">&#x2713;</button>'
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+ai+'" data-recid="'+esc(contactId)+'" '
+      +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,parseInt(this.dataset.idx))">&#x270e;</button>'
+      +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+ai+'" '
+      +'onclick="askDeleteByData(this)">&#x2715;</button>'
+      +'</div>';
+  }).join('');
+
+  return '<div style="background:var(--bg);border:2px solid var(--blue);border-radius:var(--r);padding:1.25rem;margin-bottom:1.5rem;">'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:1rem;">'
+    +'<div>'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:4px;">&#x2764; Key Relationship</div>'
+    +'<div style="font-size:20px;font-weight:700;color:var(--text);">'+esc(name)+'</div>'
+    +(contact.nickname?'<div style="font-size:13px;color:var(--text2);">&ldquo;'+esc(contact.nickname)+'&rdquo;</div>':'')
+    +'</div>'
+    +'<div style="display:flex;gap:6px;align-items:center;">'
+    +(overdue>0?'<span class="badge badge-red">'+overdue+' overdue</span>':'')
+    +(soon>0&&!overdue?'<span class="badge badge-amber">'+soon+' due soon</span>':'')
+    +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" '
+    +'onclick="openItemModalByData(this)">&#x270e;</button>'
+    +'</div></div>'
+    +(contact.anniversary||contact.birthdate||contact.lastContacted?
+      '<div style="display:flex;gap:12px;margin-bottom:1rem;flex-wrap:wrap;">'
+      +(contact.anniversary?'<div style="font-size:12px;color:var(--text2);">&#x1F48D; Anniversary: <strong>'+fmtDate(contact.anniversary)+'</strong></div>':'')
+      +(contact.birthdate?'<div style="font-size:12px;color:var(--text2);">&#x1F382; Birthday: <strong>'+fmtDate(contact.birthdate)+'</strong></div>':'')
+      +(contact.lastContacted?'<div style="font-size:12px;color:var(--text2);">&#x1F4DE; Last contact: <strong>'+fmtDate(contact.lastContacted)+'</strong></div>':'')
+      +'</div>'
+    :'')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1rem;">'
+    +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Milestones</div>'
+    +'<button class="iBtn" data-cid="'+esc(contactId)+'" onclick="openMilestoneModal(this.dataset.cid,null)" style="font-size:11px;color:var(--blue);">+ Add</button>'
+    +'</div>'
+    +(milestonesHtml||'<div style="font-size:11px;color:var(--text3);">None yet.</div>')
+    +'</div>'
+    +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Shared Goals</div>'
+    +'<button class="iBtn" data-cid="'+esc(contactId)+'" onclick="openGoalModal(this.dataset.cid,null)" style="font-size:11px;color:var(--blue);">+ Add</button>'
+    +'</div>'
+    +(goalsHtml||'<div style="font-size:11px;color:var(--text3);">None yet.</div>')
+    +'</div>'
+    +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Follow-ups</div>'
+    +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-recid="'+esc(contactId)+'" '
+    +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,null)" style="font-size:11px;color:var(--blue);">+ Add</button>'
+    +'</div>'
+    +(actionsHtml||'<div style="font-size:11px;color:var(--text3);">None yet.</div>')
+    +'</div></div>'
+    +'<div style="border-top:1px solid var(--border);padding-top:12px;display:flex;gap:8px;align-items:center;">'
+    +'<button class="btn-blue" style="font-size:13px;padding:7px 16px;" data-cid="'+esc(contactId)+'" data-name="'+esc(name)+'" '
+    +'onclick="generateWeeklyAgenda(this.dataset.cid,this.dataset.name)">&#x2736; Weekly agenda</button>'
+    +'<span style="font-size:12px;color:var(--text3);">Aurora-generated, hybrid template</span>'
+    +'</div></div>';
+}
+
+var _editMsCid=null, _editMsIdx=null;
+function openMilestoneModal(cid, idx){
+  _editMsCid=cid; _editMsIdx=idx;
+  var rel=getRelData(cid);
+  var m=(idx!==null&&idx!==undefined)?rel.milestones[idx]:null;
+  document.getElementById('item-title').textContent=m?'Edit milestone':'Add milestone';
+  document.getElementById('item-body').innerHTML=
+    '<div class="fg"><label>Milestone name</label><input type="text" id="ms-name" value="'+esc(m?m.name:'')+'" autocomplete="off"></div>'
+    +'<div class="fg"><label>Date</label><input type="date" id="ms-date" value="'+(m?m.date||'':'')+'" ></div>'
+    +'<div class="fg"><label>Emoji (optional)</label><input type="text" id="ms-emoji" value="'+esc(m?m.emoji||'*':'*')+'" maxlength="4" style="width:60px;"></div>'
+    +'<div class="fg"><label>Notes</label><textarea id="ms-notes">'+esc(m?m.notes||'':'')+'</textarea></div>';
+  document.getElementById('item-ov').dataset.recordMode='milestone';
+  openOv('item-ov');
+}
+function saveMilestone(){
+  var name=document.getElementById('ms-name').value.trim();
+  if(!name){document.getElementById('ms-name').style.borderColor='var(--red)';return;}
+  var rel=getRelData(_editMsCid);
+  var m={name:name,date:document.getElementById('ms-date').value,emoji:document.getElementById('ms-emoji').value.trim()||'*',notes:document.getElementById('ms-notes').value.trim()};
+  if(_editMsIdx!==null&&_editMsIdx!==undefined) rel.milestones[_editMsIdx]=m;
+  else rel.milestones.push(m);
+  persistLS();closeOv('item-ov');renderOrgContent();
+}
+function editMilestone(cid,idx){openMilestoneModal(cid,idx);}
+function deleteMilestone(cid,idx){if(!confirm('Delete this milestone?'))return;getRelData(cid).milestones.splice(idx,1);persistLS();renderOrgContent();}
+
+var _editGlCid=null, _editGlIdx=null;
+function openGoalModal(cid, idx){
+  _editGlCid=cid; _editGlIdx=idx;
+  var rel=getRelData(cid);
+  var g=(idx!==null&&idx!==undefined)?rel.sharedGoals[idx]:null;
+  document.getElementById('item-title').textContent=g?'Edit shared goal':'Add shared goal';
+  document.getElementById('item-body').innerHTML=
+    '<div class="fg"><label>Goal name</label><input type="text" id="gl-name" value="'+esc(g?g.name:'')+'" autocomplete="off"></div>'
+    +'<div class="fg"><label>Target date (optional)</label><input type="date" id="gl-date" value="'+(g?g.targetDate||'':'')+'" ></div>'
+    +'<div class="fg"><label>Progress (%)</label><input type="number" id="gl-prog" min="0" max="100" value="'+(g?g.progress||0:0)+'"></div>'
+    +'<div class="fg"><label>Notes / description</label><textarea id="gl-notes">'+esc(g?g.notes||'':'')+'</textarea></div>';
+  document.getElementById('item-ov').dataset.recordMode='goal';
+  openOv('item-ov');
+}
+function saveGoal(){
+  var name=document.getElementById('gl-name').value.trim();
+  if(!name){document.getElementById('gl-name').style.borderColor='var(--red)';return;}
+  var rel=getRelData(_editGlCid);
+  var g={name:name,targetDate:document.getElementById('gl-date').value,progress:parseInt(document.getElementById('gl-prog').value)||0,notes:document.getElementById('gl-notes').value.trim()};
+  if(_editGlIdx!==null&&_editGlIdx!==undefined) rel.sharedGoals[_editGlIdx]=g;
+  else rel.sharedGoals.push(g);
+  persistLS();closeOv('item-ov');renderOrgContent();
+}
+function editGoal(cid,idx){openGoalModal(cid,idx);}
+function deleteGoal(cid,idx){if(!confirm('Delete this goal?'))return;getRelData(cid).sharedGoals.splice(idx,1);persistLS();renderOrgContent();}
+function updateGoalProgress(cid,idx,val){
+  var rel=getRelData(cid);if(!rel.sharedGoals[idx])return;
+  rel.sharedGoals[idx].progress=val;persistLS();
+}
+
+async function generateWeeklyAgenda(contactId, partnerName){
+  if(!S.anthropicKey){alert('Anthropic API key required.');return;}
+  var wrap=document.getElementById('aurora-inline-resp-wrap');
+  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span> Generating weekly agenda with '+esc(partnerName)+'...</div>';
+  var rel=getRelData(contactId);
+  var actions=((S.items.personal||{}).Social||[]).filter(function(a){return a._type==='action'&&a._parentId===contactId;});
+  var weekItems=allItems().filter(function(r){var d=r.days;return d!==null&&d>=0&&d<=7;}).slice(0,10);
+  var overdueItems=allItems().filter(function(r){return r.days!==null&&r.days<0;}).slice(0,5);
+  var relCtx='RELATIONSHIP: '+partnerName+'\n'
+    +'Milestones: '+(rel.milestones||[]).map(function(m){return m.name+(m.date?' ('+m.date+')':'');}).join(', ')+'\n'
+    +'Shared goals: '+(rel.sharedGoals||[]).map(function(g){return g.name+' ('+( g.progress||0)+'%)';}).join(', ')+'\n'
+    +'Open follow-ups: '+actions.map(function(a){return a.name+(a.dueDate?' due '+a.dueDate:'');}).join(', ')+'\n\n'
+    +'PERICLES\'S WEEK:\n'
+    +'Due this week: '+weekItems.map(function(r){return r.item.name+' ('+r.domain+', '+r.days+'d)';}).join(', ')+'\n'
+    +'Overdue: '+overdueItems.map(function(r){return r.item.name;}).join(', ')+'\n'
+    +'Plants needing water: '+plantsNeedingWater().map(function(p){return p.name;}).join(', ');
+  var prompt='You are Aurora. Generate a structured weekly planning agenda for Pericles and '+partnerName+'.'
+    +' Today is '+new Date().toISOString().slice(0,10)+'.\n\n'+relCtx
+    +'\n\nGenerate an agenda with these sections:\n'
+    +'1. WEEK IN REVIEW — 2-3 reflection prompts\n'
+    +'2. THIS WEEK\'S COMMITMENTS — auto-populated from Pericles\'s week data above as a checklist\n'
+    +'3. SHARED GOALS CHECK-IN — progress prompt for each shared goal\n'
+    +'4. RELATIONSHIP & CONNECTION — 1-2 intentional prompts (date idea, conversation topic, etc.)\n'
+    +'5. OPEN ITEMS — pending follow-ups or things to resolve together\n'
+    +'6. NOTES — blank section for in-meeting notes\n\n'
+    +'Format cleanly with markdown headers and bullet points.';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+    });
+    var data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    if(data.usage){tokenUsage.inputTokens+=(data.usage.input_tokens||0);tokenUsage.outputTokens+=(data.usage.output_tokens||0);tokenUsage.queries+=1;updateTokenDisplay();}
+    var agenda=data.content&&data.content[0]&&data.content[0].text||'';
+    window._lastAgenda=agenda;window._lastAgendaPartner=partnerName;
+    wrap.innerHTML='<div class="aurora-inline-resp" style="max-height:70vh;overflow-y:auto;">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+      +'<div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);">&#x2736; Weekly Agenda &mdash; '+esc(partnerName)+'</div>'
+      +'<div style="display:flex;gap:6px;">'
+      +'<button onclick="printAgenda()" style="padding:4px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);font-size:12px;cursor:pointer;font-family:inherit;">&#x1F5A8; Print</button>'
+      +'<button onclick="exportAgendaWord()" style="padding:4px 10px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);font-size:12px;cursor:pointer;font-family:inherit;">&#x1F4C4; Export</button>'
+      +'<button onclick="document.getElementById(\'aurora-inline-resp-wrap\').innerHTML=\'\'" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;">&#x2715;</button>'
+      +'</div></div>'
+      +'<div id="agenda-content" style="font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;">'+esc(agenda)+'</div>'
+      +'</div>';
+  }catch(e){
+    wrap.innerHTML='<div class="aurora-inline-resp" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">'+esc(e.message)+'</div>';
+  }
+}
+
+function printAgenda(){
+  var agenda=window._lastAgenda||'';
+  var partner=window._lastAgendaPartner||'Partner';
+  var date=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var win=window.open('','_blank');
+  win.document.write('<html><head><title>Weekly Agenda</title>'
+    +'<style>body{font-family:Arial,sans-serif;max-width:720px;margin:40px auto;font-size:14px;line-height:1.7;color:#1a1a18;}'
+    +'h1{font-size:22px;border-bottom:2px solid #C49A2A;padding-bottom:8px;}'
+    +'pre{white-space:pre-wrap;font-family:inherit;}@media print{body{margin:20px;}}</style></head>'
+    +'<body><h1>Weekly Planning Agenda</h1>'
+    +'<div style="font-size:12px;color:#888;margin-bottom:20px;">Pericles &amp; '+esc(partner)+' &middot; '+date+'</div>'
+    +'<pre>'+agenda.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>'
+    +'</body></html>');
+  win.document.close();
+  setTimeout(function(){win.print();},400);
+}
+
+function exportAgendaWord(){
+  var agenda=window._lastAgenda||'';
+  var partner=window._lastAgendaPartner||'Partner';
+  var date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8">'
+    +'<style>body{font-family:Arial;font-size:12pt;max-width:720px;margin:40px auto;}'
+    +'h1{font-size:18pt;border-bottom:2pt solid #C49A2A;padding-bottom:6pt;}'
+    +'h2{font-size:14pt;color:#C49A2A;margin-top:18pt;}'
+    +'pre{white-space:pre-wrap;font-family:inherit;}</style></head>'
+    +'<body><h1>Weekly Planning Agenda</h1>'
+    +'<p style="color:#888;">Pericles &amp; '+esc(partner)+' &middot; '+date+'</p>'
+    +'<pre>'+agenda.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>'
+    +'</body></html>';
+  var blob=new Blob([html],{type:'application/msword'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Weekly_Agenda_'+partner.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.doc';
+  a.click();
+}
+
 function updateTokenDisplay(){
   const el = document.getElementById('s-token-display');
   if(!el) return;
@@ -1008,7 +1270,8 @@ function defaultState(){
     sbConfig:{url:'',key:'',migrationDone:false},
     anthropicKey:'',
     budget:{income:{},fixedExpenses:{},variableExpenses:{},months:[]},
-    completedTasks:[]
+    completedTasks:[],
+    relationships:{}
   };
   Object.keys(DEFAULT_DOMAINS).forEach(org=>{
     s.domains[org] = [...DEFAULT_DOMAINS[org]];
@@ -1032,6 +1295,7 @@ function loadLS(){
   if(S.socialHiddenFields) socialHiddenFields=S.socialHiddenFields;
   if(!S.budget) S.budget={income:{},fixedExpenses:{},variableExpenses:{},months:[]};
   if(!S.completedTasks) S.completedTasks=[];
+  if(!S.relationships) S.relationships={};
   if(S.domains&&S.domains.personal&&!S.domains.personal.includes('Budget')){
     var pli=S.domains.personal.indexOf('Plants');
     if(pli>=0)S.domains.personal.splice(pli,0,'Budget');
@@ -1787,6 +2051,11 @@ function renderCard(org,domain,item,idx,fromDrill){
   const notesHtml=(item.importantNotes||item.notes)?('<div class="card-notes">'+esc(item.importantNotes||item.notes)+'</div>'):'';
   const nameHtml='<div class="card-name">'+esc(displayName||'Unnamed')+'</div>'+(displaySub?'<div class="card-sub">'+esc(displaySub)+'</div>':'');
 
+  // Social: key relationship gets expanded dashboard
+  if(isSocial&&!fromDrill&&item.isKeyRelationship==='true'){
+    return renderRelationshipCard(org,domain,item,idx);
+  }
+
   // Social: add actions drawer
   let socialActionsHtml='';
   if(isSocial&&!fromDrill){
@@ -1863,6 +2132,8 @@ function openItemModal(org,domain,idx){
 }
 async function saveItem(){
   var ov=document.getElementById('item-ov');
+  if(ov.dataset.recordMode==='milestone'){saveMilestone();return;}
+  if(ov.dataset.recordMode==='goal'){saveGoal();return;}
   var isRecordMode=ov.dataset.recordMode==='true';
   var isActionMode=ov.dataset.recordMode==='false';
   var org=ov.dataset.org||currentOrg;
