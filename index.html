@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.1.1</span>
+      <span class="ver">v11.1.2</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -556,6 +556,7 @@ const ACTION_FIELDS = [
   {k:'name',l:'Task / action',t:'text',req:true},
   {k:'dueDate',l:'Due date',t:'date'},
   {k:'notes',l:'Notes',t:'textarea'},
+  {k:'_assignedTo',l:'Assign to (contact)',t:'text'},
 ];
 const TWO_LAYER_DOMAINS = new Set(['Vehicles','Health','Finances & taxes','Social']);
 const SPECIAL_FIELDS = {
@@ -984,7 +985,8 @@ function drillCompletedTasks(){
 
 // ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
-// RELATIONSHIP FEATURE v2
+// ═══════════════════════════════════════════
+// RELATIONSHIP FEATURE v3
 // ═══════════════════════════════════════════
 
 function getRelData(contactId){
@@ -997,27 +999,41 @@ function getRelData(contactId){
 function toggleKeyRelationship(org, domain, idx){
   var item=((S.items[org]||{})[domain]||[])[parseInt(idx)];
   if(!item) return;
-  item.isKeyRelationship=item.isKeyRelationship==='true'?'false':'true';
+  // Cycle: none -> keyRelationship -> significantOther -> none
+  if(item.isSignificantOther==='true'){
+    item.isSignificantOther='false'; item.isKeyRelationship='false';
+  } else if(item.isKeyRelationship==='true'){
+    item.isKeyRelationship='false'; item.isSignificantOther='true';
+  } else {
+    item.isKeyRelationship='true'; item.isSignificantOther='false';
+  }
   persistLS();
   if(SB&&item._sbId) sbSaveItem(org,domain,item);
   renderOrgContent();
+}
+
+function relBadgeIcon(item){
+  if(item.isSignificantOther==='true') return {icon:'&#x2665;',color:'#e05a7a',title:'Significant other'};
+  if(item.isKeyRelationship==='true') return {icon:'&#x2605;',color:'#f5a623',title:'Key relationship'};
+  return {icon:'&#x2605;',color:'var(--text3)',title:'Mark as key relationship'};
 }
 
 function renderRelationshipCard(org, domain, contact, idx){
   var contactId=getSocialId(contact);
   var rel=getRelData(contactId);
   var name=[contact.salutation,contact.firstName,contact.lastName].filter(Boolean).join(' ')||'Unnamed';
+  var isSO=contact.isSignificantOther==='true';
+  var badge=relBadgeIcon(contact);
   var actions=((S.items[org]||{})[domain]||[]).filter(function(a){return a._type==='action'&&a._parentId===contactId;});
   var overdue=actions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d<0;}).length;
   var soon=actions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=14;}).length;
 
   var milestonesHtml=(rel.milestones||[]).map(function(m,mi){
-    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">'
-      +'<span style="font-size:14px;">'+esc(m.emoji||'*')+'</span>'
+    return '<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);">'
+      +'<span style="font-size:13px;">'+esc(m.emoji||'*')+'</span>'
       +'<div style="flex:1;min-width:0;">'
-      +'<div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(m.name)+'</div>'
-      +(m.date?'<div style="font-size:10px;color:var(--text3);">'+fmtDate(m.date)+'</div>':'')
-      +'</div>'
+      +'<div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(m.name)+'</div>'
+      +(m.date?'<div style="font-size:10px;color:var(--text3);">'+fmtDate(m.date)+'</div>':'')+'</div>'
       +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-mi="'+mi+'" onclick="editMilestone(this.dataset.cid,parseInt(this.dataset.mi))">&#x270e;</button>'
       +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-mi="'+mi+'" onclick="deleteMilestone(this.dataset.cid,parseInt(this.dataset.mi))">&#x2715;</button>'
       +'</div>';
@@ -1027,12 +1043,12 @@ function renderRelationshipCard(org, domain, contact, idx){
     var prog=g.progress||0;
     return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">'
       +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">'
-      +'<span style="flex:1;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(g.name)+'</span>'
+      +'<span style="flex:1;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(g.name)+'</span>'
       +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-gi="'+gi+'" onclick="editGoal(this.dataset.cid,parseInt(this.dataset.gi))">&#x270e;</button>'
       +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-gi="'+gi+'" onclick="deleteGoal(this.dataset.cid,parseInt(this.dataset.gi))">&#x2715;</button>'
       +'</div>'
-      +'<div style="background:var(--bg3,#e0e0e0);border-radius:4px;height:5px;overflow:hidden;">'
-      +'<div style="background:var(--green);height:100%;width:'+prog+'%;"></div></div>'
+      +'<div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden;">'
+      +'<div style="background:var(--green);height:100%;width:'+prog+'%;transition:width .2s;"></div></div>'
       +'<div style="display:flex;align-items:center;gap:4px;margin-top:3px;">'
       +'<input type="range" min="0" max="100" value="'+prog+'" data-cid="'+esc(contactId)+'" data-gi="'+gi+'" '
       +'oninput="updateGoalProgress(this.dataset.cid,parseInt(this.dataset.gi),parseInt(this.value))" '
@@ -1047,7 +1063,7 @@ function renderRelationshipCard(org, domain, contact, idx){
     var lbl=days===null?'':days<0?(Math.abs(days)+'d overdue'):days===0?'Today':(days+'d');
     var bc=days===null?'':days<0?'badge-red':days<=7?'badge-amber':'badge-green';
     return '<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid var(--border);">'
-      +'<span style="flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(act.name||'')+'</span>'
+      +'<span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(act.name||'')+'</span>'
       +(lbl?'<span class="badge '+bc+'" style="font-size:9px;flex-shrink:0;">'+lbl+'</span>':'')
       +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+ai+'" '
       +'onclick="completeAction(this.dataset.org,this.dataset.dom,this.dataset.idx)" style="color:var(--green);">&#x2713;</button>'
@@ -1058,36 +1074,38 @@ function renderRelationshipCard(org, domain, contact, idx){
       +'</div>';
   }).join('');
 
-  // Saved agendas
   var aHistory=rel.agendaHistory||[];
-  var agendasHtml=aHistory.length?'<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">'
+  var agendasHtml=aHistory.length?'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">'
     +'<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Saved agendas</div>'
     +aHistory.map(function(a,ai){
-      return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;">'
-        +'<a href="#" data-cid="'+esc(contactId)+'" data-ai="'+ai+'" onclick="viewSavedAgenda(this.dataset.cid,parseInt(this.dataset.ai));return false;" '
+      return '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;">'
+        +'<a href="#" data-cid="'+esc(contactId)+'" data-ai="'+ai+'" '
+        +'onclick="viewSavedAgenda(this.dataset.cid,parseInt(this.dataset.ai));return false;" '
         +'style="flex:1;font-size:11px;color:var(--blue);text-decoration:none;">'+esc(a.date)+' agenda</a>'
-        +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-ai="'+ai+'" onclick="deleteSavedAgenda(this.dataset.cid,parseInt(this.dataset.ai))" style="font-size:10px;">&#x2715;</button>'
+        +'<button class="iBtn" data-cid="'+esc(contactId)+'" data-ai="'+ai+'" '
+        +'onclick="deleteSavedAgenda(this.dataset.cid,parseInt(this.dataset.ai))" style="font-size:10px;">&#x2715;</button>'
         +'</div>';
-    }).join('')
-    +'</div>':'';
+    }).join('')+'</div>':'';
 
-  return '<div class="card" style="border:2px solid var(--blue);padding:1rem;">'
-    // Header row
+  var headerColor=isSO?'#e05a7a':'var(--blue)';
+  var headerLabel=isSO?'&#x2665; Significant Other':'&#x2605; Key Relationship';
+
+  return '<div class="card" style="border:2px solid '+headerColor+';padding:1rem;">'
     +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">'
     +'<div>'
-    +'<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:3px;">&#x2764; Key Relationship</div>'
+    +'<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:'+headerColor+';margin-bottom:3px;">'+headerLabel+'</div>'
     +'<div style="font-size:17px;font-weight:700;">'+esc(name)+'</div>'
     +(contact.nickname?'<div style="font-size:12px;color:var(--text2);">&ldquo;'+esc(contact.nickname)+'&rdquo;</div>':'')
     +'</div>'
     +'<div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">'
     +(overdue>0?'<span class="badge badge-red" style="font-size:9px;">'+overdue+' overdue</span>':'')
     +(soon>0&&!overdue?'<span class="badge badge-amber" style="font-size:9px;">'+soon+' soon</span>':'')
-    +'<button class="iBtn" style="color:#f5a623;font-size:15px;" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" '
-    +'onclick="toggleKeyRelationship(this.dataset.org,this.dataset.dom,parseInt(this.dataset.idx))" title="Remove key relationship flag">&#x2605;</button>'
+    +'<button class="iBtn" style="color:'+badge.color+';font-size:15px;" title="'+badge.title+'" '
+    +'data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" '
+    +'onclick="toggleKeyRelationship(this.dataset.org,this.dataset.dom,parseInt(this.dataset.idx))">'+badge.icon+'</button>'
     +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" '
     +'onclick="openItemModalByData(this)">&#x270e;</button>'
     +'</div></div>'
-    // Quick facts
     +(contact.anniversary||contact.birthdate||contact.lastContacted?
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);">'
       +(contact.anniversary?'<div style="font-size:11px;color:var(--text2);">&#x1F48D; '+fmtDate(contact.anniversary)+'</div>':'')
@@ -1095,45 +1113,34 @@ function renderRelationshipCard(org, domain, contact, idx){
       +(contact.lastContacted?'<div style="font-size:11px;color:var(--text2);">&#x1F4DE; '+fmtDate(contact.lastContacted)+'</div>':'')
       +'</div>'
     :'')
-    // Two rows: Milestones+Goals top, Follow-ups bottom
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'
-    // Milestones
     +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:8px;">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
     +'<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);">Milestones</div>'
     +'<button class="iBtn" data-cid="'+esc(contactId)+'" onclick="openMilestoneModal(this.dataset.cid,null)" style="font-size:10px;color:var(--blue);">+ Add</button>'
-    +'</div>'
-    +(milestonesHtml||'<div style="font-size:10px;color:var(--text3);">None yet.</div>')
-    +'</div>'
-    // Shared goals
+    +'</div>'+(milestonesHtml||'<div style="font-size:10px;color:var(--text3);">None yet.</div>')+'</div>'
     +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:8px;">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
     +'<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);">Shared Goals</div>'
     +'<button class="iBtn" data-cid="'+esc(contactId)+'" onclick="openGoalModal(this.dataset.cid,null)" style="font-size:10px;color:var(--blue);">+ Add</button>'
+    +'</div>'+(goalsHtml||'<div style="font-size:10px;color:var(--text3);">None yet.</div>')+'</div>'
     +'</div>'
-    +(goalsHtml||'<div style="font-size:10px;color:var(--text3);">None yet.</div>')
-    +'</div></div>'
-    // Follow-ups full width
     +'<div style="background:var(--bg2);border-radius:var(--r-sm);padding:8px;margin-bottom:8px;">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
     +'<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);">Follow-ups</div>'
     +'<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-recid="'+esc(contactId)+'" '
     +'onclick="openActionModal(this.dataset.org,this.dataset.dom,this.dataset.recid,null)" style="font-size:10px;color:var(--blue);">+ Add</button>'
-    +'</div>'
-    +(actionsHtml||'<div style="font-size:10px;color:var(--text3);">No follow-ups yet.</div>')
-    +'</div>'
-    // Agenda button + saved agendas
+    +'</div>'+(actionsHtml||'<div style="font-size:10px;color:var(--text3);">No follow-ups yet.</div>')+'</div>'
     +'<div style="border-top:1px solid var(--border);padding-top:8px;">'
-    +'<button class="btn-blue" style="font-size:12px;padding:5px 12px;width:100%;" data-cid="'+esc(contactId)+'" data-name="'+esc(name)+'" '
-    +'onclick="generateWeeklyAgenda(this.dataset.cid,this.dataset.name)">&#x2736; Generate weekly agenda</button>'
-    +agendasHtml
-    +'</div></div>';
+    +(isSO?'<button class="btn-blue" style="font-size:12px;padding:5px 12px;width:100%;margin-bottom:4px;" data-cid="'+esc(contactId)+'" data-name="'+esc(name)+'" '
+      +'onclick="generateWeeklyAgenda(this.dataset.cid,this.dataset.name)">&#x2736; Generate weekly agenda</button>':'')
+    +agendasHtml+'</div></div>';
 }
 
 // ── Milestone CRUD ─────────────────────────────────────────────────────
 var _editMsCid=null, _editMsIdx=null;
 function openMilestoneModal(cid, idx){
-  _editMsCid=cid; _editMsIdx=(idx!==null&&idx!==undefined)?idx:null;
+  _editMsCid=cid; _editMsIdx=(idx!==null&&idx!==undefined)?parseInt(idx):null;
   var rel=getRelData(cid);
   var m=(_editMsIdx!==null)?rel.milestones[_editMsIdx]:null;
   document.getElementById('item-title').textContent=m?'Edit milestone':'Add milestone';
@@ -1155,12 +1162,12 @@ function saveMilestone(){
   persistLS();closeOv('item-ov');renderOrgContent();
 }
 function editMilestone(cid,idx){openMilestoneModal(cid,idx);}
-function deleteMilestone(cid,idx){if(!confirm('Delete this milestone?'))return;getRelData(cid).milestones.splice(idx,1);persistLS();renderOrgContent();}
+function deleteMilestone(cid,idx){if(!confirm('Delete?'))return;getRelData(cid).milestones.splice(idx,1);persistLS();renderOrgContent();}
 
 // ── Shared Goal CRUD ───────────────────────────────────────────────────
 var _editGlCid=null, _editGlIdx=null;
 function openGoalModal(cid, idx){
-  _editGlCid=cid; _editGlIdx=(idx!==null&&idx!==undefined)?idx:null;
+  _editGlCid=cid; _editGlIdx=(idx!==null&&idx!==undefined)?parseInt(idx):null;
   var rel=getRelData(cid);
   var g=(_editGlIdx!==null)?rel.sharedGoals[_editGlIdx]:null;
   document.getElementById('item-title').textContent=g?'Edit shared goal':'Add shared goal';
@@ -1168,7 +1175,7 @@ function openGoalModal(cid, idx){
     '<div class="fg"><label>Goal name</label><input type="text" id="gl-name" value="'+esc(g?g.name:'')+'" autocomplete="off"></div>'
     +'<div class="fg"><label>Target date (optional)</label><input type="date" id="gl-date" value="'+(g?g.targetDate||'':'')+'" ></div>'
     +'<div class="fg"><label>Progress (%)</label><input type="number" id="gl-prog" min="0" max="100" value="'+(g?g.progress||0:0)+'"></div>'
-    +'<div class="fg"><label>Notes / description</label><textarea id="gl-notes">'+esc(g?g.notes||'':'')+'</textarea></div>';
+    +'<div class="fg"><label>Notes</label><textarea id="gl-notes">'+esc(g?g.notes||'':'')+'</textarea></div>';
   document.getElementById('item-ov').dataset.recordMode='goal';
   openOv('item-ov');
 }
@@ -1182,115 +1189,129 @@ function saveGoal(){
   persistLS();closeOv('item-ov');renderOrgContent();
 }
 function editGoal(cid,idx){openGoalModal(cid,idx);}
-function deleteGoal(cid,idx){if(!confirm('Delete this goal?'))return;getRelData(cid).sharedGoals.splice(idx,1);persistLS();renderOrgContent();}
+function deleteGoal(cid,idx){if(!confirm('Delete?'))return;getRelData(cid).sharedGoals.splice(idx,1);persistLS();renderOrgContent();}
 function updateGoalProgress(cid,idx,val){
   var rel=getRelData(cid);if(!rel.sharedGoals[idx])return;
   rel.sharedGoals[idx].progress=val;persistLS();
   var sp=document.getElementById('gp-'+cid+'-'+idx);
   if(sp)sp.textContent=val+'%';
-  var slider=document.querySelector('input[data-cid="'+cid+'"][data-gi="'+idx+'"]');
-  if(slider){var bar=slider.closest('div').previousElementSibling&&slider.closest('div').previousElementSibling.querySelector('div');if(bar)bar.style.width=val+'%';}
+  // update bar
+  var inputs=document.querySelectorAll('input[data-cid="'+cid+'"][data-gi="'+idx+'"]');
+  inputs.forEach(function(inp){
+    var bar=inp.closest('div') && inp.closest('div').previousElementSibling;
+    if(bar){var fill=bar.querySelector('div');if(fill)fill.style.width=val+'%';}
+  });
 }
 
-// ── Weekly Agenda ──────────────────────────────────────────────────────
+// ── Weekly Agenda Generator ────────────────────────────────────────────
 async function generateWeeklyAgenda(contactId, partnerName){
   if(!S.anthropicKey){alert('Anthropic API key required.');return;}
-  var wrap=document.getElementById('aurora-inline-resp-wrap');
-  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span> Generating weekly agenda with '+esc(partnerName)+'...</div>';
+  // Show loading state in the card area temporarily
+  var loadMsg='<div style="padding:8px;font-size:12px;color:var(--text3);"><span class="spinner"></span> Generating agenda...</div>';
+  var btnArea=event&&event.target?event.target.parentNode:null;
+  if(btnArea){var origHtml=btnArea.innerHTML;btnArea.innerHTML=loadMsg;}
+
   var rel=getRelData(contactId);
-  var actions=((S.items.personal||{}).Social||[]).filter(function(a){return a._type==='action'&&a._parentId===contactId;});
-  var weekItems=allItems().filter(function(r){var d=r.days;return d!==null&&d>=0&&d<=7;}).slice(0,10);
-  var overdueItems=allItems().filter(function(r){return r.days!==null&&r.days<0;}).slice(0,5);
-  var relCtx='RELATIONSHIP: '+partnerName+'\n'
+  // Emma-assigned action items = actions where _assignedTo matches contactId
+  var allSocialActions=((S.items.personal||{}).Social||[]).filter(function(a){return a._type==='action';});
+  var emmaActions=allSocialActions.filter(function(a){return a._parentId===contactId||a._assignedTo===contactId;});
+  var emmaOverdue=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d<0;});
+  var emmaDueThisWeek=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=7;});
+  var emmaHorizon=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>7&&d<=14;});
+
+  // Tagged events (action items with category='event' or type containing 'event')
+  var allActions=allItems();
+  var eventItems=allSocialActions.filter(function(a){
+    return (a.category||'').toLowerCase()==='event'||(a.notes||'').toLowerCase().indexOf('event')===0;
+  });
+
+  var relCtx='RELATIONSHIP WITH '+partnerName.toUpperCase()+':\n'
     +'Milestones: '+(rel.milestones||[]).map(function(m){return m.name+(m.date?' ('+m.date+')':'');}).join(', ')+'\n'
-    +'Shared goals: '+(rel.sharedGoals||[]).map(function(g){return g.name+' ('+(g.progress||0)+'%)';}).join(', ')+'\n'
-    +'Open follow-ups: '+actions.map(function(a){return a.name+(a.dueDate?' due '+a.dueDate:'');}).join(', ')+'\n\n'
-    +'PERICLES\'S WEEK:\n'
-    +'Due this week: '+weekItems.map(function(r){return r.item.name+' ('+r.domain+', '+r.days+'d)';}).join(', ')+'\n'
-    +'Overdue: '+overdueItems.map(function(r){return r.item.name;}).join(', ')+'\n'
-    +'Plants needing water: '+plantsNeedingWater().map(function(p){return p.name;}).join(', ');
-  var prompt='You are Aurora. Generate a structured weekly planning agenda for Pericles and '+partnerName+'.'
-    +' Today is '+new Date().toISOString().slice(0,10)+'.\n\n'+relCtx
-    +'\n\nGenerate an agenda with these sections:\n'
-    +'1. WEEK IN REVIEW - 2-3 reflection prompts\n'
-    +'2. THIS WEEK\'S COMMITMENTS - auto-populated from the week data above as a checklist\n'
-    +'3. SHARED GOALS CHECK-IN - one progress prompt per shared goal\n'
-    +'4. RELATIONSHIP & CONNECTION - 1-2 intentional prompts (date idea, conversation topic, etc.)\n'
-    +'5. OPEN ITEMS - pending follow-ups to resolve together\n'
-    +'6. NOTES - blank section for in-meeting notes\n\n'
-    +'Format cleanly with markdown headers and bullet points.';
+    +'Shared goals: '+(rel.sharedGoals||[]).map(function(g){return g.name+' ('+(g.progress||0)+'%)';}).join(', ')+'\n\n'
+    +'ITEMS CONNECTED TO '+partnerName.toUpperCase()+':\n'
+    +'Overdue: '+emmaOverdue.map(function(a){return a.name;}).join(', ')+'\n'
+    +'Due this week: '+emmaDueThisWeek.map(function(a){return a.name+(a.dueDate?' ('+a.dueDate+')':'');}).join(', ')+'\n'
+    +'On the horizon (next 2 weeks): '+emmaHorizon.map(function(a){return a.name+(a.dueDate?' ('+a.dueDate+')':'');}).join(', ')+'\n'
+    +'Events/commitments this week: '+eventItems.map(function(a){return a.name;}).join(', ');
+
+  var prompt='You are Aurora, Pericles Niarchos\'s intelligent assistant. Generate a structured weekly planning agenda for Pericles and his partner '+partnerName+'.'
+    +' Today is '+new Date().toISOString().slice(0,10)+'.'
+    +' This is a practical working meeting, not a relationship check-in. Lead with execution, end with connection.\n\n'
+    +relCtx
+    +'\n\nGenerate the agenda with EXACTLY these sections in this order:\n\n'
+    +'## 1. THIS WEEK\'S COMMITMENTS\n'
+    +'- **Events & scheduled commitments** — list any events from the data above, or prompt to fill in\n'
+    +'- **Where are we sleeping?** — [ ] Pericles\'s place  [ ] '+partnerName+'\'s place  [ ] Other: ___\n'
+    +'- **Overdue** — list overdue items connected to '+partnerName+', or "None"\n'
+    +'- **Due this week** — list items due this week connected to '+partnerName+', or "None"\n'
+    +'- **On the horizon** — items due in the next 2 weeks connected to '+partnerName+', or "None"\n\n'
+    +'## 2. SHARED GOALS CHECK-IN\n'
+    +'- One progress prompt per shared goal, or "No shared goals yet"\n\n'
+    +'## 3. OPEN ITEMS\n'
+    +'- Things to discuss or resolve together this week\n\n'
+    +'## 4. SHOW & TELL\n'
+    +'- Pericles: [something exciting to share]\n'
+    +'- '+partnerName+': [something exciting to share]\n\n'
+    +'## 5. RELATIONSHIP & CONNECTION\n'
+    +'- 1-2 intentional prompts: date idea, meaningful conversation topic, or something to do together\n\n'
+    +'## 6. WEEK IN REVIEW\n'
+    +'- 2-3 reflection prompts: what went well, what to improve, what you\'re grateful for\n\n'
+    +'## 7. NOTES\n'
+    +'[blank]\n\n'
+    +'Keep it concise and practical. Use checkboxes [ ] for actionable items.';
+
   try{
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':S.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1800,messages:[{role:'user',content:prompt}]})
     });
     var data=await resp.json();
     if(data.error)throw new Error(data.error.message);
     if(data.usage){tokenUsage.inputTokens+=(data.usage.input_tokens||0);tokenUsage.outputTokens+=(data.usage.output_tokens||0);tokenUsage.queries+=1;updateTokenDisplay();}
     var agenda=data.content&&data.content[0]&&data.content[0].text||'';
-    window._lastAgenda=agenda;window._lastAgendaPartner=partnerName;window._lastAgendaCid=contactId;
-    wrap.innerHTML='<div class="aurora-inline-resp" style="max-height:65vh;overflow-y:auto;">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-      +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);">&#x2736; Weekly Agenda &mdash; '+esc(partnerName)+'</div>'
-      +'<div style="display:flex;gap:5px;">'
-      +'<button onclick="saveAgendaToCard()" style="padding:3px 9px;border:1px solid var(--green);border-radius:var(--r-sm);background:none;color:var(--green);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F4BE; Save to card</button>'
-      +'<button onclick="printAgenda()" style="padding:3px 9px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F5A8; Print</button>'
-      +'<button onclick="exportAgendaWord()" style="padding:3px 9px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F4C4; Export</button>'
-      +'<button onclick="document.getElementById(\'aurora-inline-resp-wrap\').innerHTML=\'\'" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 5px;">&#x2715;</button>'
-      +'</div></div>'
-      +'<div id="agenda-content" style="font-size:12px;line-height:1.65;color:var(--text);white-space:pre-wrap;">'+esc(agenda)+'</div>'
-      +'</div>';
+    if(btnArea)btnArea.innerHTML=origHtml;
+    openAgendaPanel(agenda, partnerName, contactId);
   }catch(e){
-    wrap.innerHTML='<div class="aurora-inline-resp" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">'+esc(e.message)+'</div>';
+    if(btnArea)btnArea.innerHTML=origHtml;
+    alert('Agenda generation failed: '+e.message);
   }
 }
 
-function saveAgendaToCard(){
+// ── Agenda panel functions ─────────────────────────────────────────────
+function openAgendaPanel(content, partnerName, contactId){
+  var panel=document.getElementById('agenda-panel');
+  if(!panel) return;
+  window._lastAgendaCid=contactId;
+  window._lastAgendaPartner=partnerName;
+  window._lastAgenda=content;
+  document.getElementById('agenda-panel-name').textContent='Weekly Agenda \u2014 '+partnerName;
+  var ta=document.getElementById('agenda-textarea');
+  if(ta) ta.value=content;
+  panel.classList.add('open');
+  if(ta) setTimeout(function(){ta.focus();},300);
+}
+function closeAgendaPanel(){
+  document.getElementById('agenda-panel').classList.remove('open');
+}
+function agendaChanged(){
+  window._lastAgenda=document.getElementById('agenda-textarea').value;
+}
+function saveAgendaFromPanel(){
   var cid=window._lastAgendaCid;
-  var agenda=window._lastAgenda;
-  if(!cid||!agenda) return;
+  var agenda=document.getElementById('agenda-textarea').value;
+  if(!cid||!agenda)return;
   var rel=getRelData(cid);
   if(!rel.agendaHistory) rel.agendaHistory=[];
-  rel.agendaHistory.unshift({
-    date:new Date().toISOString().slice(0,10),
-    text:agenda
-  });
-  // Keep last 12 agendas
+  rel.agendaHistory.unshift({date:new Date().toISOString().slice(0,10),text:agenda});
   rel.agendaHistory=rel.agendaHistory.slice(0,12);
-  persistLS();
-  renderOrgContent();
-  var btn=document.querySelector('button[onclick="saveAgendaToCard()"]');
-  if(btn){btn.textContent='&#x2713; Saved';btn.style.borderColor='var(--green)';btn.style.color='var(--green)';}
-}
-
-function viewSavedAgenda(cid, idx){
-  var rel=getRelData(cid);
-  var a=rel.agendaHistory[idx];
-  if(!a) return;
-  window._lastAgenda=a.text;
-  window._lastAgendaCid=cid;
-  var wrap=document.getElementById('aurora-inline-resp-wrap');
-  wrap.innerHTML='<div class="aurora-inline-resp" style="max-height:65vh;overflow-y:auto;">'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-    +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);">&#x1F4C5; Agenda &mdash; '+esc(a.date)+'</div>'
-    +'<div style="display:flex;gap:5px;">'
-    +'<button onclick="printAgenda()" style="padding:3px 9px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F5A8; Print</button>'
-    +'<button onclick="exportAgendaWord()" style="padding:3px 9px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F4C4; Export</button>'
-    +'<button onclick="document.getElementById(\'aurora-inline-resp-wrap\').innerHTML=\'\'" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 5px;">&#x2715;</button>'
-    +'</div></div>'
-    +'<div style="font-size:12px;line-height:1.65;color:var(--text);white-space:pre-wrap;">'+esc(a.text)+'</div>'
-    +'</div>';
-}
-
-function deleteSavedAgenda(cid,idx){
-  if(!confirm('Delete this saved agenda?'))return;
-  getRelData(cid).agendaHistory.splice(idx,1);
+  window._lastAgenda=agenda;
   persistLS();renderOrgContent();
+  var btn=document.getElementById('agenda-save-btn');
+  if(btn){btn.textContent='\u2713 Saved';setTimeout(function(){btn.textContent='\uD83D\uDCBE Save to card';},2000);}
 }
-
 function printAgenda(){
-  var agenda=window._lastAgenda||'';
+  var agenda=document.getElementById('agenda-textarea')?document.getElementById('agenda-textarea').value:(window._lastAgenda||'');
   var partner=window._lastAgendaPartner||'Partner';
   var date=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var win=window.open('','_blank');
@@ -1299,15 +1320,14 @@ function printAgenda(){
     +'h1{font-size:20pt;border-bottom:2pt solid #C49A2A;padding-bottom:6pt;}'
     +'pre{white-space:pre-wrap;font-family:inherit;}@media print{body{margin:20px;}}</style></head>'
     +'<body><h1>Weekly Planning Agenda</h1>'
-    +'<p style="color:#888;font-size:10pt;">Pericles &amp; '+esc(partner)+' &middot; '+date+'</p>'
+    +'<p style="color:#888;font-size:10pt;">Pericles &amp; '+partner.replace(/</g,'&lt;')+' &middot; '+date+'</p>'
     +'<pre>'+agenda.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>'
     +'</body></html>');
   win.document.close();
   setTimeout(function(){win.print();},400);
 }
-
 function exportAgendaWord(){
-  var agenda=window._lastAgenda||'';
+  var agenda=document.getElementById('agenda-textarea')?document.getElementById('agenda-textarea').value:(window._lastAgenda||'');
   var partner=window._lastAgendaPartner||'Partner';
   var date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
   var html='<!DOCTYPE html><html><head><meta charset="utf-8">'
@@ -1315,7 +1335,7 @@ function exportAgendaWord(){
     +'h1{font-size:18pt;border-bottom:2pt solid #C49A2A;padding-bottom:6pt;}'
     +'pre{white-space:pre-wrap;font-family:inherit;}</style></head>'
     +'<body><h1>Weekly Planning Agenda</h1>'
-    +'<p style="color:#888;font-size:10pt;">Pericles &amp; '+esc(partner)+' &middot; '+date+'</p>'
+    +'<p style="color:#888;font-size:10pt;">Pericles &amp; '+partner.replace(/</g,'&lt;')+' &middot; '+date+'</p>'
     +'<pre>'+agenda.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre>'
     +'</body></html>';
   var blob=new Blob([html],{type:'application/msword'});
@@ -1323,6 +1343,19 @@ function exportAgendaWord(){
   a.href=URL.createObjectURL(blob);
   a.download='Weekly_Agenda_'+partner.replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.doc';
   a.click();
+}
+function viewSavedAgenda(cid, idx){
+  var rel=getRelData(cid);
+  var a=rel.agendaHistory[idx];
+  if(!a) return;
+  var contact=((S.items.personal||{}).Social||[]).find(function(c){return getSocialId(c)===cid;});
+  var name=contact?[contact.firstName,contact.lastName].filter(Boolean).join(' '):'Partner';
+  openAgendaPanel(a.text, name, cid);
+}
+function deleteSavedAgenda(cid,idx){
+  if(!confirm('Delete this saved agenda?'))return;
+  getRelData(cid).agendaHistory.splice(idx,1);
+  persistLS();renderOrgContent();
 }
 
 
@@ -1748,6 +1781,8 @@ function renderSocialControls(allItems, circles){
     +'<option value="andreasMemorials"'+(f.flag==='andreasMemorials'?' selected':'')+'>Dad\u2019s memorials list</option>'
     +'<option value="isKeyRelationship"'+(f.flag==='isKeyRelationship'?' selected':'')+'>&#x2605; Key relationships</option>'
     +'<option value="isSignificantOther"'+(f.flag==='isSignificantOther'?' selected':'')+'>&#x2665; Significant other</option>'
+    +'<option value="isKeyRelationship"'+(f.flag==='isKeyRelationship'?' selected':'')+'>&#x2605; Key relationships</option>'
+    +'<option value="isSignificantOther"'+(f.flag==='isSignificantOther'?' selected':'')+'>&#x2665; Significant other</option>'
     +'</select>'
     +'<select onchange="setSocialSort(this.value)" style="padding:7px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
     +'<option value="lastName"'+(f.sort==='lastName'?' selected':'')+'>Sort: Last name</option>'
@@ -1900,13 +1935,22 @@ function openActionModal(org,domain,parentId,idx){
   var parentRec=((S.items[org]||{})[domain]||[]).find(function(r){return r._id===parentId;});
   var parentName=parentRec?parentRec.name:'';
   document.getElementById('item-title').textContent=(item?'Edit action':'New action')+(parentName?' — '+parentName:'');
+  var _cts=((S.items.personal||{}).Social||[]).filter(function(c){return !c._type||c._type!=='action';});
+  var _av=item?item['_assignedTo']||'':'';
+  var _copts='<option value="">-- No assignee --</option>'+_cts.map(function(c){
+    var cn=[c.firstName,c.lastName].filter(Boolean).join(' ')||c.name||'';
+    var cid=getSocialId(c);
+    return '<option value="'+esc(cid)+'"'+(cid===_av?' selected':'')+'>'+esc(cn)+'</option>';
+  }).join('');
   document.getElementById('item-body').innerHTML=
     '<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Linked to: <strong>'+esc(parentName)+'</strong></div>'
-    +ACTION_FIELDS.map(function(f){
+    +ACTION_FIELDS.filter(function(f){return f.k!=='_assignedTo';}).map(function(f){
       var val=item?item[f.k]||'':'';
       if(f.t==='textarea')return'<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label><textarea id="f-'+f.k+'">'+esc(val)+'</textarea></div>';
       return'<div class="fg"><label for="f-'+f.k+'">'+f.l+'</label><input type="'+f.t+'" id="f-'+f.k+'" value="'+esc(val)+'"'+(f.req?' required':'')+' autocomplete="off"></div>';
-    }).join('');
+    }).join('')
+    +'<div class="fg"><label>Assign to (contact)</label>'
+    +'<select id="f-_assignedTo" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">'+_copts+'</select></div>';
   var ov=document.getElementById('item-ov');
   ov.dataset.recordMode='false';ov.dataset.org=org;ov.dataset.domain=domain;
   ov.dataset.idx=idx!==null&&idx!==undefined?String(idx):'';ov.dataset.parentId=parentId||'';
@@ -2129,9 +2173,10 @@ function renderCard(org,domain,item,idx,fromDrill){
   window['_card_'+org+'_'+idx]=item;
   const calBtn=hasDue?('<button class="iBtn'+(item._calPushed?' cal-sent':'')+'" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="pushToCalendarByData(this)" title="'+(item._calPushed?'Pushed':'Send to calendar')+'">&#x1F4C5;</button>'):'';
   const lbl2=lbl?('<span class="badge '+bCls+'">'+lbl+'</span>'):'';
+  var _rb=isSocial&&!fromDrill?relBadgeIcon(item):null;
   const starBtn=isSocial&&!fromDrill?('<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" '
     +'onclick="toggleKeyRelationship(this.dataset.org,this.dataset.dom,parseInt(this.dataset.idx))" '
-    +'title="Toggle key relationship" style="color:'+(item.isKeyRelationship==='true'?'#f5a623':'var(--text3)')+';font-size:14px;">&#x2605;</button>'):'';
+    +'title="'+_rb.title+'" style="color:'+_rb.color+';font-size:14px;">'+_rb.icon+'</button>'):'';
   const editBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="openItemModalByData(this)">&#x270e;</button>';
   const delBtn='<button class="iBtn" data-org="'+esc(org)+'" data-dom="'+esc(domain)+'" data-idx="'+idx+'" onclick="askDeleteByData(this)">&#x2715;</button>';
   const rowsHtml=rows.map(f=>{let v=item[f.k];if(f.t==='date')v=fmtDate(v);return'<div class="crow"><span class="crow-lbl">'+esc(f.l)+'</span><span class="crow-val">'+esc(v)+'</span></div>';}).join('');
@@ -2140,7 +2185,7 @@ function renderCard(org,domain,item,idx,fromDrill){
   const nameHtml='<div class="card-name">'+esc(displayName||'Unnamed')+'</div>'+(displaySub?'<div class="card-sub">'+esc(displaySub)+'</div>':'');
 
   // Social: key relationship gets expanded dashboard
-  if(isSocial&&!fromDrill&&item.isKeyRelationship==='true'){
+  if(isSocial&&!fromDrill&&(item.isKeyRelationship==='true'||item.isSignificantOther==='true')){
     return renderRelationshipCard(org,domain,item,idx);
   }
 
@@ -2900,5 +2945,20 @@ setTimeout(smartNotificationsOnLoad,1500);
     </div>
   </div>
 </div>
+
+<!-- Agenda slide-out panel -->
+<div id="agenda-panel" style="position:fixed;top:0;right:-490px;width:490px;max-width:95vw;height:100vh;background:var(--bg);border-left:1px solid var(--border2);z-index:162;display:flex;flex-direction:column;transition:right .28s cubic-bezier(.4,0,.2,1);">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border2);flex-shrink:0;">
+    <div style="font-size:13px;font-weight:600;color:var(--blue);" id="agenda-panel-name">Weekly Agenda</div>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <button id="agenda-save-btn" onclick="saveAgendaFromPanel()" style="padding:4px 10px;border:1px solid var(--green);border-radius:4px;background:none;color:var(--green);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F4BE; Save</button>
+      <button onclick="printAgenda()" style="padding:4px 10px;border:1px solid var(--border2);border-radius:4px;background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F5A8; Print</button>
+      <button onclick="exportAgendaWord()" style="padding:4px 10px;border:1px solid var(--border2);border-radius:4px;background:var(--bg2);font-size:11px;cursor:pointer;font-family:inherit;">&#x1F4C4; .doc</button>
+      <button onclick="closeAgendaPanel()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 6px;">&#x2715;</button>
+    </div>
+  </div>
+  <textarea id="agenda-textarea" oninput="agendaChanged()" placeholder="Agenda will appear here..." style="flex:1;width:100%;padding:14px 16px;resize:none;border:none;outline:none;font-size:13px;line-height:1.75;color:var(--text);background:var(--bg);font-family:inherit;box-sizing:border-box;"></textarea>
+</div>
+<style>#agenda-panel.open{right:0;}</style>
 </body>
 </html>
