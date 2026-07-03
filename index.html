@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.1.2</span>
+      <span class="ver">v11.1.3</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -1205,60 +1205,66 @@ function updateGoalProgress(cid,idx,val){
 
 // ── Weekly Agenda Generator ────────────────────────────────────────────
 async function generateWeeklyAgenda(contactId, partnerName){
-  if(!S.anthropicKey){alert('Anthropic API key required.');return;}
-  // Show loading state in the card area temporarily
-  var loadMsg='<div style="padding:8px;font-size:12px;color:var(--text3);"><span class="spinner"></span> Generating agenda...</div>';
-  var btnArea=event&&event.target?event.target.parentNode:null;
-  if(btnArea){var origHtml=btnArea.innerHTML;btnArea.innerHTML=loadMsg;}
+  if(!S.anthropicKey){alert('Anthropic API key required. Open Settings.');return;}
+  var wrap=document.getElementById('aurora-inline-resp-wrap');
+  if(wrap) wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span> Generating agenda...</div>';
 
   var rel=getRelData(contactId);
-  // Emma-assigned action items = actions where _assignedTo matches contactId
-  var allSocialActions=((S.items.personal||{}).Social||[]).filter(function(a){return a._type==='action';});
-  var emmaActions=allSocialActions.filter(function(a){return a._parentId===contactId||a._assignedTo===contactId;});
+  var allSocial=((S.items.personal||{}).Social||[]);
+  var emmaActions=allSocial.filter(function(a){
+    return a._type==='action'&&(a._parentId===contactId||a._assignedTo===contactId);
+  });
   var emmaOverdue=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d<0;});
-  var emmaDueThisWeek=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=7;});
+  var emmaDueWeek=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>=0&&d<=7;});
   var emmaHorizon=emmaActions.filter(function(a){var d=daysUntil(a.dueDate);return d!==null&&d>7&&d<=14;});
 
-  // Tagged events (action items with category='event' or type containing 'event')
-  var allActions=allItems();
-  var eventItems=allSocialActions.filter(function(a){
-    return (a.category||'').toLowerCase()==='event'||(a.notes||'').toLowerCase().indexOf('event')===0;
-  });
+  var namesJoin=function(arr){return arr.length?arr.map(function(a){return a.name;}).join(', '):'None';};
+  var milestones=(rel.milestones||[]).map(function(m){return m.name+(m.date?' ('+m.date+')':'');}).join(', ')||'None';
+  var goals=(rel.sharedGoals||[]).map(function(g){return g.name+' ('+(g.progress||0)+'%)';}).join(', ')||'None';
+  var overdueStr=namesJoin(emmaOverdue);
+  var dueStr=namesJoin(emmaDueWeek);
+  var horizonStr=namesJoin(emmaHorizon);
 
-  var relCtx='RELATIONSHIP WITH '+partnerName.toUpperCase()+':\n'
-    +'Milestones: '+(rel.milestones||[]).map(function(m){return m.name+(m.date?' ('+m.date+')':'');}).join(', ')+'\n'
-    +'Shared goals: '+(rel.sharedGoals||[]).map(function(g){return g.name+' ('+(g.progress||0)+'%)';}).join(', ')+'\n\n'
-    +'ITEMS CONNECTED TO '+partnerName.toUpperCase()+':\n'
-    +'Overdue: '+emmaOverdue.map(function(a){return a.name;}).join(', ')+'\n'
-    +'Due this week: '+emmaDueThisWeek.map(function(a){return a.name+(a.dueDate?' ('+a.dueDate+')':'');}).join(', ')+'\n'
-    +'On the horizon (next 2 weeks): '+emmaHorizon.map(function(a){return a.name+(a.dueDate?' ('+a.dueDate+')':'');}).join(', ')+'\n'
-    +'Events/commitments this week: '+eventItems.map(function(a){return a.name;}).join(', ');
+  var relCtx='RELATIONSHIP WITH '+partnerName+' (data to use):\n'
+    +'Milestones: '+milestones+'\n'
+    +'Shared goals: '+goals+'\n\n'
+    +'ITEMS CONNECTED TO '+partnerName+':\n'
+    +'Overdue: '+overdueStr+'\n'
+    +'Due this week: '+dueStr+'\n'
+    +'On the horizon (next 2 weeks): '+horizonStr;
 
-  var prompt='You are Aurora, Pericles Niarchos\'s intelligent assistant. Generate a structured weekly planning agenda for Pericles and his partner '+partnerName+'.'
+  var sleepLine='- **Where are we sleeping?**\n'
+    +'  [ ] Pericles\'s place\n'
+    +'  [ ] '+partnerName+'\'s place\n'
+    +'  [ ] Other: ___';
+
+  var prompt='You are Aurora. Generate a structured weekly planning agenda for Pericles and his partner '+partnerName+'.'
     +' Today is '+new Date().toISOString().slice(0,10)+'.'
-    +' This is a practical working meeting, not a relationship check-in. Lead with execution, end with connection.\n\n'
+    +' This is a practical working meeting: lead with execution, end with connection.\n\n'
     +relCtx
-    +'\n\nGenerate the agenda with EXACTLY these sections in this order:\n\n'
+    +'\n\nGenerate the agenda with EXACTLY these sections:\n\n'
     +'## 1. THIS WEEK\'S COMMITMENTS\n'
-    +'- **Events & scheduled commitments** — list any events from the data above, or prompt to fill in\n'
-    +'- **Where are we sleeping?** — [ ] Pericles\'s place  [ ] '+partnerName+'\'s place  [ ] Other: ___\n'
-    +'- **Overdue** — list overdue items connected to '+partnerName+', or "None"\n'
-    +'- **Due this week** — list items due this week connected to '+partnerName+', or "None"\n'
-    +'- **On the horizon** — items due in the next 2 weeks connected to '+partnerName+', or "None"\n\n'
+    +'- **Events & scheduled commitments:** [list any known events or leave blank]\n'
+    +sleepLine+'\n'
+    +'- **Overdue:** '+overdueStr+'\n'
+    +'- **Due this week:** '+dueStr+'\n'
+    +'- **On the horizon (next 2 weeks):** '+horizonStr+'\n\n'
     +'## 2. SHARED GOALS CHECK-IN\n'
-    +'- One progress prompt per shared goal, or "No shared goals yet"\n\n'
+    +'- One progress prompt per shared goal from the data above, or "No shared goals yet"\n\n'
     +'## 3. OPEN ITEMS\n'
-    +'- Things to discuss or resolve together this week\n\n'
+    +'- Things to discuss or resolve together\n\n'
     +'## 4. SHOW & TELL\n'
-    +'- Pericles: [something exciting to share]\n'
-    +'- '+partnerName+': [something exciting to share]\n\n'
+    +'- Pericles:\n'
+    +'- '+partnerName+':\n\n'
     +'## 5. RELATIONSHIP & CONNECTION\n'
-    +'- 1-2 intentional prompts: date idea, meaningful conversation topic, or something to do together\n\n'
+    +'- 1-2 intentional prompts: date idea, topic to discuss, or something to do together\n\n'
     +'## 6. WEEK IN REVIEW\n'
-    +'- 2-3 reflection prompts: what went well, what to improve, what you\'re grateful for\n\n'
+    +'- What went well?\n'
+    +'- What would we do differently?\n'
+    +'- What are we grateful for?\n\n'
     +'## 7. NOTES\n'
     +'[blank]\n\n'
-    +'Keep it concise and practical. Use checkboxes [ ] for actionable items.';
+    +'Keep it concise and practical. Use [ ] for fill-in checkboxes.';
 
   try{
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -1269,12 +1275,12 @@ async function generateWeeklyAgenda(contactId, partnerName){
     var data=await resp.json();
     if(data.error)throw new Error(data.error.message);
     if(data.usage){tokenUsage.inputTokens+=(data.usage.input_tokens||0);tokenUsage.outputTokens+=(data.usage.output_tokens||0);tokenUsage.queries+=1;updateTokenDisplay();}
-    var agenda=data.content&&data.content[0]&&data.content[0].text||'';
-    if(btnArea)btnArea.innerHTML=origHtml;
+    var agenda=(data.content&&data.content[0]&&data.content[0].text)||'';
+    if(!agenda)throw new Error('Empty response from Aurora.');
+    if(wrap)wrap.innerHTML='';
     openAgendaPanel(agenda, partnerName, contactId);
   }catch(e){
-    if(btnArea)btnArea.innerHTML=origHtml;
-    alert('Agenda generation failed: '+e.message);
+    if(wrap)wrap.innerHTML='<div class="aurora-inline-resp" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">Agenda error: '+esc(e.message)+'</div>';
   }
 }
 
