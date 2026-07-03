@@ -219,6 +219,8 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .cal-embed-wrap iframe{width:100%;height:600px;border:none;display:block;}
 .cal-no-config{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px;}
 </style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
 </head>
 <body>
 <div class="shell">
@@ -572,10 +574,10 @@ const SPECIAL_FIELDS = {
     {k:'nickname',l:'Nickname',t:'text'},{k:'salutation',l:'Salutation',t:'text'},
     {k:'type',l:'Type / relationship',t:'text'},{k:'circle',l:'Circle',t:'select',opts:['Family','Inner','Circle 2','Circle 3','Outer']},
     {k:'email',l:'Email',t:'text'},{k:'phone',l:'Phone',t:'text'},
-    {k:'streetNum',l:'Street and number',t:'text'},{k:'city',l:'City',t:'text'},
+    {k:'streetNum',l:'Street and number',t:'text'},{k:'apt',l:'Apt / unit',t:'text'},{k:'city',l:'City',t:'text'},
     {k:'state',l:'State',t:'text'},{k:'zip',l:'Zip',t:'text'},{k:'country',l:'Country',t:'text'},
     {k:'birthdate',l:'Birthdate',t:'date'},{k:'deathdate',l:'Deathdate',t:'date'},
-    {k:'anniversary',l:'Anniversary',t:'date'},{k:'lastContacted',l:'Last contacted',t:'date'},
+    {k:'anniversary',l:'Anniversary',t:'date'},{k:'relationshipDate',l:'Relationship date',t:'date'},{k:'lastContacted',l:'Last contacted',t:'date'},
     {k:'updatedDate',l:'Updated',t:'date'},
     {k:'spouseSalutation',l:'Spouse salutation',t:'text'},{k:'spouseFirst',l:'Spouse first name',t:'text'},
     {k:'spouseLast',l:'Spouse last name',t:'text'},{k:'spouseBirthdate',l:'Spouse birthdate',t:'date'},
@@ -598,11 +600,11 @@ const SOCIAL_MAP_FIELDS = [
   {k:'firstName',l:'First Name'},{k:'lastName',l:'Last Name'},{k:'nickname',l:'Nickname'},
   {k:'birthdate',l:'Birthdate'},{k:'deathdate',l:'Deathdate'},
   {k:'birthdayCard',l:'Birthday Card'},{k:'christmasCard',l:'Christmas Card'},
-  {k:'anniversary',l:'Anniversary'},{k:'personalize',l:'Personalize'},
+  {k:'anniversary',l:'Anniversary'},{k:'relationshipDate',l:'Relationship Date'},{k:'personalize',l:'Personalize'},
   {k:'spouseSalutation',l:'Spouse Salutation'},{k:'spouseFirst',l:'Spouse First'},
   {k:'spouseLast',l:'Spouse Last'},{k:'spouseBirthdate',l:'Spouse Birthdate'},
   {k:'spouseDeathdate',l:'Spouse Deathdate'},{k:'email',l:'Email'},{k:'phone',l:'Phone'},
-  {k:'streetNum',l:'Street #'},{k:'city',l:'City'},{k:'state',l:'State'},
+  {k:'streetNum',l:'Street #'},{k:'apt',l:'Apt / unit'},{k:'city',l:'City'},{k:'state',l:'State'},
   {k:'zip',l:'Zip'},{k:'country',l:'Country'},{k:'weddingInvite',l:'Wedding Invite'},
   {k:'circle',l:'Circle'},{k:'andreasFuneral',l:'Andreas Funeral'},
   {k:'andreasMemorials',l:'Andreas Memorials'},{k:'story',l:'Story'},
@@ -992,6 +994,7 @@ function drillCompletedTasks(){
 
 function getRelData(contactId){
   if(!S.relationships) S.relationships={};
+  if(!S.deletedContactIds) S.deletedContactIds=[];
   if(S.items&&S.items.personal&&S.items.personal.Social){
     S.items.personal.Social.forEach(function(c){
       if(!c.contactId&&(c.firstName||c.name)) c.contactId=generateContactId();
@@ -1399,7 +1402,8 @@ function defaultState(){
     anthropicKey:'',
     budget:{income:{},fixedExpenses:{},variableExpenses:{},months:[]},
     completedTasks:[],
-    relationships:{}
+    relationships:{},
+    deletedContactIds:[]
   };
   Object.keys(DEFAULT_DOMAINS).forEach(org=>{
     s.domains[org] = [...DEFAULT_DOMAINS[org]];
@@ -2018,7 +2022,7 @@ function renderOrgContent(){
     const isPS=org==='personal'&&currentDomain==='Social';
     const items=(S.items[org]||{})[currentDomain]||[];
     const syncConn=isPS&&S.gConfig.clientId&&S.gConfig.sheetId;
-    const syncBtn=isPS?('<button class="sync-btn" id="sync-btn" onclick="'+(syncConn?'syncSheet()':'openSettings()')+'">'+( syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets')+'</button>'):'';
+    const syncBtn=isPS?('<button class="sync-btn" id="sync-btn" onclick="'+(syncConn?'syncSheet()':'openSettings()')+'">'+( syncConn?'\u21f3 Sync Google Sheets':'\u2b21 Connect Google Sheets')+'</button>'+(syncConn?'<button onclick="remapColumns()" style="font-size:12px;padding:4px 10px;margin-left:4px;">&#x2692; Field mapping</button>':''))  :'';
     const lastSyncStr=syncConn&&S.gConfig.lastSync?function(){try{const d=new Date(S.gConfig.lastSync);return isNaN(d.getTime())?'':d.toLocaleString();}catch(e){return '';}}():'';const lastSync=lastSyncStr?('<div class="sync-status">Last synced: '+lastSyncStr+'</div>'):'';
     var isTwoLayer=TWO_LAYER_DOMAINS.has(currentDomain)&&currentDomain!=='Social';
     if(isTwoLayer){
@@ -2351,8 +2355,10 @@ async function confirmDelete(){
   if(!deleteTarget)return;
   const{org,domain,idx}=deleteTarget;
   const item=S.items[org][domain][idx];const sbId=item&&item._sbId;
-  if(org==='personal'&&domain==='Social'&&item&&item.contactId&&S.gConfig.sheetId){
-    ensureGAuth(function(){deleteContactFromSheet(item);});
+  if(org==='personal'&&domain==='Social'&&item&&item.contactId){
+    if(!S.deletedContactIds) S.deletedContactIds=[];
+    S.deletedContactIds.push(item.contactId);
+    if(S.gConfig.sheetId) ensureGAuth(function(){deleteContactFromSheet(item);});
   }
   S.items[org][domain].splice(idx,1);persistLS();
   if(sbId)await sbDeleteItem(sbId);
@@ -2779,6 +2785,7 @@ function doSync(){
       var updColIdx=headers.indexOf(mapping.updatedDate||'Updated');
 
       var existing=S.items.personal.Social||[];
+      var graveyard=new Set(S.deletedContactIds||[]);
       var added=0, updated=0, deleted=0;
       var rowsNeedingIds=[];
 
@@ -2805,6 +2812,7 @@ function doSync(){
         var sheetCid=(row[cidColIdx]||'').trim();
 
         if(sheetCid){
+          if(graveyard.has(sheetCid)) return;
           sheetCids.add(sheetCid);
           c.contactId=sheetCid;
           var ei=existing.findIndex(function(x){return x.contactId===sheetCid;});
@@ -2917,9 +2925,9 @@ async function pushContactToSheet(contact){
     var today=new Date().toISOString().slice(0,10);
     var row=headers.map(function(h){
       if(h===CONTACT_ID_COL) return contact.contactId||'';
+      if(h==='Updated'||h===mapping.updatedDate) return today;
       var hk=Object.entries(mapping).find(function(e){return e[1]===h;});
       if(!hk) return '';
-      if(hk[0]==='updatedDate') return today;
       return contact[hk[0]]||'';
     });
     if(contact.contactId){
