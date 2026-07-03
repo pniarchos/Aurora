@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v10.9.8</span>
+      <span class="ver">v11.0</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -670,34 +670,80 @@ function buildWritePrompt(){
   var od=Object.keys(S.domains).map(function(org){
     return ORG_LABELS[org]+': '+S.domains[org].filter(function(d){return d!=='Plants';}).join(', ');
   }).join('\n');
-  return '\n\nWRITE MODE: Return ONLY a JSON array:\n'
-    +'[{"name":"...","org":"personal|fee|tenfwd","domain":"...","dueDate":"YYYY-MM-DD or null"}]\n'
-    +'Domains:\n'+od+'\nSplit compound inputs. Return ONLY the JSON array.';
+
+  // Build parent records context for two-layer domains
+  var parentContext='\n\nAVAILABLE PARENT RECORDS (for action items — use _parentId field):\n';
+  TWO_LAYER_DOMAINS.forEach(function(domain){
+    Object.keys(S.domains).forEach(function(org){
+      if(!(S.domains[org]||[]).includes(domain))return;
+      var records=((S.items[org]||{})[domain]||[]).filter(function(i){return i._type==='record'||(!i._type&&domain!=='Social');});
+      if(!records.length)return;
+      parentContext+=ORG_LABELS[org]+' > '+domain+': ';
+      parentContext+=records.map(function(r){return '"'+(r.name||((r.firstName||'')+' '+(r.lastName||'')).trim()||'?')+'" (id:'+( r._id||getSocialId(r))+')';}).join(', ')+'\n';
+    });
+  });
+
+  return '\n\nWRITE MODE: Parse the user input and return ONLY a JSON array.\n'
+    +'Each item must have these fields:\n'
+    +'  name: string (required)\n'
+    +'  org: "personal" | "fee" | "tenfwd"\n'
+    +'  domain: string (must match a domain listed below)\n'
+    +'  dueDate: "YYYY-MM-DD" or null\n'
+    +'  itemType: "action" | "record" | "standard" (use "action" for tasks linked to a vehicle/health/finance/social record, "record" for new reference records, "standard" for all other domains)\n'
+    +'  parentId: string or null (required if itemType is "action" — use the id from AVAILABLE PARENT RECORDS)\n'
+    +'  parentName: string or null (human-readable parent name for display)\n'
+    +'\nDomains:\n'+od
+    +parentContext
+    +'\nRules:\n'
+    +'- For tasks like "oil change for Cherokee" or "renew insurance" → itemType="action", find parent in AVAILABLE PARENT RECORDS\n'
+    +'- For new vehicles/health conditions/accounts → itemType="record"\n'
+    +'- For follow-ups on contacts → itemType="action", domain="Social", find contact in Social parent records\n'
+    +'- For anything else → itemType="standard"\n'
+    +'- Split compound inputs into separate items\n'
+    +'- Return ONLY the JSON array, no other text.';
 }
 function openWriteReview(items){
+  var iStyle='width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;';
   var html='<div style="display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
   items.forEach(function(item,i){
     var org=item.org||'personal';
+    var domain=item.domain||'';
+    var isAction=item.itemType==='action';
+    var isTL=TWO_LAYER_DOMAINS.has(domain);
     var domOpts=(S.domains[org]||[]).filter(function(d){return d!=='Plants';}).map(function(d){
-      return '<option value="'+esc(d)+'"'+(d===item.domain?' selected':'')+'>'+esc(d)+'</option>';
+      return '<option value="'+esc(d)+'"'+(d===domain?' selected':'')+'>'+esc(d)+'</option>';
     }).join('');
+    // Parent selector for action items in two-layer domains
+    var parentRow='';
+    if(isAction&&isTL){
+      var recs=((S.items[org]||{})[domain]||[]).filter(function(r){return r._type==='record'||(!r._type&&domain==='Social');});
+      var pOpts='<option value="">-- Select parent --</option>'+recs.map(function(r){
+        var rid=r._id||getSocialId(r);
+        var rn=r.name||((r.firstName||'')+' '+(r.lastName||'')).trim()||'Unnamed';
+        return '<option value="'+esc(rid)+'"'+(rid===item.parentId?' selected':'')+'>'+esc(rn)+'</option>';
+      }).join('');
+      parentRow='<div class="fg" style="margin-bottom:7px;"><label>Linked to (parent record)</label>'
+        +'<select id="wi-parent-'+i+'" style="'+iStyle+'">'+pOpts+'</select></div>';
+    }
     html+='<div class="wi-item" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:8px;">'
-      +'<span style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;">Item '+(i+1)+'</span>'
-      +'<button data-idx="'+i+'" onclick="this.closest(\'.wi-item\').style.display=\'none\'" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;">&#x2715;</button>'
+      +'<span style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;">'
+      +(isAction?'&#x2713; Action':'&#x2022; Item')+' '+(i+1)+'</span>'
+      +'<button data-idx="'+i+'" onclick="this.closest(\'.wi-item\').style.display=\'none\';" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;">&#x2715;</button>'
       +'</div>'
       +'<div class="fg" style="margin-bottom:7px;"><label>Name</label>'
-      +'<input type="text" id="wi-name-'+i+'" value="'+esc(item.name||'')+'" autocomplete="off" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;"></div>'
+      +'<input type="text" id="wi-name-'+i+'" value="'+esc(item.name||'')+'" autocomplete="off" style="'+iStyle+'"></div>'
+      +parentRow
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px;">'
       +'<div class="fg" style="margin:0;"><label>Org</label>'
-      +'<select id="wi-org-'+i+'" data-idx="'+i+'" onchange="updateWriteDomains(this)" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">'
+      +'<select id="wi-org-'+i+'" data-idx="'+i+'" onchange="updateWriteDomains(this)" style="'+iStyle+'">'
       +Object.keys(ORG_LABELS).map(function(k){return '<option value="'+k+'"'+(k===org?' selected':'')+'>'+ORG_LABELS[k]+'</option>';}).join('')
       +'</select></div>'
       +'<div class="fg" style="margin:0;"><label>Domain</label>'
-      +'<select id="wi-domain-'+i+'" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;">'
-      +domOpts+'</select></div></div>'
+      +'<select id="wi-domain-'+i+'" style="'+iStyle+'">'+domOpts+'</select></div></div>'
       +'<div class="fg" style="margin:0;"><label>Due date (optional)</label>'
-      +'<input type="date" id="wi-due-'+i+'" value="'+(item.dueDate||'')+'" style="width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;"></div>'
+      +'<input type="date" id="wi-due-'+i+'" value="'+(item.dueDate||'')+'" style="'+iStyle+'"></div>'
+      +'<input type="hidden" id="wi-type-'+i+'" value="'+(item.itemType||'standard')+'">'
       +'</div>';
   });
   html+='</div>';
@@ -705,6 +751,7 @@ function openWriteReview(items){
   document.getElementById('write-review-modal').dataset.count=items.length;
   openOv('write-review-ov');
 }
+
 function updateWriteDomains(sel){
   var i=sel.dataset.idx; var org=sel.value;
   var ds=document.getElementById('wi-domain-'+i);
