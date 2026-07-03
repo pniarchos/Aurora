@@ -228,7 +228,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.3</span>
+      <span class="ver">v11.3.1</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -570,7 +570,7 @@ const SPECIAL_FIELDS = {
   'Social':[
     {k:'firstName',l:'First name',t:'text',req:true},{k:'lastName',l:'Last name',t:'text'},
     {k:'nickname',l:'Nickname',t:'text'},{k:'salutation',l:'Salutation',t:'text'},
-    {k:'type',l:'Type / relationship',t:'text'},{k:'circle',l:'Circle',t:'text'},
+    {k:'type',l:'Type / relationship',t:'text'},{k:'circle',l:'Circle',t:'select',opts:['Family','Inner','Circle 2','Circle 3','Outer']},
     {k:'email',l:'Email',t:'text'},{k:'phone',l:'Phone',t:'text'},
     {k:'streetNum',l:'Street and number',t:'text'},{k:'city',l:'City',t:'text'},
     {k:'state',l:'State',t:'text'},{k:'zip',l:'Zip',t:'text'},{k:'country',l:'Country',t:'text'},
@@ -1734,7 +1734,14 @@ function setSocialSearch(v){
 }
 function setSocialCircle(v){ socialFilter.circle=v; renderOrgContent(); }
 function setSocialSort(v){ socialFilter.sort=v; renderOrgContent(); }
-function setSocialFlag(v){ socialFilter.flag=v; renderOrgContent(); }
+function setSocialFlag(v){
+  if(v&&v.indexOf('circle_')===0){
+    socialFilter.circle=v.slice(7); socialFilter.flag='';
+  } else {
+    socialFilter.flag=v; socialFilter.circle='';
+  }
+  renderOrgContent();
+}
 function resetSocialFilter(){ socialFilter={search:'',circle:'',sort:'lastName',flag:''}; renderOrgContent(); }
 
 function applySocialFilter(items){
@@ -1789,8 +1796,13 @@ function renderSocialControls(allItems, circles){
     +'<option value="andreasMemorials"'+(f.flag==='andreasMemorials'?' selected':'')+'>Dad\u2019s memorials list</option>'
     +'<option value="isKeyRelationship"'+(f.flag==='isKeyRelationship'?' selected':'')+'>&#x2605; Key relationships</option>'
     +'<option value="isSignificantOther"'+(f.flag==='isSignificantOther'?' selected':'')+'>&#x2665; Significant other</option>'
-    +'<option value="isKeyRelationship"'+(f.flag==='isKeyRelationship'?' selected':'')+'>&#x2605; Key relationships</option>'
-    +'<option value="isSignificantOther"'+(f.flag==='isSignificantOther'?' selected':'')+'>&#x2665; Significant other</option>'
+    +'<optgroup label="Circle">'
+    +'<option value="circle_Family"'+(f.flag==='circle_Family'?' selected':'')+'>Family</option>'
+    +'<option value="circle_Inner"'+(f.flag==='circle_Inner'?' selected':'')+'>Inner</option>'
+    +'<option value="circle_Circle 2"'+(f.flag==='circle_Circle 2'?' selected':'')+'>Circle 2</option>'
+    +'<option value="circle_Circle 3"'+(f.flag==='circle_Circle 3'?' selected':'')+'>Circle 3</option>'
+    +'<option value="circle_Outer"'+(f.flag==='circle_Outer'?' selected':'')+'>Outer</option>'
+    +'</optgroup>'
     +'</select>'
     +'<select onchange="setSocialSort(this.value)" style="padding:7px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;">'
     +'<option value="lastName"'+(f.sort==='lastName'?' selected':'')+'>Sort: Last name</option>'
@@ -2321,6 +2333,12 @@ async function saveItem(){
   }else S.items[org][domain].push(item);
   ov.dataset.recordMode='';ov.dataset.org='';ov.dataset.domain='';ov.dataset.idx='';ov.dataset.parentId='';
   editTarget=null;
+  if(org==='personal'&&domain==='Social'&&!item.contactId){
+    item.contactId=generateContactId();
+    var sarr=S.items[org][domain];
+    if(idx!==undefined) sarr[idx]=item; else if(sarr.length) sarr[sarr.length-1]=item;
+    persistLS();
+  }
   persistLS();await sbSaveItem(org,domain,item);
   closeOv('item-ov');renderDash();renderOrgContent();
   if(org==='personal'&&domain==='Social'&&S.gConfig.clientId&&S.gConfig.sheetId)
@@ -2792,6 +2810,7 @@ function doSync(){
           var nk=(c.firstName||c.name||'').toLowerCase();
           if(!nk) return;
           var ei=existing.findIndex(function(x){
+            if(x.contactId) return false;
             return (x.firstName||x.name||'').toLowerCase()===nk;
           });
           var newCid=generateContactId();
@@ -2870,12 +2889,13 @@ async function pushContactToSheet(contact){
     var cidColIdx=headers.indexOf(CONTACT_ID_COL);
     if(cidColIdx<0) cidColIdx=1;
 
-    // Build the row data
+    var today=new Date().toISOString().slice(0,10);
     var row=headers.map(function(h){
-      var hk=Object.entries(mapping).find(function(e){return e[1]===h;});
-      if(hk) return contact[hk[0]]||'';
       if(h===CONTACT_ID_COL) return contact.contactId||'';
-      return '';
+      var hk=Object.entries(mapping).find(function(e){return e[1]===h;});
+      if(!hk) return '';
+      if(hk[0]==='updatedDate') return today;
+      return contact[hk[0]]||'';
     });
 
     // If contact has a contactId, find and update its row
