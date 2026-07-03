@@ -653,10 +653,16 @@ const SONNET_OUT = 0.000015;  // $15 per 1M output tokens
 // WRITE MODE — Phase 3.1
 // ═══════════════════════════════════
 function isWriteIntent(text){
-  var t=text.toLowerCase();
-  return [/^add\b/,/^create\b/,/^new\b/,/^log\b/,/^schedule\b/,/^remind/,
-    /^note\b/,/^track\b/,/\btask\b/,/\bto.?do\b/,/\bfollow.?up\b/,
-    /\bdue\b.*\b(by|on|before)\b/].some(function(p){return p.test(t);});
+  var t=text.toLowerCase().trim();
+  return [
+    /^add\b/,/^create\b/,/^new\b/,/^log\b/,/^schedule\b/,/^remind/,
+    /^note\b/,/^track\b/,/^put\b/,/^set\b/,/^make\b/,/^enter\b/,
+    /\btask\b/,/\bto.?do\b/,/\bfollow.?up\b/,/\baction item\b/,
+    /\bdue\b.*\b(by|on|before)\b/,
+    /\bchange the oil\b/,/\boil change\b/,/\brenew\b/,/\bbook\b/,/\border\b/,
+    /\brefill\b/,/\bappointment\b/,/\brepair\b/,/\bservice\b/,
+    /\bremind me\b/,/\bdon't forget\b/,/\bneed to\b/,/\bhave to\b/
+  ].some(function(p){return p.test(t);});
 }
 function parseWriteItems(text){
   try{
@@ -2260,7 +2266,7 @@ function buildAuroraContext(){
     +'PLANTS: '+((S.plants||[]).length)+' total. Need water now: '+pnw.length+' ('+wn+'). Need checking: '+pnc.length+'.\n\n'
     +'CONTACTS: '+contacts.length+' total. Not contacted in 60+ days: '+nc.length+' ('+cn+').\n\n'
     +'Respond conversationally and specifically. Reference actual names, fields, and values from the data above. '
-    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.';
+    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.\n\n'    +'WRITE CAPABILITY: You CAN create items for the user. When asked to add, create, schedule, or track something, '    +'tell them you are creating it — do not say you cannot save data. '    +'The interface will open a review screen for the user to confirm before saving.';
 }
 
 async function callClaude(userMessage){
@@ -2293,7 +2299,7 @@ async function sendAuroraBarQuery(){
   inp.value='';inp.disabled=true;
   const wrap=document.getElementById('aurora-inline-resp-wrap');
   var writeMode=isWriteIntent(q);
-  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span>'+(writeMode?' Creating items…':' Aurora is thinking…')+'</div>';
+  wrap.innerHTML='<div class="aurora-inline-resp"><span class="spinner"></span>'+(writeMode?' Parsing items for review…':' Aurora is thinking…')+'</div>';
   try{
     if(writeMode){
       conversationHistory.push({role:'user',content:q});
