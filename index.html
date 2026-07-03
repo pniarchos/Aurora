@@ -669,49 +669,53 @@ function isWriteIntent(text){
   ].some(function(p){return p.test(t);});
 }
 function parseWriteItems(text){
+  if(!text) return null;
+  var clean=text.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+  var s=clean.indexOf('['), e=clean.lastIndexOf(']');
+  if(s<0||e<=s) return null;
   try{
-    var c=text.replace(/```json/g,'').replace(/```/g,'').trim();
-    var p=JSON.parse(c);
-    if(Array.isArray(p)) return p;
-  }catch(e){}
-  return null;
+    var arr=JSON.parse(clean.slice(s,e+1));
+    if(!Array.isArray(arr)||!arr.length) return null;
+    return arr.filter(function(i){return i&&i.name;}).map(function(i){
+      return{name:String(i.name||'').trim(),org:i.org||'personal',domain:i.domain||'Home',
+        dueDate:i.dueDate||null,itemType:i.itemType||'standard',parentId:i.parentId||null,parentName:i.parentName||null};
+    });
+  }catch(e2){
+    try{var m=clean.match(/\[[\s\S]*\]/);if(m){var a=JSON.parse(m[0]);if(Array.isArray(a)&&a.length)return a.filter(function(i){return i&&i.name;});}}catch(e3){}
+    return null;
+  }
 }
 function buildWritePrompt(){
   var od=Object.keys(S.domains).map(function(org){
-    return ORG_LABELS[org]+': '+S.domains[org].filter(function(d){return d!=='Plants';}).join(', ');
+    return ORG_LABELS[org]+': '+S.domains[org].filter(function(d){return d!=='Plants'&&d!=='Budget';}).join(', ');
   }).join('\n');
-
-  // Build parent records context for two-layer domains
-  var parentContext='\n\nAVAILABLE PARENT RECORDS (for action items — use _parentId field):\n';
+  var parentContext='\n\nAVAILABLE PARENT RECORDS:\n';
   TWO_LAYER_DOMAINS.forEach(function(domain){
     Object.keys(S.domains).forEach(function(org){
-      if(!(S.domains[org]||[]).includes(domain))return;
-      var records=((S.items[org]||{})[domain]||[]).filter(function(i){return i._type==='record'||(!i._type&&domain!=='Social');});
-      if(!records.length)return;
+      if(!(S.domains[org]||[]).includes(domain)) return;
+      var records=((S.items[org]||{})[domain]||[]).filter(function(i){return i._type==='record'||(domain==='Social'&&!i._type);});
+      if(!records.length) return;
       parentContext+=ORG_LABELS[org]+' > '+domain+': ';
-      parentContext+=records.map(function(r){return '"'+(r.name||((r.firstName||'')+' '+(r.lastName||'')).trim()||'?')+'" (id:'+( r._id||getSocialId(r))+')';}).join(', ')+'\n';
+      parentContext+=records.map(function(r){
+        var n=r.name||((r.firstName||'')+' '+(r.lastName||'')).trim()||'?';
+        return n+' (id:'+(r._id||r.contactId||getSocialId(r))+')';
+      }).join(', ')+'\n';
     });
   });
-
-  return '\n\nWRITE MODE: Parse the user input and return ONLY a JSON array.\n'
-    +'Each item must have these fields:\n'
-    +'  name: string (required)\n'
-    +'  org: "personal" | "fee" | "tenfwd"\n'
-    +'  domain: string (must match a domain listed below)\n'
-    +'  dueDate: "YYYY-MM-DD" or null\n'
-    +'  itemType: "action" | "record" | "standard" (use "action" for tasks linked to a vehicle/health/finance/social record, "record" for new reference records, "standard" for all other domains)\n'
-    +'  parentId: string or null (required if itemType is "action" — use the id from AVAILABLE PARENT RECORDS)\n'
-    +'  parentName: string or null (human-readable parent name for display)\n'
-    +'\nDomains:\n'+od
-    +parentContext
-    +'\nRules:\n'
-    +'- For tasks like "oil change for Cherokee" or "renew insurance" → itemType="action", find parent in AVAILABLE PARENT RECORDS\n'
-    +'- For new vehicles/health conditions/accounts → itemType="record"\n'
-    +'- For follow-ups on contacts → itemType="action", domain="Social", find contact in Social parent records\n'
-    +'- For anything else → itemType="standard"\n'
-    +'- Split compound inputs into separate items\n'
-    +'- Return ONLY the JSON array, no other text.';
+  return '\n\nWRITE MODE: You MUST respond with ONLY a valid JSON array. No prose, no markdown, no explanation.\n'
+    +'Parse the user message and return an array where each object has:\n'
+    +'  name (string, required), org ("personal"|"fee"|"tenfwd"), domain (string),\n'
+    +'  dueDate ("YYYY-MM-DD" or null), itemType ("action"|"record"|"standard"),\n'
+    +'  parentId (string or null), parentName (string or null)\n'
+    +'TODAY = '+new Date().toISOString().slice(0,10)+'. Resolve relative dates (tomorrow, next Friday, etc.) against TODAY.\n'
+    +'Default org=personal, domain=Home if not specified.\n'
+    +'Split compound inputs into separate objects.\n'
+    +'RESPOND WITH ONLY THE JSON ARRAY. Example:\n'
+    +'[{"name":"Buy milk","org":"personal","domain":"Home","dueDate":null,"itemType":"standard","parentId":null,"parentName":null}]\n'
+    +'\nDomains:\n'+od+parentContext;
 }
+
+
 function openWriteReview(items){
   var iStyle='width:100%;padding:6px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;';
   var html='<div style="display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;">';
@@ -3137,7 +3141,11 @@ async function sendAuroraBarQuery(){
       conversationHistory.push({role:'assistant',content:wreply});
       var witems=parseWriteItems(wreply);
       if(witems&&witems.length>0){wrap.innerHTML='';inp.disabled=false;openWriteReview(witems);return;}
-      wrap.innerHTML='<div class="aurora-inline-resp">'+esc(wreply)+'</div>';
+      var rh2=esc(wreply).split('\n').join('<br>');
+      wrap.innerHTML='<div class="aurora-inline-resp">'
+        +'<button class="aurora-resp-close" onclick="document.getElementById(\'aurora-inline-resp-wrap\').innerHTML=\'\'" >&#x2715;</button>'
+        +'<div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Aurora — Write mode</div>'
+        +'<div>'+rh2+'</div></div>';
       inp.disabled=false;inp.focus();return;
     }
     const reply=await callClaude(q);
