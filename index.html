@@ -232,7 +232,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.6</span>
+      <span class="ver">v12.5</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -1669,7 +1669,7 @@ function initSupabase(cb){
           autoRefreshToken:true,
           persistSession:true,
           detectSessionInUrl:true,
-          flowType:'pkce'
+          flowType:'implicit'
         }
       });
       if(cb) cb();
@@ -1737,27 +1737,33 @@ function hideLoginScreen(){
 }
 
 async function handleAuthCallback(){
-  if(!SB) return;
-  // Handle OAuth callback — Supabase detects code in URL automatically
-  var resp=await SB.auth.getSession();
-  var session=resp.data&&resp.data.session;
-  if(session&&session.user){
-    AURORA_USER=session.user;
-    // Extract Google OAuth tokens from session for GAPI
-    var providerToken=session.provider_token;
-    var providerRefreshToken=session.provider_refresh_token;
-    if(providerToken){
-      S.gConfig.accessToken=providerToken;
-      S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;
-      if(providerRefreshToken) S.gConfig.refreshToken=providerRefreshToken;
+  if(!SB) return false;
+  try{
+    // For implicit flow, tokens arrive in URL hash
+    var hash=window.location.hash;
+    var search=window.location.search;
+    if(hash.indexOf('access_token')>=0||search.indexOf('code=')>=0){
+      // Let Supabase parse the URL automatically
+      var {data,error}=await SB.auth.getSession();
+      if(error) console.error('Auth callback error:',error);
+      if(data&&data.session&&data.session.user){
+        AURORA_USER=data.session.user;
+        var providerToken=data.session.provider_token;
+        var providerRefreshToken=data.session.provider_refresh_token;
+        if(providerToken){
+          S.gConfig.accessToken=providerToken;
+          S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;
+          if(providerRefreshToken) S.gConfig.refreshToken=providerRefreshToken;
+        }
+        window.history.replaceState({},document.title,window.location.pathname);
+        return true;
+      }
     }
-    // Clean URL
-    if(window.location.search.indexOf('code=')>=0){
-      window.history.replaceState({},document.title,window.location.pathname);
-    }
-    return true;
+    return false;
+  }catch(e){
+    console.error('handleAuthCallback failed:',e);
+    return false;
   }
-  return false;
 }
 
 // ── State sync to/from Supabase ────────────────────────────────────────
@@ -3786,6 +3792,24 @@ if(!S.sbConfig||!S.sbConfig.url||!S.sbConfig.key){
 }
 initSupabase(async function(){
   if(!SB){setTimeout(function(){showLoginScreen();},100);return;}
+  // Listen for auth state changes (fires when session is detected from URL)
+  SB.auth.onAuthStateChange(async function(event, session){
+    if(event==='SIGNED_IN'&&session&&session.user&&!AURORA_USER){
+      AURORA_USER=session.user;
+      var pt=session.provider_token;
+      if(pt){S.gConfig.accessToken=pt;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
+      hideLoginScreen();
+      await loadUserState();
+      if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
+      renderDash();renderOrgContent();
+      if(!localStorage.getItem('aurora_migrated_v116')){
+        setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1000);
+      }
+    } else if(event==='SIGNED_OUT'){
+      AURORA_USER=null;
+      showLoginScreen();
+    }
+  });
   var user=null;
   if(window.location.search.indexOf('code=')>=0||window.location.hash.indexOf('access_token')>=0){
     var authed=await handleAuthCallback();
