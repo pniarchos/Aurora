@@ -225,7 +225,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 <meta name="theme-color" content="#C49A2A">
 </head>
 <body>
-<div class="shell">
+<div class="shell" id="app-body">
   <div class="top-bar">
     <div>
       <h1>Aurora</h1>
@@ -1723,14 +1723,14 @@ async function signOut(){
 function showLoginScreen(){
   var body=document.getElementById('app-body');
   var login=document.getElementById('login-screen');
-  if(body) body.style.display='none';
+  if(body) body.style.visibility='hidden';
   if(login) login.style.display='flex';
 }
 
 function hideLoginScreen(){
   var body=document.getElementById('app-body');
   var login=document.getElementById('login-screen');
-  if(body) body.style.display='';
+  if(body) body.style.visibility='visible';
   if(login) login.style.display='none';
 }
 
