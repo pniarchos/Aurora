@@ -1661,7 +1661,7 @@ function loadSupabaseLib(cb){
 function initSupabase(cb){
   var url=S.sbConfig&&S.sbConfig.url?S.sbConfig.url:'';
   var key=S.sbConfig&&S.sbConfig.key?S.sbConfig.key:'';
-  if(!url||!key){if(cb)cb();return;}
+  if(!url||!key){if(cb)cb();return;} // cb handles no-SB case
   loadSupabaseLib(function(){
     try{
       SB=supabase.createClient(url,key,{
@@ -3779,7 +3779,7 @@ switchOrg('personal');
 updateNotifBtn();
 updateSettingsBtn();
 initSupabase(async function(){
-  if(!SB) return;
+  if(!SB){showLoginScreen();return;}
   var user=null;
   if(window.location.search.indexOf('code=')>=0||window.location.hash.indexOf('access_token')>=0){
     var authed=await handleAuthCallback();
