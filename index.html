@@ -1721,10 +1721,12 @@ async function signOut(){
 }
 
 function showLoginScreen(){
-  var body=document.getElementById('app-body');
-  var login=document.getElementById('login-screen');
-  if(body) body.style.visibility='hidden';
-  if(login) login.style.display='flex';
+  setTimeout(function(){
+    var body=document.getElementById('app-body');
+    var login=document.getElementById('login-screen');
+    if(body) body.style.visibility='hidden';
+    if(login) login.style.display='flex';
+  },50);
 }
 
 function hideLoginScreen(){
@@ -3778,8 +3780,12 @@ renderDash();
 switchOrg('personal');
 updateNotifBtn();
 updateSettingsBtn();
+// Show login screen immediately if no Supabase credentials
+if(!S.sbConfig||!S.sbConfig.url||!S.sbConfig.key){
+  setTimeout(function(){showLoginScreen();},100);
+}
 initSupabase(async function(){
-  if(!SB){showLoginScreen();return;}
+  if(!SB){setTimeout(function(){showLoginScreen();},100);return;}
   var user=null;
   if(window.location.search.indexOf('code=')>=0||window.location.hash.indexOf('access_token')>=0){
     var authed=await handleAuthCallback();
