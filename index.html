@@ -1562,6 +1562,19 @@ async function runDataMigration(){
   if(ok){localStorage.setItem('aurora_migrated_v116','true');alert('Migration complete!');await loadUserState();renderDash();renderOrgContent();}else{alert('Migration failed. Try again.');}
 }
 
+
+function applyTypeToTwoLayerItems(){
+  // Stamp _type:'record' on items in two-layer domains that are missing it
+  // These come from Supabase without _type if they were saved before v11.0
+  TWO_LAYER_DOMAINS.forEach(function(domain){
+    Object.keys(S.items||{}).forEach(function(org){
+      ((S.items[org]||{})[domain]||[]).forEach(function(item){
+        if(!item._type&&domain!=='Social') item._type='record';
+      });
+    });
+  });
+}
+
 function updateTokenDisplay(){
   const el = document.getElementById('s-token-display');
   if(!el) return;
@@ -3791,15 +3804,24 @@ if(!S.sbConfig||!S.sbConfig.url||!S.sbConfig.key){
   setTimeout(function(){showLoginScreen();},100);
 }
 initSupabase(async function(){
-  if(!SB){setTimeout(function(){showLoginScreen();},100);return;}
-  // Listen for auth state changes (fires when session is detected from URL)
+  if(!SB){
+    // No Supabase credentials — render dashboard from localStorage, show login
+    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+    setTimeout(function(){showLoginScreen();},200);
+    return;
+  }
+
+  // Listen for future auth changes (sign-in redirect, sign-out)
   SB.auth.onAuthStateChange(async function(event, session){
-    if(event==='SIGNED_IN'&&session&&session.user&&!AURORA_USER){
+    if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session&&session.user){
+      if(AURORA_USER&&AURORA_USER.id===session.user.id) return;
       AURORA_USER=session.user;
       var pt=session.provider_token;
       if(pt){S.gConfig.accessToken=pt;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
-      hideLoginScreen();
+      await loadFromSupabase();
       await loadUserState();
+      applyTypeToTwoLayerItems();
+      hideLoginScreen();
       if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
       renderDash();renderOrgContent();
       if(!localStorage.getItem('aurora_migrated_v116')){
@@ -3810,23 +3832,25 @@ initSupabase(async function(){
       showLoginScreen();
     }
   });
-  var user=null;
-  if(window.location.search.indexOf('code=')>=0||window.location.hash.indexOf('access_token')>=0){
-    var authed=await handleAuthCallback();
-    if(authed) user=AURORA_USER;
-  }
-  if(!user) user=await checkAuthSession();
-  if(user){
-    AURORA_USER=user;
-    hideLoginScreen();
+
+  // Check for existing persisted session
+  var {data:sd}=await SB.auth.getSession();
+  if(sd&&sd.session&&sd.session.user){
+    AURORA_USER=sd.session.user;
+    var pt2=sd.session.provider_token;
+    if(pt2){S.gConfig.accessToken=pt2;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
+    await loadFromSupabase();
     await loadUserState();
-    if(S.gConfig.accessToken){loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});}
-    renderDash();renderOrgContent();
+    applyTypeToTwoLayerItems();
+    if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
+    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
     if(!localStorage.getItem('aurora_migrated_v116')){
-      setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
+      setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1000);
     }
   } else {
-    showLoginScreen();
+    // No session — render from localStorage, show login
+    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+    setTimeout(function(){showLoginScreen();},200);
   }
 });
 if(Notification.permission==='granted')scheduleNotifs();
