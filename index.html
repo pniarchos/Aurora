@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Aurora">
 <meta name="theme-color" content="#1a1a18">
-<title>AURORA</title>
+<title>AURORA v12.7</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@300;400;500&family=Space+Mono:wght@400&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -232,7 +232,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v12.5</span>
+      <span class="ver">v12.7</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -3818,14 +3818,17 @@ initSupabase(async function(){
       AURORA_USER=session.user;
       var pt=session.provider_token;
       if(pt){S.gConfig.accessToken=pt;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
-      await loadFromSupabase();
-      await loadUserState();
+      try{ await loadFromSupabase(); }catch(e){console.warn('loadFromSupabase:',e);}
+      try{ await loadUserState(); }catch(e){console.warn('loadUserState:',e);}
       applyTypeToTwoLayerItems();
       hideLoginScreen();
       if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
-      renderDash();renderOrgContent();
+      renderDash();
+      switchOrg('personal');
+      updateNotifBtn();
+      updateSettingsBtn();
       if(!localStorage.getItem('aurora_migrated_v116')){
-        setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1000);
+        setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
       }
     } else if(event==='SIGNED_OUT'){
       AURORA_USER=null;
@@ -3839,17 +3842,25 @@ initSupabase(async function(){
     AURORA_USER=sd.session.user;
     var pt2=sd.session.provider_token;
     if(pt2){S.gConfig.accessToken=pt2;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
-    await loadFromSupabase();
-    await loadUserState();
+    // Load all data before rendering
+    try{ await loadFromSupabase(); }catch(e){console.warn('loadFromSupabase:',e);}
+    try{ await loadUserState(); }catch(e){console.warn('loadUserState:',e);}
     applyTypeToTwoLayerItems();
     if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
-    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+    // Now render with full data
+    renderDash();
+    switchOrg('personal');
+    updateNotifBtn();
+    updateSettingsBtn();
     if(!localStorage.getItem('aurora_migrated_v116')){
-      setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1000);
+      setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
     }
   } else {
-    // No session — render from localStorage, show login
-    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+    // No session — render from localStorage then show login
+    renderDash();
+    switchOrg('personal');
+    updateNotifBtn();
+    updateSettingsBtn();
     setTimeout(function(){showLoginScreen();},200);
   }
 });
@@ -3908,7 +3919,7 @@ setTimeout(checkAuthCodeRedirect,100);
 #agenda-panel.open{right:0;}
 </style>
 
-<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;"><div style="text-align:center;"><div style="font-family:Orbitron,sans-serif;font-size:2.2rem;font-weight:900;letter-spacing:.04em;"><span style="color:var(--text);">10</span><span style="color:var(--gold);">FORWARD</span></div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.3em;color:var(--text3);margin-top:4px;">Augmented Intelligence Platform</div><div style="font-size:2.5rem;margin:1.5rem 0;">&#x2736;</div><div style="font-size:1.4rem;font-weight:700;margin-bottom:.5rem;">AURORA</div><div style="font-size:13px;color:var(--text2);margin-bottom:2rem;">Sign in to access your system</div></div><button onclick="signInWithGoogle()" style="display:flex;align-items:center;gap:10px;padding:12px 24px;background:var(--bg);border:2px solid var(--gold);border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>Sign in with Google</button><div style="font-size:11px;color:var(--text3);max-width:280px;text-align:center;line-height:1.6;">First time? You'll be asked to authorize Aurora to access Google Sheets, Calendar, and Drive.</div></div>
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;"><div style="text-align:center;"><div style="font-size:3.5rem;margin-bottom:.5rem;">&#x2736;</div><div style="font-family:Orbitron,sans-serif;font-size:2.2rem;font-weight:900;letter-spacing:.08em;color:var(--text);">AURORA</div><div style="font-size:13px;color:var(--text2);margin:.5rem 0 1rem;">Sign in to access your system</div><div style="font-family:Orbitron,sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.04em;margin-bottom:.25rem;"><span style="color:var(--text);">10</span><span style="color:var(--gold);">FORWARD</span></div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.3em;color:var(--text3);margin-bottom:2rem;">Technologies Corporation</div></div><button onclick="signInWithGoogle()" style="display:flex;align-items:center;gap:10px;padding:12px 24px;background:var(--bg);border:2px solid var(--gold);border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>Sign in with Google</button><div style="font-size:11px;color:var(--text3);max-width:280px;text-align:center;line-height:1.6;">First time? You'll be asked to authorize Aurora to access Google Sheets, Calendar, and Drive.</div></div>
 <div id="migration-banner" style="display:none;position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--gold);border-radius:var(--r);padding:12px 16px;z-index:200;max-width:400px;box-shadow:0 4px 20px rgba(0,0,0,.3);"><div style="font-size:13px;font-weight:600;margin-bottom:6px;">&#x1F4E6; Existing data found</div><div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Migrate your contacts and data from your previous session to your account.</div><div style="display:flex;gap:8px;"><button onclick="runDataMigration()" class="btn-save" style="font-size:12px;padding:5px 12px;">Migrate my data</button><button onclick="document.getElementById('migration-banner').style.display='none'" class="btn-cancel" style="font-size:12px;padding:5px 12px;">Skip</button></div></div>
 </body>
 </html>
