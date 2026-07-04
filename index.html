@@ -1674,20 +1674,26 @@ function loadSupabaseLib(cb){
 function initSupabase(cb){
   var url=S.sbConfig&&S.sbConfig.url?S.sbConfig.url:'';
   var key=S.sbConfig&&S.sbConfig.key?S.sbConfig.key:'';
-  if(!url||!key){if(cb)cb();return;} // cb handles no-SB case
-  loadSupabaseLib(function(){
+  if(!url||!key){if(cb)cb();return;}
+  // Use statically loaded library from <head>
+  if(window.supabase){
     try{
-      SB=supabase.createClient(url,key,{
-        auth:{
-          autoRefreshToken:true,
-          persistSession:true,
-          detectSessionInUrl:true,
-          flowType:'implicit'
-        }
+      SB=window.supabase.createClient(url,key,{
+        auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
       });
       if(cb) cb();
     }catch(e){console.error('Supabase init failed:',e);}
-  });
+  } else {
+    // Fallback to dynamic load
+    loadSupabaseLib(function(){
+      try{
+        SB=window.supabase.createClient(url,key,{
+          auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
+        });
+        if(cb) cb();
+      }catch(e){console.error('Supabase init failed:',e);}
+    });
+  }
 }
 
 async function checkAuthSession(){
