@@ -219,8 +219,10 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 .cal-embed-wrap iframe{width:100%;height:600px;border:none;display:block;}
 .cal-no-config{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px;}
 </style>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48cmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgcng9JzIyJyBmaWxsPScjRjVGNEYwJy8+PHRleHQgeT0nLjllbScgZm9udC1zaXplPSc3MicgeD0nNTAlJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkb21pbmFudC1iYXNlbGluZT0naGFuZ2luZycgZmlsbD0nI0M0OUEyQSc+4pymPC90ZXh0Pjwvc3ZnPg==">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48cmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgcng9JzIyJyBmaWxsPScjRjVGNEYwJy8+PHRleHQgeT0nLjllbScgZm9udC1zaXplPSc3MicgeD0nNTAlJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkb21pbmFudC1iYXNlbGluZT0naGFuZ2luZycgZmlsbD0nI0M0OUEyQSc+4pymPC90ZXh0Pjwvc3ZnPg==">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogIkFVUk9SQSIsICJzaG9ydF9uYW1lIjogIkF1cm9yYSIsICJzdGFydF91cmwiOiAiL0FkbWluSHViIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGNUY0RjAiLCAidGhlbWVfY29sb3IiOiAiI0M0OUEyQSIsICJpY29ucyI6IFt7InNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MG5hSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY25JSFpwWlhkQ2IzZzlKekFnTUNBeE1EQWdNVEF3Sno0OGNtVmpkQ0IzYVdSMGFEMG5NVEF3SnlCb1pXbG5hSFE5SnpFd01DY2djbmc5SnpJeUp5Qm1hV3hzUFNjalJqVkdORVl3Snk4K1BIUmxlSFFnZVQwbkxqbGxiU2NnWm05dWRDMXphWHBsUFNjM01pY2dlRDBuTlRBbEp5QjBaWGgwTFdGdVkyaHZjajBuYldsa1pHeGxKeUJrYjIxcGJtRnVkQzFpWVhObGJHbHVaVDBuYUdGdVoybHVaeWNnWm1sc2JEMG5JME0wT1VFeVFTYys0cHltUEM5MFpYaDBQand2YzNablBnPT0iLCAic2l6ZXMiOiAiYW55IiwgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIsICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSJ9XX0=">
+<meta name="theme-color" content="#C49A2A">
 </head>
 <body>
 <div class="shell">
@@ -230,7 +232,7 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
       <p style="font-size:10px;color:var(--text3);letter-spacing:.12em;margin-top:2px;font-family:'Space Mono',monospace;text-transform:uppercase;">Augmented Intelligence Platform</p>
     </div>
     <div class="tbr">
-      <span class="ver">v11.4</span>
+      <span class="ver">v11.5</span>
       <button class="tb-btn" id="notif-btn" onclick="requestNotif()">Notifications</button>
       <button class="tb-btn" id="settings-btn" onclick="openSettings()">&#x2699; Settings</button>
       <div class="top-date" id="top-date"></div>
@@ -999,6 +1001,7 @@ function drillCompletedTasks(){
 function getRelData(contactId){
   if(!S.relationships) S.relationships={};
   if(!S.deletedContactIds) S.deletedContactIds=[];
+  if(!S.notes) S.notes=[];
   if(S.items&&S.items.personal&&S.items.personal.Social){
     S.items.personal.Social.forEach(function(c){
       if(!c.contactId&&(c.firstName||c.name)) c.contactId=generateContactId();
@@ -1378,6 +1381,166 @@ function deleteSavedAgenda(cid,idx){
 }
 
 
+// ═══════════════════════════════════════════
+// NOTES MODULE — Aurora Notepad
+// ═══════════════════════════════════════════
+
+function renderNotesSection(org){
+  if(!S.notes) S.notes=[];
+  var orgNotes=S.notes.filter(function(n){return n.org===org;})
+    .sort(function(a,b){return b.createdAt-a.createdAt;});
+
+  var tagOpts=['General','Idea','Task','Meeting','Reference'].map(function(t){
+    return '<option value="'+t+'">'+t+'</option>';
+  }).join('');
+
+  var notesList=orgNotes.length?orgNotes.map(function(n,i){
+    var d=new Date(n.createdAt);
+    var dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+      +' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    var tagColor={'General':'var(--text3)','Idea':'var(--blue)','Task':'var(--amber)',
+      'Meeting':'var(--green)','Reference':'var(--text2)'}[n.tag]||'var(--text3)';
+    var driveLink=n.driveDocUrl?'<a href="'+n.driveDocUrl+'" target="_blank" style="font-size:10px;color:var(--blue);text-decoration:none;margin-left:6px;">&#x1F4C4; Drive</a>':'';
+    return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:'+tagColor+';">'+esc(n.tag||'General')+'</span>'
+      +driveLink
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;">'
+      +'<span style="font-size:10px;color:var(--text3);">'+esc(dateStr)+'</span>'
+      +(org==='tenfwd'&&!n.driveDocUrl&&S.gConfig.tenfwdFolderId?
+        '<button class="iBtn" data-nid="'+esc(n.id)+'" onclick="promoteNoteToDrive(this.dataset.nid)" title="Save to 10Forward Drive" style="font-size:10px;color:var(--blue);">&#x2601; Drive</button>':'')
+      +'<button class="iBtn" data-nid="'+esc(n.id)+'" onclick="editNote(this.dataset.nid)" title="Edit">&#x270e;</button>'
+      +'<button class="iBtn" data-nid="'+esc(n.id)+'" onclick="deleteNote(this.dataset.nid)" title="Delete">&#x2715;</button>'
+      +'</div></div>'
+      +'<div id="note-view-'+esc(n.id)+'" style="font-size:13px;line-height:1.65;color:var(--text);white-space:pre-wrap;">'+esc(n.text)+'</div>'
+      +'<div id="note-edit-'+esc(n.id)+'" style="display:none;">'
+      +'<textarea style="width:100%;min-height:80px;padding:8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;">'+esc(n.text)+'</textarea>'
+      +'<div style="display:flex;gap:6px;margin-top:6px;">'
+      +'<button class="btn-save" style="font-size:12px;padding:4px 10px;" data-nid="'+esc(n.id)+'" onclick="saveNoteEdit(this.dataset.nid)">Save</button>'
+      +'<button class="btn-cancel" style="font-size:12px;padding:4px 10px;" data-nid="'+esc(n.id)+'" onclick="cancelNoteEdit(this.dataset.nid)">Cancel</button>'
+      +'</div></div>'
+      +'</div>';
+  }).join(''):'<div class="empty">No notes yet. Add your first note above.</div>';
+
+  var scanBtn=orgNotes.length?'<button class="btn-blue" style="font-size:12px;padding:5px 12px;" onclick="scanNotesForTasks(\''+org+'\')">&#x2736; Scan for tasks</button>':'';
+
+  return '<div class="sec-hdr"><div class="sec-title">Notes</div>'
+    +'<div class="sec-acts">'+scanBtn+'</div></div>'
+    // Quick entry
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:1rem;">'
+    +'<textarea id="note-input-'+org+'" placeholder="Quick note..." style="width:100%;min-height:72px;border:none;outline:none;background:transparent;color:var(--text);font-size:13px;font-family:inherit;resize:none;box-sizing:border-box;" onkeydown="handleNoteKey(event,\''+org+'\')"></textarea>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
+    +'<select id="note-tag-'+org+'" style="padding:5px 8px;border:1px solid var(--border2);border-radius:var(--r-sm);background:var(--bg2);color:var(--text);font-size:12px;font-family:inherit;">'+tagOpts+'</select>'
+    +'<button class="btn-save" style="font-size:12px;padding:5px 12px;" onclick="saveNote(\''+org+'\')">Add note</button>'
+    +'</div></div>'
+    // Notes list
+    +notesList;
+}
+
+function handleNoteKey(e, org){
+  // Cmd/Ctrl+Enter to save
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();saveNote(org);}
+}
+
+function saveNote(org){
+  var ta=document.getElementById('note-input-'+org);
+  var tagEl=document.getElementById('note-tag-'+org);
+  if(!ta) return;
+  var text=ta.value.trim();
+  if(!text) return;
+  var tag=tagEl?tagEl.value:'General';
+  if(!S.notes) S.notes=[];
+  var note={
+    id:'note_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+    org:org, text:text, tag:tag,
+    createdAt:Date.now(), updatedAt:Date.now(),
+    driveDocId:null, driveDocUrl:null
+  };
+  S.notes.unshift(note);
+  persistLS();
+  ta.value='';
+  renderOrgContent();
+}
+
+function editNote(nid){
+  var view=document.getElementById('note-view-'+nid);
+  var edit=document.getElementById('note-edit-'+nid);
+  if(view) view.style.display='none';
+  if(edit) edit.style.display='block';
+  if(edit){var ta=edit.querySelector('textarea');if(ta)ta.focus();}
+}
+
+function saveNoteEdit(nid){
+  var edit=document.getElementById('note-edit-'+nid);
+  if(!edit) return;
+  var ta=edit.querySelector('textarea');
+  var text=ta?ta.value.trim():'';
+  if(!text) return;
+  var note=(S.notes||[]).find(function(n){return n.id===nid;});
+  if(!note) return;
+  note.text=text; note.updatedAt=Date.now();
+  persistLS();
+  var view=document.getElementById('note-view-'+nid);
+  if(view){view.textContent=text;view.style.display='block';}
+  edit.style.display='none';
+}
+
+function cancelNoteEdit(nid){
+  var view=document.getElementById('note-view-'+nid);
+  var edit=document.getElementById('note-edit-'+nid);
+  if(view) view.style.display='block';
+  if(edit) edit.style.display='none';
+}
+
+function deleteNote(nid){
+  if(!confirm('Delete this note?')) return;
+  S.notes=(S.notes||[]).filter(function(n){return n.id!==nid;});
+  persistLS();
+  renderOrgContent();
+}
+
+async function promoteNoteToDrive(nid){
+  var note=(S.notes||[]).find(function(n){return n.id===nid;});
+  if(!note) return;
+  if(!S.gConfig.tenfwdFolderId){alert('Set your 10Forward Drive folder ID in Settings first.');return;}
+  ensureGAuth(async function(){
+    try{
+      var title=note.tag+' — '+new Date(note.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      // Create Doc via Drive API
+      var meta=await gapi.client.drive.files.create({
+        resource:{name:title,mimeType:'application/vnd.google-apps.document',
+          parents:[S.gConfig.tenfwdFolderId]},fields:'id,webViewLink'
+      });
+      var docId=meta.result.id;
+      var docUrl=meta.result.webViewLink;
+      // Write content via Docs API
+      await gapi.client.docs.documents.batchUpdate({
+        documentId:docId,
+        resource:{requests:[{insertText:{location:{index:1},text:note.text}}]}
+      });
+      note.driveDocId=docId;
+      note.driveDocUrl=docUrl;
+      persistLS();
+      renderOrgContent();
+    }catch(e){alert('Drive promotion failed: '+e.message);}
+  });
+}
+
+function scanNotesForTasks(org){
+  var orgNotes=(S.notes||[]).filter(function(n){return n.org===org;})
+    .sort(function(a,b){return b.createdAt-a.createdAt;}).slice(0,10);
+  if(!orgNotes.length){alert('No notes to scan.');return;}
+  var noteText=orgNotes.map(function(n,i){return (i+1)+'. ['+n.tag+'] '+n.text;}).join('\n\n');
+  // Inject into Aurora bar and trigger write mode
+  var inp=document.getElementById('aurora-bar-input');
+  if(inp){
+    inp.value='Scan these notes and extract action items, tasks, and follow-ups:\n\n'+noteText;
+    sendAuroraBarQuery();
+  }
+}
+
 function updateTokenDisplay(){
   const el = document.getElementById('s-token-display');
   if(!el) return;
@@ -1400,14 +1563,15 @@ function defaultState(){
     domains:{}, items:{},
     tiles: DEFAULT_TILES.map(t=>({...t})),
     plants: DEFAULT_PLANTS.map(p=>({...p})),
-    gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null,accessToken:'',tokenExpiry:0,refreshToken:''},
+    gConfig:{clientId:'',sheetId:'',sheetTab:'',mapping:{},lastSync:null,accessToken:'',tokenExpiry:0,refreshToken:'',tenfwdFolderId:''},
     calConfig:{personalCalId:'',tenfwdCalId:'',embedUrl:'',remindersByOrg:{personal:7,tenfwd:14}},
     sbConfig:{url:'',key:'',migrationDone:false},
     anthropicKey:'',
     budget:{income:{},fixedExpenses:{},variableExpenses:{},months:[]},
     completedTasks:[],
     relationships:{},
-    deletedContactIds:[]
+    deletedContactIds:[],
+    notes:[]
   };
   Object.keys(DEFAULT_DOMAINS).forEach(org=>{
     s.domains[org] = [...DEFAULT_DOMAINS[org]];
@@ -1433,6 +1597,9 @@ function loadLS(){
   if(!S.completedTasks) S.completedTasks=[];
   if(!S.gConfig.refreshToken) S.gConfig.refreshToken='';
   if(!S.relationships) S.relationships={};
+  ['personal','fee','tenfwd'].forEach(function(o){
+    if(S.domains&&S.domains[o]&&!S.domains[o].includes('Notes')) S.domains[o].push('Notes');
+  });
   if(S.domains&&S.domains.personal&&!S.domains.personal.includes('Budget')){
     var pli=S.domains.personal.indexOf('Plants');
     if(pli>=0)S.domains.personal.splice(pli,0,'Budget');
@@ -2018,7 +2185,9 @@ function renderOrgContent(){
   nav+='<button class="dom-mgr-btn" data-org="'+esc(org)+'" onclick="openDomMgr(this.dataset.org)">\u2295 Manage</button></div>';
 
   let body='';
-  if(currentDomain==='Budget'){
+  if(currentDomain==='Notes'){
+    body=renderNotesSection(org);
+  } else if(currentDomain==='Budget'){
     body=renderBudgetSection();
   } else if(currentDomain==='Plants'){
     body=renderPlantSection();
@@ -3091,7 +3260,14 @@ function buildAuroraContext(){
     +'PLANTS: '+((S.plants||[]).length)+' total. Need water now: '+pnw.length+' ('+wn+'). Need checking: '+pnc.length+'.\n\n'
     +'CONTACTS: '+contacts.length+' total. Not contacted in 60+ days: '+nc.length+' ('+cn+').\n\n'
     +'Respond conversationally and specifically. Reference actual names, fields, and values from the data above. '
-    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.';
+    +'If asked about a specific item (vehicle, medication, policy, etc.), look it up in ALL ITEM DATA above.'
+    +'\n\nRECENT NOTES (last 20):\n'+(function(){
+      var r=(S.notes||[]).slice(0,20);
+      if(!r.length) return 'None.';
+      return r.map(function(n){
+        return '['+new Date(n.createdAt).toISOString().slice(0,10)+'] ['+n.org+'] ['+n.tag+'] '+n.text.slice(0,200);
+      }).join('\n');
+    })();
 }
 
 async function callClaude(userMessage){
