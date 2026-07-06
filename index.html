@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- AURORA BUILD: async IIFE boot fix, Supabase session restore, applyTypeToTwoLayerItems | CODE: XK7-IIFE-2025 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1674,26 +1675,20 @@ function loadSupabaseLib(cb){
 function initSupabase(cb){
   var url=S.sbConfig&&S.sbConfig.url?S.sbConfig.url:'';
   var key=S.sbConfig&&S.sbConfig.key?S.sbConfig.key:'';
-  if(!url||!key){if(cb)cb();return;}
-  // Use statically loaded library from <head>
-  if(window.supabase){
+  if(!url||!key){if(cb)cb();return;} // cb handles no-SB case
+  loadSupabaseLib(function(){
     try{
-      SB=window.supabase.createClient(url,key,{
-        auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
+      SB=supabase.createClient(url,key,{
+        auth:{
+          autoRefreshToken:true,
+          persistSession:true,
+          detectSessionInUrl:true,
+          flowType:'implicit'
+        }
       });
       if(cb) cb();
     }catch(e){console.error('Supabase init failed:',e);}
-  } else {
-    // Fallback to dynamic load
-    loadSupabaseLib(function(){
-      try{
-        SB=window.supabase.createClient(url,key,{
-          auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
-        });
-        if(cb) cb();
-      }catch(e){console.error('Supabase init failed:',e);}
-    });
-  }
+  });
 }
 
 async function checkAuthSession(){
@@ -3800,76 +3795,66 @@ function setCalView(v){calView=v;renderCalendarView();}
 // BOOT — all bugs fixed here
 // ═══════════════════════════════════════════
 document.getElementById('top-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
-loadLS();
-renderDash();
-switchOrg('personal');
-updateNotifBtn();
-updateSettingsBtn();
-// Show login screen immediately if no Supabase credentials
-if(!S.sbConfig||!S.sbConfig.url||!S.sbConfig.key){
-  setTimeout(function(){showLoginScreen();},100);
-}
-initSupabase(async function(){
-  if(!SB){
-    // No Supabase credentials — render dashboard from localStorage, show login
-    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
-    setTimeout(function(){showLoginScreen();},200);
-    return;
+(async function(){
+  loadLS();
+
+  // Initialize Supabase synchronously using statically loaded library
+  var url=S.sbConfig&&S.sbConfig.url?S.sbConfig.url:'';
+  var key=S.sbConfig&&S.sbConfig.key?S.sbConfig.key:'';
+
+  if(url&&key&&window.supabase){
+    try{
+      SB=window.supabase.createClient(url,key,{
+        auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
+      });
+    }catch(e){console.error('Supabase init:',e);}
   }
 
-  // Listen for future auth changes (sign-in redirect, sign-out)
-  SB.auth.onAuthStateChange(async function(event, session){
-    if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session&&session.user){
-      if(AURORA_USER&&AURORA_USER.id===session.user.id) return;
-      AURORA_USER=session.user;
-      var pt=session.provider_token;
-      if(pt){S.gConfig.accessToken=pt;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
-      try{ await loadFromSupabase(); }catch(e){console.warn('loadFromSupabase:',e);}
-      try{ await loadUserState(); }catch(e){console.warn('loadUserState:',e);}
+  if(SB){
+    // Wire auth state listener
+    SB.auth.onAuthStateChange(async function(event,session){
+      if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session&&session.user){
+        if(AURORA_USER&&AURORA_USER.id===session.user.id) return;
+        AURORA_USER=session.user;
+        var pt=session.provider_token;
+        if(pt){S.gConfig.accessToken=pt;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
+        try{await loadFromSupabase();}catch(e){console.warn(e);}
+        try{await loadUserState();}catch(e){console.warn(e);}
+        applyTypeToTwoLayerItems();
+        hideLoginScreen();
+        if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
+        renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+        if(!localStorage.getItem('aurora_migrated_v116')){
+          setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
+        }
+      } else if(event==='SIGNED_OUT'){
+        AURORA_USER=null;
+        setTimeout(function(){showLoginScreen();},100);
+      }
+    });
+
+    // Check persisted session
+    var resp=await SB.auth.getSession();
+    var sess=resp&&resp.data&&resp.data.session;
+    if(sess&&sess.user){
+      AURORA_USER=sess.user;
+      if(sess.provider_token){S.gConfig.accessToken=sess.provider_token;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
+      try{await loadFromSupabase();}catch(e){console.warn(e);}
+      try{await loadUserState();}catch(e){console.warn(e);}
       applyTypeToTwoLayerItems();
-      hideLoginScreen();
       if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
-      renderDash();
-      switchOrg('personal');
-      updateNotifBtn();
-      updateSettingsBtn();
+      renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
       if(!localStorage.getItem('aurora_migrated_v116')){
         setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
       }
-    } else if(event==='SIGNED_OUT'){
-      AURORA_USER=null;
-      showLoginScreen();
+      return;
     }
-  });
-
-  // Check for existing persisted session
-  var {data:sd}=await SB.auth.getSession();
-  if(sd&&sd.session&&sd.session.user){
-    AURORA_USER=sd.session.user;
-    var pt2=sd.session.provider_token;
-    if(pt2){S.gConfig.accessToken=pt2;S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;}
-    // Load all data before rendering
-    try{ await loadFromSupabase(); }catch(e){console.warn('loadFromSupabase:',e);}
-    try{ await loadUserState(); }catch(e){console.warn('loadUserState:',e);}
-    applyTypeToTwoLayerItems();
-    if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
-    // Now render with full data
-    renderDash();
-    switchOrg('personal');
-    updateNotifBtn();
-    updateSettingsBtn();
-    if(!localStorage.getItem('aurora_migrated_v116')){
-      setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
-    }
-  } else {
-    // No session — render from localStorage then show login
-    renderDash();
-    switchOrg('personal');
-    updateNotifBtn();
-    updateSettingsBtn();
-    setTimeout(function(){showLoginScreen();},200);
   }
-});
+
+  // No session or no Supabase — render from localStorage, show login
+  renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+  setTimeout(function(){showLoginScreen();},200);
+})();
 if(Notification.permission==='granted')scheduleNotifs();
 initSupabase();
 // Restore Google token silently if previously authenticated
