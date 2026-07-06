@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AURORA BUILD: async IIFE boot fix, Supabase session restore, applyTypeToTwoLayerItems | CODE: XK7-IIFE-2025 -->
+<!-- AURORA BUILD: login loop fix via SIGNED_OUT guard + load flag | CODE: PP9-LOOP-FIX -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3821,6 +3821,7 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
         try{await loadFromSupabase();}catch(e){console.warn(e);}
         try{await loadUserState();}catch(e){console.warn(e);}
         applyTypeToTwoLayerItems();
+        window._auroraLoading=false;
         hideLoginScreen();
         if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
         renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
