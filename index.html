@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AURORA BUILD: AURORA_USER set sync before await, hideLoginScreen early | CODE: ZP3-SYNCFIX -->
+<!-- AURORA BUILD: hash strip moved AFTER Supabase processes it, explicit localStorage storage | CODE: WT8-LATEHASH -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3799,10 +3799,6 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
 (async function(){
   loadLS();
 
-  if(window.location.hash&&window.location.hash.indexOf('access_token')>=0){
-    window.history.replaceState(null,'',window.location.pathname);
-  }
-
   if(Notification.permission==='granted') scheduleNotifs();
   setTimeout(smartNotificationsOnLoad,1500);
 
@@ -3811,7 +3807,13 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
   if(url&&key&&window.supabase){
     try{
       SB=window.supabase.createClient(url,key,{
-        auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true,flowType:'implicit'}
+        auth:{
+          autoRefreshToken:true,
+          persistSession:true,
+          detectSessionInUrl:true,
+          flowType:'implicit',
+          storage:window.localStorage
+        }
       });
     }catch(e){console.error('Supabase init:',e);}
   }
@@ -3831,7 +3833,7 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
       console.log('Skip duplicate from:',source);
       return;
     }
-    // Set AURORA_USER SYNCHRONOUSLY before any await
+    // Set AURORA_USER synchronously before any await
     sessionStorage.setItem('aurora_session_loaded','1');
     AURORA_USER=sess.user;
     console.log('bootWithSession:',source,sess.user.id.slice(0,8));
@@ -3845,6 +3847,10 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
     applyTypeToTwoLayerItems();
     if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
     renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+    // Clean up hash AFTER Supabase has processed it
+    if(window.location.hash&&window.location.hash.indexOf('access_token')>=0){
+      window.history.replaceState(null,'',window.location.pathname);
+    }
     if(!localStorage.getItem('aurora_migrated_v116')){
       setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
     }
@@ -3867,8 +3873,10 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
     }
   });
 
+  // Check persisted session — Supabase reads hash automatically via detectSessionInUrl
   var resp=await SB.auth.getSession();
   var sess=resp&&resp.data&&resp.data.session;
+  console.log('getSession result:',sess?sess.user.id.slice(0,8):'null');
   if(sess&&sess.user){
     await bootWithSession(sess,'getSession');
   } else {
