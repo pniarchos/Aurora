@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AURORA BUILD: Supabase CDN restored, session guard, clean boot | CODE: NC8-CDNFIX -->
+<!-- AURORA BUILD: AURORA_USER set sync before await, hideLoginScreen early | CODE: ZP3-SYNCFIX -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3831,19 +3831,20 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
       console.log('Skip duplicate from:',source);
       return;
     }
+    // Set AURORA_USER SYNCHRONOUSLY before any await
     sessionStorage.setItem('aurora_session_loaded','1');
-    console.log('bootWithSession:',source,sess.user.id.slice(0,8));
     AURORA_USER=sess.user;
+    console.log('bootWithSession:',source,sess.user.id.slice(0,8));
     if(sess.provider_token){
       S.gConfig.accessToken=sess.provider_token;
       S.gConfig.tokenExpiry=Date.now()+(3600-120)*1000;
     }
+    hideLoginScreen();
     try{await loadFromSupabase();}catch(e){console.warn('loadFromSupabase:',e);}
     try{await loadUserState();}catch(e){console.warn('loadUserState:',e);}
     applyTypeToTwoLayerItems();
     if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
     renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
-    hideLoginScreen();
     if(!localStorage.getItem('aurora_migrated_v116')){
       setTimeout(function(){var b=document.getElementById('migration-banner');if(b)b.style.display='block';},1500);
     }
