@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AURORA BUILD: notif toast+snooze+panel, maybeSingle, account email, v12.8 | CODE: NF2-TOAST -->
+<!-- AURORA BUILD: notif v2 rename updateNotifBtn→updateNotifBadge | CODE: NF2-TOAST -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3605,7 +3605,7 @@ async function deleteContactFromSheet(contact){
 // ═══════════════════════════════════════════
 function requestNotif(){
   if(!('Notification' in window))return;
-  Notification.requestPermission().then(p=>{updateNotifBtn();if(p==='granted')scheduleNotifs();});
+  Notification.requestPermission().then(p=>{updateNotifBadge();if(p==='granted')scheduleNotifs();});
 }
 function scheduleNotifs(){
   if(Notification.permission!=='granted')return;
@@ -3977,7 +3977,7 @@ document.getElementById('top-date').textContent=new Date().toLocaleDateString('e
     try{await loadUserState();}catch(e){console.warn('loadUserState:',e);}
     applyTypeToTwoLayerItems();
     if(S.gConfig.accessToken) loadGapi(function(){setGapiToken(S.gConfig.accessToken);updateSettingsBtn();});
-    renderDash();switchOrg('personal');updateNotifBtn();updateSettingsBtn();
+    renderDash();switchOrg('personal');updateNotifBadge();updateSettingsBtn();
     // Clean up hash AFTER Supabase has processed it
     if(window.location.hash&&window.location.hash.indexOf('access_token')>=0){
       window.history.replaceState(null,'',window.location.pathname);
