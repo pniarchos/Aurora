@@ -2855,14 +2855,14 @@ function openSettings(){
   }
   const supaConn=!!(SB&&S.sbConfig&&S.sbConfig.url);
   const driveConn=!!(S.gConfig&&S.gConfig.clientId);
-  const sl=document.getElementById('supa-status-lbl')||{};
-  const dl=document.getElementById('drive-status-lbl')||{};
-  const sd=document.getElementById('supa-disconnect-btn')||{};
+  const sl=document.getElementById('supa-status-lbl');
+  const dl=document.getElementById('drive-status-lbl');
+  const sd=document.getElementById('supa-disconnect-btn');
   if(sl){sl.textContent=supaConn?'\u2713 Connected':'Not connected';sl.style.color=supaConn?'var(--green)':'var(--text3)';}
   if(sd)sd.style.display=supaConn?'block':'none';
   if(dl){dl.textContent=driveConn?'\u2713 Connected':'Not connected';dl.style.color=driveConn?'var(--green)':'var(--text3)';}
   const hasData=Object.values(S.items||{}).some(o=>Object.values(o).some(d=>d.length>0));
-  const mr=document.getElementById('supa-migrate-row')||{};
+  const mr=document.getElementById('supa-migrate-row');
   if(mr)mr.style.display=(hasData&&!(S.sbConfig&&S.sbConfig.migrationDone))?'block':'none';
   updateTokenDisplay();
   openOv('settings-ov');
