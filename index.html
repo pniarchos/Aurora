@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- AURORA BUILD: hash strip moved AFTER Supabase processes it, explicit localStorage storage | CODE: WT8-LATEHASH -->
+<!-- AURORA BUILD: settings cleanup, account section, sign out, removed sheet | CODE: GH6-CLEANUP -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -418,88 +418,59 @@ body{background:var(--bg3);color:var(--text);min-height:100vh;}
 <!-- SETTINGS MODAL — unified, all s- prefixed IDs to avoid duplicates -->
 <div class="overlay" id="settings-ov" onclick="ovBg(event,'settings-ov')">
   <div class="modal" style="max-width:500px;">
-    <h3>&#x2699; Aurora Settings</h3>
-    <div class="modal-desc">All credentials stored locally on this device only &mdash; never in code or repository.</div>
+    <div class="modal-hdr"><span>&#x2699; Settings</span></div>
+
     <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Aurora Assistant</div>
-    <div class="fg">
-      <label>Anthropic API Key</label>
-      <input type="password" id="s-anthropic-key" placeholder="sk-ant-...">
-      <div class="hint">Required for Aurora chat. Get yours at console.anthropic.com &rarr; API Keys</div>
-    </div>
+    <div class="fg"><label>Anthropic API Key</label><input type="password" id="s-anthropic-key" placeholder="sk-ant-..."><div class="hint">Required for Aurora chat &mdash; console.anthropic.com &rarr; API Keys</div></div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:.5rem;">
       <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Session usage (claude-sonnet-4-6)</div>
       <div id="s-token-display" style="font-size:13px;color:var(--text2);line-height:1.5;"></div>
       <button onclick="resetTokenCounter()" style="margin-top:8px;background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:3px 10px;font-size:11px;cursor:pointer;color:var(--text3);font-family:inherit;">Reset counter</button>
     </div>
+
     <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Supabase</div>
-      <span id="supa-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Account</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:12px;font-weight:600;color:var(--text);" id="s-account-email">Not signed in</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">Google account via Supabase Auth</div></div>
+      <span id="s-account-status" style="font-size:11px;color:var(--green);">Connected</span>
     </div>
+    <button onclick="signOut()" style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:none;border:1px solid var(--border2);border-radius:var(--r);cursor:pointer;font-family:inherit;font-size:13px;color:var(--text2);margin-bottom:1rem;" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">&#x2192; Sign out of Aurora</button>
+
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Database <span style="font-size:10px;font-weight:400;color:var(--text3);">(Supabase)</span></div>
     <div class="fg"><label>Project URL</label><input type="text" id="s-sb-url" placeholder="https://xxxx.supabase.co"></div>
-    <div class="fg"><label>Publishable (anon) key</label><input type="text" id="s-sb-key" placeholder="eyJ..."></div>
-    <div id="supa-migrate-row" style="display:none;">
-      <div class="alert alert-info">Existing data detected. Migrate to Supabase on connect?</div>
-      <div class="fg-check"><input type="checkbox" id="s-sb-migrate" checked><label for="s-sb-migrate">Migrate existing data</label></div>
-    </div>
+    <div class="fg"><label>Anon key</label><input type="text" id="s-sb-key" placeholder="eyJ..."></div>
     <div id="supa-alert"></div>
-    <div style="display:flex;gap:6px;margin-bottom:1rem;">
-      <button class="btn-save" style="font-size:13px;padding:6px 14px;" onclick="connectSupabase()">Connect Supabase</button>
-      <button class="btn-cancel" id="supa-disconnect-btn" style="font-size:13px;padding:6px 14px;display:none;" onclick="disconnectSupabase()">Disconnect</button>
-    </div>
+
     <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);">Google Drive</div>
-      <span id="drive-status-lbl" style="font-size:11px;color:var(--text3);">Not connected</span>
-    </div>
-    <div class="fg">
-      <label>OAuth Client ID</label>
-      <input type="text" id="s-gs-client-id" placeholder="123456789-abc.apps.googleusercontent.com">
-      <div class="hint">Google Cloud Console &rarr; APIs &amp; Services &rarr; Credentials</div>
-    </div>
-    <div class="fg">
-      <label>Contacts Sheet ID (optional &mdash; for Social sync)</label>
-      <input type="text" id="s-gs-sheet-id" placeholder="Sheet ID from contacts sheet URL">
-      <div class="hint">docs.google.com/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
-    </div>
-    <div class="fg"><label>Sheet tab name</label><input type="text" id="s-gs-sheet-tab" placeholder="Sheet1"></div>
-    <div id="gsetup-alert"></div>
-    <div style="margin-bottom:1rem;">
-      <button class="btn-blue" style="font-size:13px;padding:6px 14px;" onclick="connectGoogle()">Connect Google</button>
-    </div>
-    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
-    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Drive Folders <span style="font-size:10px;font-weight:400;color:var(--text3);">(for Notes promotion)</span></div>
-    <div class="fg"><label>Personal Drive folder ID</label><input type="text" id="s-personal-folder" placeholder="Paste folder ID from Drive URL..." autocomplete="off"></div>
-    <div class="fg"><label>10Forward Drive folder ID</label><input type="text" id="s-tenfwd-folder" placeholder="Paste folder ID from Drive URL..." autocomplete="off"></div>
-    <div class="fg"><label>FEE Drive folder ID</label><input type="text" id="s-fee-folder" placeholder="Paste folder ID from Drive URL..." autocomplete="off"></div>
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Google Drive Folders <span style="font-size:10px;font-weight:400;color:var(--text3);">(Notes promotion)</span></div>
+    <div class="fg"><label>Personal</label><input type="text" id="s-personal-folder" placeholder="Drive folder ID..." autocomplete="off"></div>
+    <div class="fg"><label>10Forward</label><input type="text" id="s-tenfwd-folder" placeholder="Drive folder ID..." autocomplete="off"></div>
+    <div class="fg"><label>FEE</label><input type="text" id="s-fee-folder" placeholder="Drive folder ID..." autocomplete="off"></div>
+
     <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
     <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:.5rem;">Google Calendar</div>
     <div class="fg"><label>Personal calendar ID</label><input type="text" id="s-cal-personal-id" placeholder="yourname@gmail.com"></div>
-    <div class="fg"><label>10Forward calendar ID</label><input type="text" id="s-cal-tenfwd-id" placeholder="abc123@group.calendar.google.com"></div>
+    <div class="fg"><label>10Forward calendar ID</label><input type="text" id="s-cal-tenfwd-id" placeholder="Calendar ID"></div>
+    <div class="fg"><label>FEE calendar ID</label><input type="text" id="s-cal-fee-id" placeholder="Calendar ID"></div>
     <div class="field-row">
       <div class="fg"><label>Personal reminder (days before)</label>
-        <select id="s-cal-remind-personal">
-          <option value="1">1 day</option><option value="3">3 days</option>
-          <option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option>
-        </select>
+        <select id="s-cal-remind-personal"><option value="1">1 day</option><option value="3">3 days</option><option value="7" selected>7 days</option><option value="14">14 days</option><option value="30">30 days</option></select>
       </div>
       <div class="fg"><label>10Forward reminder (days before)</label>
-        <select id="s-cal-remind-tenfwd">
-          <option value="1">1 day</option><option value="3">3 days</option>
-          <option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option>
-        </select>
+        <select id="s-cal-remind-tenfwd"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option></select>
       </div>
     </div>
-    <div class="fg">
-      <label>Custom embed URL (optional)</label>
-      <input type="text" id="s-cal-embed-url" placeholder="Leave blank &mdash; Aurora builds this automatically">
-      <div class="hint">Leave blank to auto-build from calendar IDs above.</div>
-    </div>
+    <div class="fg"><label>Custom embed URL <span style="font-size:10px;color:var(--text3);">(optional)</span></label><input type="text" id="s-cal-embed-url" placeholder="Leave blank — Aurora builds this automatically"><div class="hint">Leave blank to auto-build from calendar IDs above.</div></div>
+    <div id="cal-alert"></div>
+
+    <div style="border-top:1px solid var(--border);margin:1rem 0;"></div>
     <div class="modal-acts">
       <button class="btn-cancel" onclick="closeOv('settings-ov')">Close</button>
       <button class="btn-save" onclick="saveAllSettings()">Save all</button>
     </div>
   </div>
+</div>
 </div>
 
 <div class="aurora-panel" id="aurora-panel">
